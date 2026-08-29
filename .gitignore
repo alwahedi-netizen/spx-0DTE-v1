@@ -1,0 +1,9 @@
+# secrets — never commit
+.env
+tokens.json
+
+__pycache__/
+*.pyc
+
+# The journal CSVs in data/paper/ are intentionally NOT ignored:
+# committing them keeps the paper-test record with the code.

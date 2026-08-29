@@ -1,0 +1,36 @@
+# paper_config.yaml — METF + Band Condor paper-mode signal logger (see paper_engine.py)
+# One fixed config for the test window. No parameter sweeps until 100 entries/strategy.
+
+timezone: America/New_York
+account_equity: 100000          # for daily risk budget calc only
+daily_risk_pct: 0.015           # 1.5% — sum of all stop losses may not exceed this
+skip_dates: []                  # FOMC minutes, CPI — YYYY-MM-DD (FOMC decision days
+                                # are added automatically from trade_builder.FOMC_2026)
+
+metf:
+  enabled: true
+  slots: ["10:00", "10:45", "11:30", "12:30", "13:30", "14:15"]
+  ema_fast: 20
+  ema_slow: 40
+  ema_bar: "1min"
+  width: 30                     # points
+  target_credit: 1.50           # per spread, mid
+  min_credit: 1.25              # skip slot if best available mid < this
+  stop_multiple: 1.0            # stop when spread value >= credit * (1 + stop_multiple)
+  hold_to_expiry: true
+  contracts: 1
+
+band:
+  enabled: true
+  band_time: "10:30"
+  entry_time: "10:35"
+  em_factor: 0.85               # expected move = straddle_mid * em_factor
+  wing_width: 30
+  skew_lo: 0.80                 # inside [lo, hi] -> full condor; outside -> single vertical on cushioned side
+  skew_hi: 1.25
+  stop_rule: "total_credit_per_side"
+  take_profit_short: 0.05
+  containment_window: 20        # rolling days
+  size_full_above: 0.70
+  size_half_above: 0.55
+  contracts: 1
