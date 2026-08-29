@@ -1,0 +1,14 @@
+[Unit]
+Description=Logicon sign-in gate for sahmi.ae (port 5260, localhost only)
+After=network.target
+
+[Service]
+Type=simple
+User=__LOGICON_USER__
+WorkingDirectory=/opt/logicon/spx-paper-trader
+ExecStart=/usr/bin/python3 /opt/logicon/spx-paper-trader/gate.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
