@@ -1,0 +1,12 @@
+# Paper trader auto-update — poll GitHub every 2 minutes.
+#   systemctl enable --now logicon-paper-update.timer
+[Unit]
+Description=Paper trader auto-update poll (every 2 min)
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target
