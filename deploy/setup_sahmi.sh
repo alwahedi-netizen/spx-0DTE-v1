@@ -1,31 +1,31 @@
 #!/usr/bin/env bash
-# setup_kbar.sh — host Combo Trader + SPX Paper Trader on kbar.ae
+# setup_sahmi.sh — host Combo Trader + SPX Paper Trader on sahmi.ae
 # =================================================================
 # Run ON THE SAME SERVER that already runs Combo Trader
 # (/opt/logicon/combo-trader, per its deploy/setup_server.sh):
 #
 #     git clone https://github.com/alwahedi-netizen/spx-0DTE-v1 ~/spx-paper-trader
-#     cd ~/spx-paper-trader/deploy && sudo bash setup_kbar.sh
+#     cd ~/spx-paper-trader/deploy && sudo bash setup_sahmi.sh
 #
 # What it does:
 #   1. Installs the paper dashboard to /opt/logicon/spx-paper-trader and
 #      starts it as systemd service logicon-paper (127.0.0.1:5250, sharing
 #      Combo Trader's Schwab tokens read-compatibly — no new Schwab login).
 #   2. Installs Caddy and serves, with automatic HTTPS + a password on
-#      every route:  trader.kbar.ae -> Combo Trader (5050)
-#                    paper.kbar.ae  -> Paper Trader (5250)
+#      every route:  trader.sahmi.ae -> Combo Trader (5050)
+#                    paper.sahmi.ae  -> Paper Trader (5250)
 #   3. Opens ports 80/443 in ufw. Nothing else changes: the apps stay on
 #      127.0.0.1, Tailscale access keeps working, Combo Trader's files and
 #      services are not touched.
 #
-# BEFORE running: at your .ae registrar's DNS panel for kbar.ae, add
+# BEFORE running: at your .ae registrar's DNS panel for sahmi.ae, add
 # A records for @, www, trader and paper pointing at this server's public
 # IP (this script prints the IP and the exact records at the end).
 
 set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
 
-DOMAIN="kbar.ae"
+DOMAIN="sahmi.ae"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_DIR="/opt/logicon/spx-paper-trader"
 TOKENS="/opt/logicon/combo-trader/tokens.json"

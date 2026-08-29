@@ -63,9 +63,9 @@ browser. Leave the black window open (it is the engine); close it to stop.
 **Linux/macOS/server:** `./start_paper.sh` (set `PAPER_HOST=0.0.0.0` to open
 the dashboard from another machine, and `LOGICON_TOKENS_FILE` as above).
 
-**Public hosting on kbar.ae:** see `deploy/HOSTING.md` — one script on the
+**Public hosting on sahmi.ae:** see `deploy/HOSTING.md` — one script on the
 Combo Trader server puts both apps behind HTTPS + a password at
-`https://trader.kbar.ae` (platform) and `https://paper.kbar.ae` (this
+`https://trader.sahmi.ae` (platform) and `https://paper.sahmi.ae` (this
 dashboard), without modifying Combo Trader.
 
 The dashboard does everything:
@@ -113,8 +113,8 @@ alone, no API.
 - `paper_dashboard.py` + `static/paper.html` — browser dashboard (supervises
   the day loop; fills, report, log — no Python needed day-to-day)
 - `START_PAPER.bat` / `start_paper.sh` — double-click / server launchers
-- `deploy/` — kbar.ae hosting: Caddyfile (HTTPS + password), systemd unit,
-  `setup_kbar.sh`, `HOSTING.md` walkthrough
+- `deploy/` — sahmi.ae hosting: Caddyfile (HTTPS + password), systemd unit,
+  `setup_sahmi.sh`, `HOSTING.md` walkthrough
 - `paper_engine.py` — rules, day loop, CLI
 - `paper_data.py` — Schwab market data (1-min SPX bars, 0DTE SPXW chain, VIX)
 - `paper_store.py` — the CSV journal
