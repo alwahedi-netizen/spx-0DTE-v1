@@ -1,0 +1,19 @@
+[Unit]
+Description=SPX Paper Trader dashboard (port 5250, localhost only)
+After=network.target
+
+[Service]
+Type=simple
+User=__LOGICON_USER__
+WorkingDirectory=/opt/logicon/spx-paper-trader
+Environment=PAPER_HOST=127.0.0.1
+Environment=PAPER_PORT=5250
+# Share Combo Trader's Schwab tokens (read/refresh only; `auth` is blocked
+# in this mode so the platform's refresh token can never be invalidated).
+Environment=LOGICON_TOKENS_FILE=/opt/logicon/combo-trader/tokens.json
+ExecStart=/usr/bin/python3 /opt/logicon/spx-paper-trader/paper_dashboard.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

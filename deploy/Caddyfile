@@ -1,0 +1,42 @@
+# Caddyfile — public hosting for Combo Trader + SPX Paper Trader on kbar.ae
+# Installed to /etc/caddy/Caddyfile by setup_kbar.sh (placeholders filled there).
+#
+# Security model:
+#   - The apps keep binding 127.0.0.1 (5050 / 5250) — only Caddy faces the
+#     internet, on 443 with automatic Let's Encrypt HTTPS.
+#   - EVERY route requires the basic-auth password (bcrypt hash below).
+#     There is no unauthenticated path: the platform routes orders and holds
+#     Schwab tokens, so nothing is served without the password.
+#   - Tailscale access keeps working exactly as before, as the fallback.
+
+kbar.ae, www.kbar.ae {
+	redir https://trader.kbar.ae{uri}
+}
+
+trader.kbar.ae {
+	basic_auth {
+		__AUTH_USER__ __AUTH_HASH__
+	}
+	reverse_proxy 127.0.0.1:5050
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+	}
+	encode gzip
+}
+
+paper.kbar.ae {
+	basic_auth {
+		__AUTH_USER__ __AUTH_HASH__
+	}
+	reverse_proxy 127.0.0.1:5250
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+	}
+	encode gzip
+}
