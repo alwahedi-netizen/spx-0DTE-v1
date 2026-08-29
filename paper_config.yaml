@@ -34,3 +34,10 @@ band:
   size_full_above: 0.70
   size_half_above: 0.55
   contracts: 1
+
+execution:
+  mode: simulated               # simulated = engine fills its own orders into
+                                # the *_actual columns (paperMoney has no API);
+                                # set to "off" to type fills in manually
+  entry_slippage: 0.05          # credit received = theo credit - this
+  exit_slippage: 0.05           # stop/TP exit paid = theo exit + this

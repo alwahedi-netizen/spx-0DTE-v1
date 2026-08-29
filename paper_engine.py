@@ -77,6 +77,14 @@ DEFAULTS = {
         "containment_window": 20, "size_full_above": 0.70,
         "size_half_above": 0.55, "contracts": 1,
     },
+    # Simulated execution: the engine fills its own orders into the *_actual
+    # columns at theo price minus a slippage penalty (paperMoney has no API —
+    # nothing can route orders to it). mode: off -> the human types fills in.
+    "execution": {
+        "mode": "simulated",
+        "entry_slippage": 0.05,   # credit received = theo credit - this
+        "exit_slippage": 0.05,    # stop/TP exit paid = theo exit + this
+    },
 }
 
 
@@ -286,6 +294,24 @@ def vertical_pnl(credit: float, exit_value: float, contracts: int) -> float:
     return (credit - exit_value) * 100 * contracts
 
 
+# ── simulated execution (auto-fills the *_actual columns) ────────────────────
+
+def sim_cfg(cfg: dict):
+    e = cfg.get("execution") or {}
+    return e if e.get("mode") == "simulated" else None
+
+
+def sim_entry_credit(credit_theo: float, entry_slip: float) -> float:
+    """A real fill collects a bit less than mid."""
+    return max(0.0, credit_theo - entry_slip)
+
+
+def sim_exit_value(exit_theo: float, reason: str, exit_slip: float) -> float:
+    """Buying back (stop/TP) pays a bit over mid; cash settlement at expiry
+    has no spread to cross."""
+    return exit_theo if reason == "EXPIRED" else exit_theo + exit_slip
+
+
 # ── idempotency helpers ──────────────────────────────────────────────────────
 
 def pending_metf_slots(cfg: dict, d: str) -> list:
@@ -396,12 +422,18 @@ def do_metf_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
         credit_theo=_fmt(credit), short_delta=_fmt(pick["short_delta"], 3),
         short_mid=_fmt(pick["short_mid"]), long_mid=_fmt(pick["long_mid"]),
         stop_level=_fmt(stop_level), **base))
+    pid = f"{day_row['date']}-METF-{slot}-{side}"
     st.append("positions", {
-        "position_id": f"{day_row['date']}-METF-{slot}-{side}",
+        "position_id": pid,
         "signal_ts": ts, "strategy": "METF", "side": side,
         "contracts": m["contracts"],
         "short_strike": pick["short_strike"], "long_strike": pick["long_strike"],
         "credit_theo": _fmt(credit), "stop_level": _fmt(stop_level)})
+    e = sim_cfg(cfg)
+    if e:
+        st.update_position(pid, {
+            "credit_actual": _fmt(sim_entry_credit(credit, e["entry_slippage"])),
+            "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
     print(f"[{slot}] METF SELL {side} {pick['short_strike']}/{pick['long_strike']}"
           f" credit {credit:.2f} stop {stop_level:.2f}", flush=True)
 
@@ -506,24 +538,40 @@ def do_band_entry(cfg: dict, day_row: dict, brow: dict, chain: dict, expiry: str
         short_mid=_fmt(p0["short_mid"]), long_mid=_fmt(p0["long_mid"]),
         stop_level=_fmt(stop_level),
         size_factor=_fmt(size, 1), **base))
+    e = sim_cfg(cfg)
     for s in sides:
+        pid = f"{d}-BAND-{s['side']}"
         st.append("positions", {
-            "position_id": f"{d}-BAND-{s['side']}",
+            "position_id": pid,
             "signal_ts": ts, "strategy": "BAND", "side": s["side"],
             "contracts": b["contracts"],
             "short_strike": s["short"], "long_strike": s["long"],
             "credit_theo": _fmt(s["credit"]), "stop_level": _fmt(stop_level)})
+        if e:
+            st.update_position(pid, {
+                "credit_actual": _fmt(sim_entry_credit(s["credit"], e["entry_slippage"])),
+                "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
     print(f"[{slot}] BAND {structure} credit {total_credit:.2f} "
           f"stop/side {stop_level:.2f} size {size}", flush=True)
 
 
-def _close_position(p: dict, exit_value: float, reason: str):
-    pnl = vertical_pnl(float(p["credit_theo"]), exit_value,
-                       int(float(p.get("contracts") or 1)))
+def _close_position(cfg: dict, p: dict, exit_value: float, reason: str):
+    contracts = int(float(p.get("contracts") or 1))
+    pnl = vertical_pnl(float(p["credit_theo"]), exit_value, contracts)
     st.update_position(p["position_id"],
                        {"exit_ts": iso(now_et()), "exit_value_theo": _fmt(exit_value),
                         "exit_reason": reason, "pnl_theo": _fmt(pnl)},
                        allow=st.EXIT_COLS)
+    # Simulated execution closes its own fill — but never overwrites a value a
+    # human already typed in.
+    e = sim_cfg(cfg)
+    ca = (p.get("credit_actual") or "").strip()
+    if e and ca and not (p.get("exit_value_actual") or "").strip():
+        ev = sim_exit_value(exit_value, reason, e["exit_slippage"])
+        st.update_position(p["position_id"], {
+            "exit_value_actual": _fmt(ev),
+            "pnl_actual": _fmt(vertical_pnl(float(ca), ev, contracts))},
+            allow=st.ACTUAL_COLS)
     print(f"  {p['position_id']} {reason} @ {exit_value:.2f} pnl {pnl:+.0f}", flush=True)
 
 
@@ -541,18 +589,18 @@ def do_tracking(cfg: dict, chain: dict, expiry: str):
             continue
         value = ms - ml
         if stop_triggered(value, float(p["stop_level"])):
-            _close_position(p, value, "STOPPED")
+            _close_position(cfg, p, value, "STOPPED")
         elif p["strategy"] == "BAND" and ms <= tp:
-            _close_position(p, value, "TP")
+            _close_position(cfg, p, value, "TP")
         # METF hold_to_expiry: no take-profit; stop only.
 
 
-def do_settle(spx_close: float):
+def do_settle(cfg: dict, spx_close: float):
     """§6.4 @ 16:00 — settle remaining legs at intrinsic vs the close."""
     for p in st.open_positions():
         v = settle_value(p["side"], float(p["short_strike"]),
                          float(p["long_strike"]), spx_close)
-        _close_position(p, v, "EXPIRED")
+        _close_position(cfg, p, v, "EXPIRED")
 
 
 def do_containment(d: str, spx_close: float) -> bool:
@@ -655,7 +703,7 @@ def cmd_run(cfg: dict):
         if st.open_positions():
             if now >= settle_t:
                 try:
-                    do_settle(pd_.spx_last())
+                    do_settle(cfg, pd_.spx_last())
                     settle_done_flag["done"] = True
                 except pd_.PaperDataError as e:
                     print(f"settle failed (retrying next cycle): {e}", flush=True)

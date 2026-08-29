@@ -101,7 +101,7 @@
   </section>
 
   <section>
-    <h2>Positions <span class="mut" style="text-transform:none">(theoretical — enter your paperMoney fills in the actual columns)</span></h2>
+    <h2>Positions <span class="mut" style="text-transform:none">(actual columns auto-filled by simulated execution — overwrite with real paperMoney fills any time)</span></h2>
     <div class="tblwrap"><table id="posTable">
       <thead><tr><th>Position</th><th>Side</th><th>Strikes</th><th>Credit θ</th>
         <th>Stop</th><th>Exit</th><th>P/L θ</th>
@@ -125,9 +125,10 @@
     <pre id="logOut">…</pre>
   </section>
 
-  <footer>Signal generation &amp; journaling only — no orders are ever placed.
-    You execute manually in thinkorswim paperMoney. Market data is read-only
-    via the Schwab API.</footer>
+  <footer>No real orders are ever placed. Fills are simulated by the engine
+    at theo &plusmn; slippage (execution.mode in paper_config.yaml), or typed in
+    manually from thinkorswim paperMoney — a manual fill always wins over a
+    simulated one. Market data is read-only via the Schwab API.</footer>
 </div>
 
 <script>

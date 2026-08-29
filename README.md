@@ -1,10 +1,13 @@
 # spx-paper-trader
 
 METF + Band Condor **paper-mode signal logger** for SPX 0DTE credit spreads.
-Signal generation + journaling only — **no order routing**, paper or live.
-The engine says exactly what the rules would trade, at what strikes, for what
-theoretical credit; a human executes in thinkorswim paperMoney and back-fills
-the actual fills. After ~100 entries per strategy (or 6 weeks), the journal
+**No real order routing, paper or live.** The engine decides exactly what the
+rules would trade and — in the default `execution: simulated` mode — fills
+its own orders at theo price ± a slippage penalty, fully unattended (Schwab's
+thinkorswim paperMoney has no API, so nothing can route orders to it). Set
+`execution.mode: off` to execute manually in paperMoney and type real fills
+into the `*_actual` columns instead; a manual fill always overrides a
+simulated one. After ~100 entries per strategy (or 6 weeks), the journal
 decides whether either rule set earns real capital.
 
 Standalone sibling of the Logicon Capital platform (`combo-trader-tv`) — it

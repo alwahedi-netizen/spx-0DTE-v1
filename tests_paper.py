@@ -176,6 +176,22 @@ def test_risk_and_stops():
     ok("pnl = (credit - exit) * 100 * contracts")
 
 
+# ── simulated execution ──────────────────────────────────────────────────────
+def test_sim_execution():
+    print("Simulated execution")
+    assert pe.sim_cfg({"execution": {"mode": "simulated"}}) is not None
+    assert pe.sim_cfg({"execution": {"mode": "off"}}) is None
+    assert pe.sim_cfg({}) is None
+    ok("execution.mode gates the simulator")
+    assert abs(pe.sim_entry_credit(1.65, 0.05) - 1.60) < 1e-9
+    assert pe.sim_entry_credit(0.03, 0.05) == 0.0
+    ok("entry fill = theo credit - slippage (floored at 0)")
+    assert abs(pe.sim_exit_value(3.35, "STOPPED", 0.05) - 3.40) < 1e-9
+    assert abs(pe.sim_exit_value(0.05, "TP", 0.05) - 0.10) < 1e-9
+    assert pe.sim_exit_value(20.0, "EXPIRED", 0.05) == 20.0
+    ok("stop/TP exits pay slippage; expiry settles at intrinsic")
+
+
 # ── store: idempotent slots, immutable theo columns (§9) ─────────────────────
 def test_store():
     print("Store idempotency / immutability")
@@ -251,7 +267,7 @@ def test_store():
 
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
-              test_risk_and_stops, test_store):
+              test_risk_and_stops, test_sim_execution, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)
