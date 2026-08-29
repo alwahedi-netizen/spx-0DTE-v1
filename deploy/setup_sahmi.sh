@@ -36,7 +36,10 @@ else TOKENS=/opt/logicon/combo-trader/tokens.json
      echo "WARNING: no tokens.json found under /opt/logicon — is Combo Trader deployed here? (continuing)"
 fi
 echo "using Schwab tokens: $TOKENS"
+# Owner of the app tree; on the dockerized hub the dir can be owned by a
+# container UID with no passwd entry (stat prints UNKNOWN) — fall back to root.
 LOGICON_USER="${LOGICON_USER:-$(stat -c %U /opt/logicon/combo-trader 2>/dev/null || echo root)}"
+id "$LOGICON_USER" >/dev/null 2>&1 || LOGICON_USER=root
 
 echo "== 1/5 Paper Trader -> ${APP_DIR} (user: ${LOGICON_USER}) =="
 apt-get update -qq
