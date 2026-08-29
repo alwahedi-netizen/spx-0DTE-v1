@@ -28,10 +28,15 @@ set -euo pipefail
 DOMAIN="sahmi.ae"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_DIR="/opt/logicon/spx-paper-trader"
-TOKENS="/opt/logicon/combo-trader/tokens.json"
+# The hub keeps shared Schwab secrets in /opt/logicon/infra (tokens.json
+# symlinked from combo-trader); prefer that, fall back to the plain layout.
+if   [ -f /opt/logicon/infra/tokens.json ];        then TOKENS=/opt/logicon/infra/tokens.json
+elif [ -f /opt/logicon/combo-trader/tokens.json ]; then TOKENS=/opt/logicon/combo-trader/tokens.json
+else TOKENS=/opt/logicon/combo-trader/tokens.json
+     echo "WARNING: no tokens.json found under /opt/logicon — is Combo Trader deployed here? (continuing)"
+fi
+echo "using Schwab tokens: $TOKENS"
 LOGICON_USER="${LOGICON_USER:-$(stat -c %U /opt/logicon/combo-trader 2>/dev/null || echo root)}"
-
-[ -f "$TOKENS" ] || echo "WARNING: $TOKENS not found — is Combo Trader deployed on this server? (continuing)"
 
 echo "== 1/5 Paper Trader -> ${APP_DIR} (user: ${LOGICON_USER}) =="
 apt-get update -qq
@@ -40,8 +45,8 @@ pip3 install --break-system-packages --ignore-installed blinker -q flask request
 mkdir -p "$APP_DIR"
 rsync -a --exclude '.git' --exclude '__pycache__' --exclude 'data' "$REPO_DIR/" "$APP_DIR/"
 chown -R "$LOGICON_USER":"$LOGICON_USER" "$APP_DIR"
-sed "s/__LOGICON_USER__/${LOGICON_USER}/" "$REPO_DIR/deploy/logicon-paper.service" \
-    > /etc/systemd/system/logicon-paper.service
+sed -e "s/__LOGICON_USER__/${LOGICON_USER}/" -e "s|__TOKENS_FILE__|${TOKENS}|" \
+    "$REPO_DIR/deploy/logicon-paper.service" > /etc/systemd/system/logicon-paper.service
 systemctl daemon-reload
 systemctl enable --now logicon-paper
 systemctl --no-pager --lines=0 status logicon-paper | head -3

@@ -10,7 +10,9 @@ Environment=PAPER_HOST=127.0.0.1
 Environment=PAPER_PORT=5250
 # Share Combo Trader's Schwab tokens (read/refresh only; `auth` is blocked
 # in this mode so the platform's refresh token can never be invalidated).
-Environment=LOGICON_TOKENS_FILE=/opt/logicon/combo-trader/tokens.json
+# __TOKENS_FILE__ is filled by setup_sahmi.sh: on the hub this is
+# /opt/logicon/infra/tokens.json (the shared-infra layout).
+Environment=LOGICON_TOKENS_FILE=__TOKENS_FILE__
 ExecStart=/usr/bin/python3 /opt/logicon/spx-paper-trader/paper_dashboard.py
 Restart=on-failure
 RestartSec=5
