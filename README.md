@@ -31,33 +31,59 @@ Both share a daily risk budget (1.5% of configured equity) that caps the
 entry condition. FOMC decision days (and any `skip_dates` in the config,
 e.g. CPI, FOMC minutes) produce a no-trade day.
 
-## Setup
+## One Schwab app — how tokens work (read this first)
+
+This tool **never places orders** and never touches thinkorswim. You trade
+manually in thinkorswim paperMoney; the Schwab API is used **read-only** for
+market data (quotes, chains, 1-min bars).
+
+Schwab allows one active login per developer app: running a new OAuth login
+from a second place **invalidates the refresh token the first app is using**.
+So there are exactly two safe setups:
+
+1. **Share Combo Trader's tokens (recommended, zero disruption).** Run this
+   on the same machine as Combo Trader and point at its token file before
+   starting:
+   `export LOGICON_TOKENS_FILE=/path/to/combo-trader-tv/tokens.json`
+   The logger then behaves like one more platform process on that file (the
+   platform's own services already share it the same way). In this mode the
+   `auth` command and the dashboard's login flow are **hard-blocked** so a
+   new login can never be triggered from here by accident.
+2. **Standalone (only if this is your ONLY Schwab API app).** Copy
+   `.env.example` to `.env`, fill in the app key/secret, authenticate once
+   from the dashboard (or `python schwab_auth.py auth`). Do **not** do this
+   if Combo Trader uses the same app key — it would break Combo Trader.
+
+## Quick start — browser only, no Python commands
+
+**Windows:** double-click `START_PAPER.bat`. It installs dependencies on
+first run, starts the dashboard, and opens http://127.0.0.1:5250/ in your
+browser. Leave the black window open (it is the engine); close it to stop.
+
+**Linux/macOS/server:** `./start_paper.sh` (set `PAPER_HOST=0.0.0.0` to open
+the dashboard from another machine, and `LOGICON_TOKENS_FILE` as above).
+
+The dashboard does everything:
+
+- **supervises the day loop** — on trading days it starts the engine at
+  08:55 ET, restarts it if it dies (the loop is idempotent, nothing
+  duplicates), and shows its live log;
+- **live state** — today's signals, open/closed positions, risk used vs
+  budget, the 10:30 band, VIX/GEX tags;
+- **fills** — type your paperMoney credit/exit into the actual columns and
+  press Save (theo columns stay locked);
+- **report** — the weekly stats, rendered in the page.
+
+Leave it running all week; it does nothing on weekends and calendar-skip
+days by itself.
+
+## CLI (optional — same engine, no dashboard)
 
 ```bash
-pip install requests pyyaml
-cp .env.example .env            # fill in SCHWAB_APP_KEY / SCHWAB_APP_SECRET
-python3 schwab_auth.py auth     # Schwab login; tokens.json (7-day refresh life)
-python3 tests_paper.py          # offline regression suite — must pass
+python3 paper_engine.py run | status | report --weeks 1
+python3 paper_engine.py fill <position_id> --credit 1.45 --exit 0.00 --note "filled 10:01"
+python3 tests_paper.py     # offline regression suite
 ```
-
-Already running the Logicon platform? Skip `auth` and point at its tokens:
-`export LOGICON_TOKENS_FILE=/path/to/combo-trader-tv/tokens.json`. To get a
-real GEX tag instead of `unknown`, also add the platform repo to
-`PYTHONPATH` (the logger imports its `gex_bridge` read-only).
-
-## Daily use
-
-```bash
-python3 paper_engine.py run       # full-day loop, 09:00–16:05 ET, idempotent
-python3 paper_engine.py status    # open positions, stop distance, risk vs budget
-python3 paper_engine.py fill 2026-09-01-METF-10:00-PUT --credit 1.45 --exit 0.00 --note "filled 10:01"
-python3 paper_engine.py report --weeks 1
-```
-
-`run` is safe to restart mid-day: logged slots never re-run, and slots missed
-while the engine was down are journaled as `SKIP`/`DATA` so every day still
-has a complete, honest record. Run it under cron/systemd on trading days
-(it exits by itself on weekends and calendar-skip days).
 
 All schedule times are **America/New_York** regardless of server timezone;
 every timestamp is ET ISO-8601 with offset.
@@ -79,6 +105,9 @@ alone, no API.
 
 ## Files
 
+- `paper_dashboard.py` + `static/paper.html` — browser dashboard (supervises
+  the day loop; fills, report, log — no Python needed day-to-day)
+- `START_PAPER.bat` / `start_paper.sh` — double-click / server launchers
 - `paper_engine.py` — rules, day loop, CLI
 - `paper_data.py` — Schwab market data (1-min SPX bars, 0DTE SPXW chain, VIX)
 - `paper_store.py` — the CSV journal

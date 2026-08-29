@@ -728,11 +728,13 @@ def cmd_status(cfg: dict):
               f"credit {p['credit_theo']} stop {p['stop_level']} | {live}")
 
 
-def cmd_fill(position_id: str, credit=None, exit_value=None, note=None):
+def apply_fill(position_id: str, credit=None, exit_value=None, note=None) -> dict:
+    """Record actual paperMoney fills on a position. Only *_actual columns are
+    touched (theo stays immutable). Raises KeyError on unknown position_id.
+    Returns the updates written. Used by both the CLI and the dashboard."""
     rows = [r for r in st.read("positions") if r["position_id"] == position_id]
     if not rows:
-        print(f"no such position_id: {position_id}", file=sys.stderr)
-        sys.exit(1)
+        raise KeyError(position_id)
     row = rows[0]
     updates = {}
     if credit is not None:
@@ -747,6 +749,15 @@ def cmd_fill(position_id: str, credit=None, exit_value=None, note=None):
         updates["pnl_actual"] = _fmt(vertical_pnl(
             float(ca), float(ea), int(float(row.get("contracts") or 1))))
     st.update_position(position_id, updates, allow=st.ACTUAL_COLS)
+    return updates
+
+
+def cmd_fill(position_id: str, credit=None, exit_value=None, note=None):
+    try:
+        updates = apply_fill(position_id, credit, exit_value, note)
+    except KeyError:
+        print(f"no such position_id: {position_id}", file=sys.stderr)
+        sys.exit(1)
     print(f"{position_id}: " + ", ".join(f"{k}={v}" for k, v in updates.items()))
 
 

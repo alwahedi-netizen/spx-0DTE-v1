@@ -39,6 +39,16 @@ TOKEN_FILE = Path(os.environ.get("LOGICON_TOKENS_FILE",
 REFRESH_TOKEN_LIFE_DAYS = 7   # Schwab hard limit — refresh token dies 7 days after auth
 
 
+def shared_mode() -> bool:
+    """True when LOGICON_TOKENS_FILE points at another app's token file
+    (e.g. Combo Trader's). In shared mode this tool behaves exactly like one
+    more platform process on the same file: it may refresh the access token
+    (identical logic, refresh_auth_at preserved) but it must NEVER run a new
+    OAuth login — a fresh Schwab authorization invalidates the refresh token
+    every other app on this key is using."""
+    return bool(os.environ.get("LOGICON_TOKENS_FILE"))
+
+
 class AuthError(RuntimeError):
     pass
 
@@ -177,6 +187,13 @@ def main():
     if cmd != "auth":
         print(f"usage: {sys.argv[0]} [auth|status]", file=sys.stderr)
         sys.exit(2)
+    if shared_mode():
+        print("REFUSED: LOGICON_TOKENS_FILE is set (shared-token mode).\n"
+              "Running a new Schwab login here would invalidate the refresh "
+              "token the other app (Combo Trader) is using.\n"
+              "Re-authenticate from that app instead; this tool will pick up "
+              "the shared tokens automatically.", file=sys.stderr)
+        sys.exit(1)
     try:
         print("1. Open this URL, log in to Schwab, approve access:\n")
         print(f"   {build_auth_url()}\n")

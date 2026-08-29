@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPX Paper Trader</title>
+<style>
+  :root { --bg:#f6f4ef; --card:#ffffff; --ink:#1e232b; --mut:#6b7280;
+          --line:#e5e1d8; --green:#1a7f4b; --red:#b3372f; --amber:#a8700a;
+          --blue:#2b5d8a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:14px/1.45 system-ui, "Segoe UI", sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:16px; }
+  header { display:flex; flex-wrap:wrap; align-items:baseline; gap:12px;
+           padding:6px 2px 14px; }
+  h1 { font-size:20px; margin:0; letter-spacing:.4px; }
+  .sub { color:var(--mut); font-size:12px; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:999px;
+           font-size:12px; font-weight:600; border:1px solid var(--line); }
+  .ok   { background:#e8f5ee; color:var(--green); border-color:#bfe3cf; }
+  .warn { background:#fdf3e3; color:var(--amber); border-color:#ecd9ae; }
+  .bad  { background:#fbeae8; color:var(--red); border-color:#eec7c3; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+           gap:12px; margin-bottom:14px; }
+  .card { background:var(--card); border:1px solid var(--line);
+          border-radius:10px; padding:12px 14px; }
+  .card h3 { margin:0 0 8px; font-size:11px; text-transform:uppercase;
+             letter-spacing:.12em; color:var(--mut); }
+  .kv { display:flex; justify-content:space-between; gap:8px; padding:2px 0; }
+  .kv b { font-variant-numeric:tabular-nums; font-weight:600; }
+  .bar { height:8px; background:#ece8de; border-radius:5px; overflow:hidden; margin-top:6px; }
+  .bar i { display:block; height:100%; background:var(--blue); }
+  section { background:var(--card); border:1px solid var(--line);
+            border-radius:10px; padding:12px 14px; margin-bottom:14px; }
+  section h2 { margin:0 0 10px; font-size:13px; text-transform:uppercase;
+               letter-spacing:.12em; color:var(--mut); }
+  .tblwrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; font-size:13px; white-space:nowrap; }
+  th { text-align:left; color:var(--mut); font-weight:600; font-size:11px;
+       text-transform:uppercase; letter-spacing:.06em; padding:5px 10px 5px 0;
+       border-bottom:1px solid var(--line); }
+  td { padding:6px 10px 6px 0; border-bottom:1px solid #f0ede5;
+       font-variant-numeric:tabular-nums; }
+  .pos { color:var(--green); } .neg { color:var(--red); } .mut { color:var(--mut); }
+  .act-skip { color:var(--amber); font-weight:600; }
+  .act-sell { color:var(--green); font-weight:600; }
+  input, button { font:inherit; }
+  input[type=number], input[type=text] {
+    width:72px; padding:3px 6px; border:1px solid var(--line); border-radius:6px; }
+  input.note { width:130px; }
+  button { padding:4px 12px; border:1px solid var(--line); border-radius:7px;
+           background:#f1eee6; cursor:pointer; }
+  button:hover { background:#e8e4d8; }
+  pre { background:#14181f; color:#cfd6e1; border-radius:8px; padding:12px;
+        overflow-x:auto; font-size:12px; line-height:1.5; margin:0;
+        max-height:340px; overflow-y:auto; }
+  .msg { font-size:12px; margin-left:8px; }
+  footer { color:var(--mut); font-size:11px; padding:6px 2px 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>SPX Paper Trader</h1>
+    <span class="sub" id="clock">–</span>
+    <span class="badge" id="engineBadge">engine: …</span>
+    <span class="badge" id="authBadge">auth: …</span>
+  </header>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Risk budget</h3>
+      <div class="kv"><span>Stop risk in use</span><b id="riskUsed">–</b></div>
+      <div class="kv"><span>Daily budget</span><b id="riskBudget">–</b></div>
+      <div class="bar"><i id="riskBar" style="width:0%"></i></div>
+    </div>
+    <div class="card">
+      <h3>Day</h3>
+      <div class="kv"><span>Status</span><b id="dayStatus">–</b></div>
+      <div class="kv"><span>VIX</span><b id="dayVix">–</b></div>
+      <div class="kv"><span>GEX sign <span class="mut">(tag)</span></span><b id="dayGex">–</b></div>
+      <div class="kv"><span>Prior close / ATR20</span><b id="dayPc">–</b></div>
+    </div>
+    <div class="card">
+      <h3>10:30 band</h3>
+      <div class="kv"><span>Band</span><b id="bandRange">–</b></div>
+      <div class="kv"><span>EM / skew</span><b id="bandEm">–</b></div>
+      <div class="kv"><span>Close / contained</span><b id="bandContained">–</b></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Today's signals</h2>
+    <div class="tblwrap"><table id="sigTable">
+      <thead><tr><th>Slot</th><th>Strategy</th><th>Action</th><th>Structure</th>
+        <th>State</th><th>Strikes</th><th>Credit</th><th>Stop</th><th>Skip</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="mut" id="sigEmpty" style="display:none">No signals yet today.</div>
+  </section>
+
+  <section>
+    <h2>Positions <span class="mut" style="text-transform:none">(theoretical — enter your paperMoney fills in the actual columns)</span></h2>
+    <div class="tblwrap"><table id="posTable">
+      <thead><tr><th>Position</th><th>Side</th><th>Strikes</th><th>Credit θ</th>
+        <th>Stop</th><th>Exit</th><th>P/L θ</th>
+        <th>Actual credit</th><th>Actual exit</th><th>P/L actual</th><th>Note</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="mut" id="posEmpty" style="display:none">No positions yet.</div>
+  </section>
+
+  <section>
+    <h2>Report</h2>
+    <div style="margin-bottom:8px">
+      weeks: <input type="number" id="repWeeks" value="1" min="1" style="width:56px">
+      <button onclick="loadReport()">Run report</button>
+    </div>
+    <pre id="repOut">(press Run report)</pre>
+  </section>
+
+  <section>
+    <h2>Engine log</h2>
+    <pre id="logOut">…</pre>
+  </section>
+
+  <footer>Signal generation &amp; journaling only — no orders are ever placed.
+    You execute manually in thinkorswim paperMoney. Market data is read-only
+    via the Schwab API.</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f2 = v => (v === null || v === undefined || v === "") ? "–" : v;
+
+function setBadge(el, text, cls){ el.textContent = text;
+  el.className = "badge " + cls; }
+
+async function refresh(){
+  let s;
+  try { s = await (await fetch("/api/state")).json(); }
+  catch(e){ setBadge($("engineBadge"), "dashboard unreachable", "bad"); return; }
+
+  $("clock").textContent = s.now.replace("T"," ").slice(0,19) + " ET";
+  setBadge($("engineBadge"), "engine: " + s.engine.state,
+           s.engine.running ? "ok" : "warn");
+  const auth = s.auth || {};
+  const authOk = !/EXPIRED|not authenticated|unreadable/i.test(auth.status || "");
+  setBadge($("authBadge"),
+    (auth.shared ? "auth (shared): " : "auth: ") + (auth.status || "?"),
+    authOk ? "ok" : "bad");
+
+  const r = s.risk || {used:0, budget:0};
+  $("riskUsed").textContent = "$" + r.used.toFixed(0);
+  $("riskBudget").textContent = "$" + r.budget.toFixed(0);
+  $("riskBar").style.width =
+    Math.min(100, r.budget ? 100*r.used/r.budget : 0) + "%";
+
+  const d = s.day || {};
+  $("dayStatus").textContent = f2(d.status);
+  $("dayVix").textContent = f2(d.vix) + (d.vix_chg_5d ? ` (${d.vix_chg_5d} 5d)` : "");
+  $("dayGex").textContent = f2(d.gex_sign);
+  $("dayPc").textContent = f2(d.prior_close) + " / " + f2(d.atr20);
+
+  const b = s.band || {};
+  $("bandRange").textContent = b.lower ? `${b.lower} – ${b.upper}` : "–";
+  $("bandEm").textContent = b.em ? `${b.em} / ${b.skew}` : "–";
+  $("bandContained").textContent = b.spx_close
+    ? `${b.spx_close} / ${b.contained === "1" ? "YES" : b.contained === "0" ? "NO" : "…"}` : "–";
+
+  const sigs = s.signals || [];
+  $("sigEmpty").style.display = sigs.length ? "none" : "block";
+  $("sigTable").querySelector("tbody").innerHTML = sigs.map(g => `
+    <tr><td>${esc(g.slot)}</td><td>${esc(g.strategy)}</td>
+      <td class="${g.action==="SKIP"?"act-skip":"act-sell"}">${esc(g.action)}</td>
+      <td>${esc(g.structure)}</td><td>${esc(g.state)}</td>
+      <td>${esc(g.short_strike)}${g.long_strike?"/"+esc(g.long_strike):""}${g.short_strike_2?" &amp; "+esc(g.short_strike_2)+"/"+esc(g.long_strike_2):""}</td>
+      <td>${f2(g.credit_theo)}</td><td>${f2(g.stop_level)}</td>
+      <td class="mut">${esc(g.skip_reason)}</td></tr>`).join("");
+
+  const poss = s.positions || [];
+  $("posEmpty").style.display = poss.length ? "none" : "block";
+  $("posTable").querySelector("tbody").innerHTML = poss.map(p => {
+    const pnl = parseFloat(p.pnl_theo);
+    const pnlCls = isNaN(pnl) ? "mut" : (pnl >= 0 ? "pos" : "neg");
+    const pa = parseFloat(p.pnl_actual);
+    const paCls = isNaN(pa) ? "mut" : (pa >= 0 ? "pos" : "neg");
+    const id = esc(p.position_id);
+    return `<tr>
+      <td>${id}</td><td>${esc(p.side)}</td>
+      <td>${esc(p.short_strike)}/${esc(p.long_strike)}</td>
+      <td>${f2(p.credit_theo)}</td><td>${f2(p.stop_level)}</td>
+      <td>${p.exit_reason ? esc(p.exit_reason)+" @ "+f2(p.exit_value_theo) : "<span class=mut>open</span>"}</td>
+      <td class="${pnlCls}">${f2(p.pnl_theo)}</td>
+      <td><input type="number" step="0.01" id="fc_${id}" value="${esc(p.credit_actual)}"></td>
+      <td><input type="number" step="0.01" id="fx_${id}" value="${esc(p.exit_value_actual)}"></td>
+      <td class="${paCls}">${f2(p.pnl_actual)}</td>
+      <td><input type="text" class="note" id="fn_${id}" value="${esc(p.fill_notes)}"></td>
+      <td><button onclick="saveFill('${id}')">Save</button><span class="msg" id="fm_${id}"></span></td></tr>`;
+  }).join("");
+}
+
+async function saveFill(id){
+  const body = { position_id: id,
+    credit: $("fc_"+id).value, exit_value: $("fx_"+id).value,
+    note: $("fn_"+id).value };
+  const m = $("fm_"+id);
+  try {
+    const res = await fetch("/api/fill", {method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+    const j = await res.json();
+    m.textContent = res.ok ? "saved" : (j.error || "error");
+    m.className = "msg " + (res.ok ? "pos" : "neg");
+    if (res.ok) setTimeout(refresh, 400);
+  } catch(e){ m.textContent = "error"; m.className = "msg neg"; }
+}
+
+async function loadReport(){
+  $("repOut").textContent = "…";
+  const w = $("repWeeks").value || 1;
+  try {
+    const j = await (await fetch("/api/report?weeks="+w)).json();
+    $("repOut").textContent = j.text || "(empty)";
+  } catch(e){ $("repOut").textContent = "report failed: " + e; }
+}
+
+async function refreshLog(){
+  try {
+    const j = await (await fetch("/api/log")).json();
+    const el = $("logOut");
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 8;
+    el.textContent = j.text;
+    if (atBottom) el.scrollTop = el.scrollHeight;
+  } catch(e){}
+}
+
+refresh(); refreshLog();
+setInterval(refresh, 10000);
+setInterval(refreshLog, 7000);
+</script>
+</body>
+</html>
