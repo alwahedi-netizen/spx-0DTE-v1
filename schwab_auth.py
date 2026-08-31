@@ -53,9 +53,30 @@ class AuthError(RuntimeError):
     pass
 
 
+def _parse_env_file(path: Path) -> dict:
+    out = {}
+    try:
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            out[k.strip()] = v.strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return out
+
+
 def _app_creds():
     key = get_secret("SCHWAB_APP_KEY")
     secret = get_secret("SCHWAB_APP_SECRET")
+    if (not key or not secret) and shared_mode():
+        # Shared-token deployments (the hub) keep the platform's .env next to
+        # the shared tokens.json (/opt/logicon/infra) — refreshing the access
+        # token needs the app key, so fall back to that .env.
+        vals = _parse_env_file(TOKEN_FILE.parent / ".env")
+        key = key or vals.get("SCHWAB_APP_KEY")
+        secret = secret or vals.get("SCHWAB_APP_SECRET")
     if not key or not secret:
         raise AuthError("SCHWAB_APP_KEY / SCHWAB_APP_SECRET not set — "
                         "copy .env.example to .env and fill them in")

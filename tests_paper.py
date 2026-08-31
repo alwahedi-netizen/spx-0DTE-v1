@@ -192,6 +192,19 @@ def test_sim_execution():
     ok("stop/TP exits pay slippage; expiry settles at intrinsic")
 
 
+# ── shared .env fallback for token refresh ───────────────────────────────────
+def test_env_fallback():
+    print("Shared .env fallback")
+    import tempfile
+    import schwab_auth as sa
+    d = Path(tempfile.mkdtemp(prefix="envtest_"))
+    (d / ".env").write_text('# comment\nSCHWAB_APP_KEY="k123"\nSCHWAB_APP_SECRET=s456\nOTHER=x\n')
+    vals = sa._parse_env_file(d / ".env")
+    assert vals["SCHWAB_APP_KEY"] == "k123" and vals["SCHWAB_APP_SECRET"] == "s456"
+    assert sa._parse_env_file(d / "missing.env") == {}
+    ok("app key falls back to the .env beside the shared tokens.json")
+
+
 # ── store: idempotent slots, immutable theo columns (§9) ─────────────────────
 def test_store():
     print("Store idempotency / immutability")
@@ -267,7 +280,7 @@ def test_store():
 
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
-              test_risk_and_stops, test_sim_execution, test_store):
+              test_risk_and_stops, test_sim_execution, test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)
