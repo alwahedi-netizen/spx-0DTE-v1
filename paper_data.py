@@ -13,8 +13,10 @@ minimum gap. The 1-min tracking cadence is one chain call per cycle, well
 under Schwab's ~120 req/min market-data ceiling.
 """
 
+import os
 import time
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
 import requests
 
@@ -182,11 +184,33 @@ def chain_0dte() -> tuple:
 
 # ── GEX sign (tag only — never an entry condition here) ──────────────────────
 
+def _wire_platform():
+    """On the hub, make the platform's gex_bridge importable read-only:
+    append /opt/logicon/combo-trader to sys.path and retarget our
+    logicon_env copy at the shared infra .env so the platform modules'
+    import-time get_secret(required=True) succeeds. No platform file is
+    modified. No-op off the hub."""
+    import sys
+    tok = os.environ.get("LOGICON_TOKENS_FILE")
+    plat = Path(os.environ.get("LOGICON_PLATFORM_DIR", "/opt/logicon/combo-trader"))
+    if not tok or not plat.is_dir():
+        return
+    env_file = Path(tok).parent / ".env"
+    if env_file.exists():
+        import logicon_env
+        if logicon_env.ENV_FILE != env_file:
+            logicon_env.ENV_FILE = env_file
+            logicon_env._cache = None
+    if str(plat) not in sys.path:
+        sys.path.append(str(plat))
+
+
 def gex_sign() -> str:
-    """'positive' / 'negative' / 'unknown'. If the Logicon platform repo is on
-    PYTHONPATH, its gex_bridge supplies the regime; otherwise 'unknown'.
-    The platform repo is only imported, never modified."""
+    """'positive' / 'negative' / 'unknown' from the platform's gex_bridge
+    (imported read-only from /opt/logicon/combo-trader on the hub, or from
+    PYTHONPATH elsewhere); 'unknown' when unreachable."""
     try:
+        _wire_platform()
         from gex_bridge import get_gex
         g = get_gex("SPX") or {}
         regime = str(g.get("regime") or "")
