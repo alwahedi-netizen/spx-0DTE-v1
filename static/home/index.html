@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sahmi — Logicon Trading Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f6f4ef; --card:#fffdf9; --ink:#1e232b; --mut:#6b7280;
+          --line:#e5e1d8; --green:#1a4d36; --green2:#1a7f4b; --amber:#a8700a;
+          --serif:"Cormorant Garamond",Georgia,serif;
+          --caps:"Cinzel",Georgia,serif;
+          --mono:"IBM Plex Mono",ui-monospace,monospace; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+         font:16px/1.55 var(--serif); display:flex; flex-direction:column; }
+  .wrap { width:min(1060px, 92vw); margin:0 auto; flex:1; }
+  header { padding:34px 0 8px; display:flex; align-items:baseline;
+           justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .wordmark { font-family:var(--caps); font-size:15px; letter-spacing:.5em;
+              color:var(--green); }
+  .signout { font-family:var(--mono); font-size:11px; color:var(--mut);
+             text-decoration:none; letter-spacing:.08em; }
+  .signout:hover { color:var(--ink); }
+  .hero { padding:52px 0 40px; border-bottom:1px solid var(--line); }
+  .hero h1 { font-family:var(--serif); font-weight:600; font-size:52px;
+             line-height:1.05; margin:0 0 6px; }
+  .hero .ar { color:var(--green2); }
+  .hero p { color:var(--mut); font-size:19px; margin:10px 0 0; max-width:560px;
+            font-style:italic; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+          gap:18px; padding:38px 0 30px; }
+  a.card { display:block; background:var(--card); border:1px solid var(--line);
+           border-radius:14px; padding:26px 26px 22px; text-decoration:none;
+           color:var(--ink); transition:transform .15s, box-shadow .15s;
+           position:relative; overflow:hidden; }
+  a.card:hover { transform:translateY(-3px);
+                 box-shadow:0 14px 34px rgba(26,77,54,.12); }
+  a.card::after { content:"→"; position:absolute; right:22px; bottom:16px;
+                  color:var(--green2); font-size:20px; opacity:0;
+                  transition:opacity .15s; }
+  a.card:hover::after { opacity:1; }
+  .tag { font-family:var(--mono); font-size:10px; letter-spacing:.22em;
+         text-transform:uppercase; padding:3px 10px; border-radius:999px;
+         border:1px solid var(--line); color:var(--mut);
+         display:inline-block; margin-bottom:14px; }
+  .tag.live { color:var(--green2); border-color:#bfe3cf; background:#eef7f1; }
+  .tag.paper { color:#2b5d8a; border-color:#c9dcec; background:#eef4fa; }
+  .tag.beta { color:var(--amber); border-color:#ecd9ae; background:#fdf6e6; }
+  a.card h2 { font-family:var(--caps); font-weight:600; font-size:19px;
+              letter-spacing:.14em; margin:0 0 8px; }
+  a.card p { margin:0; color:var(--mut); font-size:15.5px; line-height:1.5;
+             min-height:3.1em; }
+  .host { font-family:var(--mono); font-size:11px; color:var(--green2);
+          margin-top:16px; letter-spacing:.04em; }
+  footer { border-top:1px solid var(--line); margin-top:14px; }
+  footer .wrap { display:flex; justify-content:space-between; gap:10px;
+                 flex-wrap:wrap; padding-top:14px; padding-bottom:22px;
+                 font-family:var(--mono); font-size:10.5px; color:var(--mut);
+                 letter-spacing:.06em; flex:none; }
+  @media (max-width:640px){ .hero h1{font-size:38px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wordmark">LOGICON</div>
+    <a class="signout" href="/gate/logout">SIGN OUT</a>
+  </header>
+
+  <section class="hero">
+    <h1>Sahmi <span class="ar">· سهمي</span></h1>
+    <p>The trading desk. Every system, one place — pick a room.</p>
+  </section>
+
+  <nav class="grid">
+    <a class="card" href="https://trader.sahmi.ae">
+      <span class="tag live">Live · Schwab</span>
+      <h2>TRADER</h2>
+      <p>Combo Trader — the full platform: momentum scans, portfolio,
+         GEX options desk, AI analyst. Orders route to Schwab.</p>
+      <div class="host">trader.sahmi.ae</div>
+    </a>
+
+    <a class="card" href="https://paper.sahmi.ae">
+      <span class="tag paper">Paper · Simulated</span>
+      <h2>PAPER</h2>
+      <p>SPX 0DTE lab — METF &amp; Band Condor rules trading a simulated
+         account, fully unattended. 100 entries decide the verdict.</p>
+      <div class="host">paper.sahmi.ae</div>
+    </a>
+
+    <a class="card" href="https://shine.sahmi.ae">
+      <span class="tag beta">Beta · Trial</span>
+      <h2>SHINE</h2>
+      <p>The new stock system under trial — running beside the main
+         platform while it earns its place on the desk.</p>
+      <div class="host">shine.sahmi.ae</div>
+    </a>
+  </nav>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>LOGICON CAPITAL · GCC STRATEGY &amp; CAPITAL</span>
+    <span>ENCRYPTED &amp; ACCESS-CONTROLLED</span>
+  </div>
+</footer>
+</body>
+</html>
