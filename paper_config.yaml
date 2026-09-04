@@ -3,7 +3,8 @@
 
 timezone: America/New_York
 account_equity: 100000          # for daily risk budget calc only
-daily_risk_pct: 0.015           # 1.5% — sum of all stop losses may not exceed this
+daily_risk_pct: 0.03            # 3% — sum of ALL strategies' stop losses; raised
+                                # from 1.5% when MEIC + ORB joined the experiment
 skip_dates: []                  # FOMC minutes, CPI — YYYY-MM-DD (FOMC decision days
                                 # are added automatically from trade_builder.FOMC_2026)
 
@@ -41,3 +42,20 @@ execution:
                                 # set to "off" to type fills in manually
   entry_slippage: 0.05          # credit received = theo credit - this
   exit_slippage: 0.05           # stop/TP exit paid = theo exit + this
+
+meic:                             # Multiple Entry Iron Condor (afternoon)
+  enabled: true
+  slots: ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"]
+  side_credit: 1.50               # per-side credit target (walked like METF)
+  min_side_credit: 1.25
+  wing_width: 30
+  take_profit_short: 0.05
+  contracts: 1
+
+orb:                              # Opening Range Breakout — directional DEBIT
+  enabled: true
+  range_end: "10:00"              # opening range = 09:30 to here
+  check_slots: ["10:30", "11:30", "13:00"]
+  width: 30
+  stop_loss_frac: 0.50            # stop when the vertical loses half its debit
+  contracts: 1

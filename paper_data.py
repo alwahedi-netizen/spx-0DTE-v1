@@ -142,6 +142,24 @@ def spx_last() -> float:
     return quote_last("$SPX")
 
 
+def opening_range(start: str = "09:30", end: str = "10:00") -> tuple:
+    """(high, low) of SPX between start and end ET today, from 1-min candles."""
+    from zoneinfo import ZoneInfo
+    et = ZoneInfo("America/New_York")
+    j = _get("/pricehistory", {"symbol": "$SPX", "periodType": "day", "period": 1,
+                               "frequencyType": "minute", "frequency": 1,
+                               "needExtendedHoursData": "false"})
+    his, los = [], []
+    for c in j.get("candles") or []:
+        hm = datetime.fromtimestamp(c["datetime"] / 1000, et).strftime("%H:%M")
+        if start <= hm < end:
+            his.append(float(c["high"]))
+            los.append(float(c["low"]))
+    if len(his) < 10:
+        raise PaperDataError(f"only {len(his)} bars in the opening range")
+    return max(his), min(los)
+
+
 # ── 0DTE chain ───────────────────────────────────────────────────────────────
 
 def fetch_chain(symbol: str = "$SPX", strike_count: int = 160) -> dict:

@@ -115,7 +115,7 @@
   <section>
     <h2>Daily P&amp;L <span class="mut" style="text-transform:none">(closed trades — actual fills, theo where unfilled)</span></h2>
     <div class="tblwrap"><table id="pnlTable">
-      <thead><tr><th>Date</th><th>METF</th><th>BAND</th><th>Total</th></tr></thead>
+      <thead></thead>
       <tbody></tbody>
     </table></div>
     <div class="mut" id="pnlEmpty" style="display:none">No closed trades yet.</div>
@@ -199,18 +199,22 @@ async function refresh(){
     const cls = v > 0 ? "pos" : (v < 0 ? "neg" : "mut");
     return `<span class="${cls}">${v >= 0 ? "+" : "−"}$${Math.abs(v).toFixed(0)}</span>`;
   };
+  const stratKeys = obj => Object.keys(obj || {}).filter(k => k !== "TOTAL" && k !== "date").sort();
   const bucket = (b, main, sub) => {
     const has = b && Object.keys(b).length > 1;
     $(main).innerHTML = has ? pm(b.TOTAL) : "–";
-    $(sub).innerHTML = has ? `METF ${pm(b.METF ?? 0)} · BAND ${pm(b.BAND ?? 0)}` : "";
+    $(sub).innerHTML = has ? stratKeys(b).map(k => `${esc(k)} ${pm(b[k])}`).join(" · ") : "";
   };
   bucket(pnl.today, "pnlToday", "pnlTodaySub");
   bucket(pnl.week,  "pnlWeek",  "pnlWeekSub");
   bucket(pnl.all,   "pnlAll",   "pnlAllSub");
   const days = pnl.days || [];
   $("pnlEmpty").style.display = days.length ? "none" : "block";
+  const cols = stratKeys(Object.assign({}, ...days));
+  $("pnlTable").querySelector("thead").innerHTML =
+    `<tr><th>Date</th>${cols.map(c => `<th>${esc(c)}</th>`).join("")}<th>Total</th></tr>`;
   $("pnlTable").querySelector("tbody").innerHTML = days.map(d => `
-    <tr><td>${esc(d.date)}</td><td>${pm(d.METF)}</td><td>${pm(d.BAND)}</td>
+    <tr><td>${esc(d.date)}</td>${cols.map(c => `<td>${pm(d[c])}</td>`).join("")}
         <td><b>${pm(d.TOTAL)}</b></td></tr>`).join("");
 
   const sigs = s.signals || [];

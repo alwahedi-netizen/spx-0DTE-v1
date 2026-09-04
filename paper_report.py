@@ -100,7 +100,8 @@ def run_report(weeks: int = 1):
           f"────────────────────────────────")
 
     # ── trades / skips per strategy ──
-    for strat in ("METF", "BAND"):
+    strategies = ("METF", "BAND", "MEIC", "ORB")
+    for strat in strategies:
         srows = [r for r in signals if r.get("strategy") == strat]
         trades = [r for r in srows if r.get("action") != "SKIP"]
         skips = Counter(r.get("skip_reason") or "?" for r in srows
@@ -110,7 +111,7 @@ def run_report(weeks: int = 1):
               f"{sum(skips.values())} skips ({skip_s})")
 
     # ── win rate / expectancy / premium capture, theo and actual ──
-    for strat in ("METF", "BAND"):
+    for strat in strategies:
         rows = [p for p in closed if p.get("strategy") == strat]
         for label, pnl_col, credit_col in (("theo", "pnl_theo", "credit_theo"),
                                            ("actual", "pnl_actual", "credit_actual")):
@@ -119,7 +120,7 @@ def run_report(weeks: int = 1):
             tot_pnl = sum(_f(p[pnl_col]) for p in sub) if sub else 0.0
             tot_credit = sum((_f(p.get(credit_col)) or 0) * 100 *
                              (_f(p.get("contracts")) or 1) for p in sub)
-            cap = (tot_pnl / tot_credit) if tot_credit else None
+            cap = (tot_pnl / tot_credit) if tot_credit > 0 else None  # n/a for debit strategies
             if n == 0:
                 what = "closed" if label == "theo" else "filled"
                 hint = "" if label == "theo" else \
@@ -134,16 +135,16 @@ def run_report(weeks: int = 1):
     # ── double-stop rate (band: both sides stopped same day) ──
     band_by_day = defaultdict(list)
     for p in closed:
-        if p.get("strategy") == "BAND":
-            band_by_day[(p.get("signal_ts") or "")[:10]].append(p)
+        if p.get("strategy") in ("BAND", "MEIC"):
+            band_by_day[((p.get("signal_ts") or "")[:16])].append(p)
     condor_days = [d for d, ps in band_by_day.items() if len(ps) >= 2]
     dbl = [d for d in condor_days
            if sum(1 for p in band_by_day[d] if p.get("exit_reason") == "STOPPED") >= 2]
     if condor_days:
-        print(f"  BAND double-stop rate: {len(dbl)}/{len(condor_days)} condor days "
-              f"({100 * len(dbl) / len(condor_days):.0f}%)")
+        print(f"  condor double-stop rate (BAND+MEIC): {len(dbl)}/{len(condor_days)} "
+              f"condors ({100 * len(dbl) / len(condor_days):.0f}%)")
     else:
-        print("  BAND double-stop rate: no condor days yet")
+        print("  condor double-stop rate: no condors yet")
 
     # ── P/L breakdowns (theo, joined position -> signal) ──
     def breakdown(title, key_fn):

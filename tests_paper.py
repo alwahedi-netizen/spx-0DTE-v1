@@ -192,6 +192,40 @@ def test_sim_execution():
     ok("stop/TP exits pay slippage; expiry settles at intrinsic")
 
 
+# ── MEIC + ORB (parallel strategies) ─────────────────────────────────────────
+def test_meic_orb():
+    print("MEIC / ORB")
+    cfg = pe.load_config(path="/nonexistent")
+    assert cfg["meic"]["enabled"] and cfg["orb"]["enabled"]
+    ok("both strategies enabled in defaults")
+
+    assert pe.orb_signal(6010.0, 6005.0, 5990.0) == "CALL"
+    assert pe.orb_signal(5980.0, 6005.0, 5990.0) == "PUT"
+    assert pe.orb_signal(6000.0, 6005.0, 5990.0) is None
+    assert pe.orb_signal(6005.0, 6005.0, 5990.0) is None    # touch is not a break
+    ok("ORB: breakout above -> CALL, below -> PUT, inside -> no trigger")
+
+    pick = pe.pick_debit_vertical(call_cmap(), "CALL", 6003.0, 30)
+    assert pick["buy"] == 6005.0 and pick["sell"] == 6035.0
+    assert abs(pick["debit"] - (6.0 - 2.05)) < 1e-9
+    ok("ORB: nearest-the-money debit vertical in breakout direction")
+
+    # debit sign convention: credit=-debit, stop=-debit*(1-frac); the credit
+    # engine's stop/pnl/risk math must come out right unchanged
+    debit = 3.95
+    credit, stop = -debit, -debit * 0.5
+    assert abs(pe.stop_risk(credit, stop, 1) - debit * 0.5 * 100) < 1e-6
+    assert pe.stop_triggered(-1.90, stop) and not pe.stop_triggered(-2.10, stop)
+    # winning to expiry: spread worth 30 -> stored -30
+    assert abs(pe.vertical_pnl(credit, -30.0, 1) - (30.0 - debit) * 100) < 1e-6
+    # settlement of a call debit stored short=far/long=near comes out negative
+    assert pe.settle_value("CALL", 6035.0, 6005.0, 6050.0) == -30.0
+    ok("debit sign convention: stop, risk and P/L all correct")
+
+    assert abs(pe.sim_entry_credit(-3.95, 0.05) + 4.00) < 1e-9
+    ok("simulated debit fill pays debit + slippage")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -222,6 +256,19 @@ def test_store():
                           "skip_reason": "CREDIT"})
     assert pe.pending_metf_slots(cfg, d) == cfg["metf"]["slots"][1:]
     ok("a logged slot never re-runs (restart-safe)")
+
+    assert pe.pending_meic_slots(cfg, d) == cfg["meic"]["slots"]
+    st.append("signals", {"ts": f"{d}T12:00:03-04:00", "date": d, "slot": "12:00",
+                          "strategy": "MEIC", "action": "SELL_CONDOR"})
+    assert pe.pending_meic_slots(cfg, d) == cfg["meic"]["slots"][1:]
+    assert pe.pending_orb_slots(cfg, d) == cfg["orb"]["check_slots"]
+    st.append("signals", {"ts": f"{d}T10:30:03-04:00", "date": d, "slot": "10:30",
+                          "strategy": "ORB", "action": "SKIP", "skip_reason": "TRIGGER"})
+    assert pe.pending_orb_slots(cfg, d) == cfg["orb"]["check_slots"][1:]
+    st.append("signals", {"ts": f"{d}T11:30:03-04:00", "date": d, "slot": "11:30",
+                          "strategy": "ORB", "action": "BUY_VERTICAL"})
+    assert pe.pending_orb_slots(cfg, d) == []    # traded once -> done for the day
+    ok("MEIC slots idempotent; ORB triggers at most once per day")
 
     assert pe.band_signal_pending(cfg, d)
     st.append("signals", {"ts": f"{d}T10:35:02-04:00", "date": d, "slot": "10:35",
@@ -295,7 +342,8 @@ def test_store():
 
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
-              test_risk_and_stops, test_sim_execution, test_env_fallback, test_store):
+              test_risk_and_stops, test_sim_execution, test_meic_orb,
+              test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)

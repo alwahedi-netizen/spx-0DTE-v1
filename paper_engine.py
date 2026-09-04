@@ -59,7 +59,7 @@ FOMC_2026 = {"2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17",
 DEFAULTS = {
     "timezone": "America/New_York",
     "account_equity": 100000,
-    "daily_risk_pct": 0.015,
+    "daily_risk_pct": 0.03,
     "skip_dates": [],
     "metf": {
         "enabled": True,
@@ -76,6 +76,24 @@ DEFAULTS = {
         "stop_rule": "total_credit_per_side", "take_profit_short": 0.05,
         "containment_window": 20, "size_full_above": 0.70,
         "size_half_above": 0.55, "contracts": 1,
+    },
+    # MEIC — Multiple Entry Iron Condor (afternoon symmetric condors; the
+    # spec's Phase-2 strategy). Stop per side = the condor's total credit.
+    "meic": {
+        "enabled": True,
+        "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
+        "side_credit": 1.50, "min_side_credit": 1.25, "wing_width": 30,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
+    # ORB — Opening Range Breakout, directional DEBIT vertical (long gamma:
+    # profits on the trend days that hurt the premium sellers). Checked at
+    # fixed slots; first breakout of the 09:30-10:00 range triggers, once/day.
+    # Debit positions use a sign convention: credit_theo = -debit,
+    # tracker/settlement values are negative, stop_level = -debit*(1-frac).
+    "orb": {
+        "enabled": True,
+        "range_end": "10:00", "check_slots": ["10:30", "11:30", "13:00"],
+        "width": 30, "stop_loss_frac": 0.50, "contracts": 1,
     },
     # Simulated execution: the engine fills its own orders into the *_actual
     # columns at theo price minus a slippage penalty (paperMoney has no API —
@@ -255,6 +273,43 @@ def containment_size(contained_history, window: int, full_above: float,
     return None, rc, False
 
 
+# ── ORB logic ────────────────────────────────────────────────────────────────
+
+def orb_signal(spot: float, or_high: float, or_low: float):
+    """'CALL' above the opening range, 'PUT' below it, None inside it."""
+    if spot > or_high:
+        return "CALL"
+    if spot < or_low:
+        return "PUT"
+    return None
+
+
+def pick_debit_vertical(cmap: dict, side: str, spot: float, width: float):
+    """Nearest-the-money debit vertical in the breakout direction. Returns
+    dict(buy, sell, debit, buy_mid, sell_mid) or None. Stored with the sign
+    convention: bought leg in long_strike, sold leg in short_strike,
+    credit_theo = -debit — the credit engine's stop/settle math then works
+    unchanged (tracker value and settlement come out negative)."""
+    ks = sorted(cmap)
+    if side == "CALL":
+        cands = [k for k in ks if k >= spot]
+        buy = cands[0] if cands else None
+        sell = buy + width if buy is not None else None
+    else:
+        cands = [k for k in ks if k <= spot]
+        buy = cands[-1] if cands else None
+        sell = buy - width if buy is not None else None
+    if buy is None or sell not in cmap:
+        return None
+    mb, ms_ = mid(cmap[buy]), mid(cmap[sell])
+    if mb is None or ms_ is None:
+        return None
+    debit = mb - ms_
+    if debit <= 0 or not leg_ok(cmap[buy]):
+        return None
+    return {"buy": buy, "sell": sell, "debit": debit, "buy_mid": mb, "sell_mid": ms_}
+
+
 # ── risk / stops / settlement ────────────────────────────────────────────────
 
 def stop_risk(credit: float, stop_level: float, contracts: int) -> float:
@@ -302,7 +357,10 @@ def sim_cfg(cfg: dict):
 
 
 def sim_entry_credit(credit_theo: float, entry_slip: float) -> float:
-    """A real fill collects a bit less than mid."""
+    """A real fill collects a bit less than mid (credit), or pays a bit more
+    (debit — negative credit convention)."""
+    if credit_theo <= 0:
+        return credit_theo - entry_slip
     return max(0.0, credit_theo - entry_slip)
 
 
@@ -321,6 +379,22 @@ def pending_metf_slots(cfg: dict, d: str) -> list:
 
 def band_signal_pending(cfg: dict, d: str) -> bool:
     return not st.signals_for(d, "BAND")
+
+
+def pending_meic_slots(cfg: dict, d: str) -> list:
+    done = {r.get("slot") for r in st.signals_for(d, "MEIC")}
+    return [x for x in cfg["meic"]["slots"] if x not in done]
+
+
+def orb_traded(d: str) -> bool:
+    return any(r.get("action") == "BUY_VERTICAL" for r in st.signals_for(d, "ORB"))
+
+
+def pending_orb_slots(cfg: dict, d: str) -> list:
+    if orb_traded(d):
+        return []
+    done = {r.get("slot") for r in st.signals_for(d, "ORB")}
+    return [x for x in cfg["orb"]["check_slots"] if x not in done]
 
 
 def band_row_for(d: str):
@@ -555,6 +629,115 @@ def do_band_entry(cfg: dict, day_row: dict, brow: dict, chain: dict, expiry: str
           f"stop/side {stop_level:.2f} size {size}", flush=True)
 
 
+def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str):
+    """MEIC: symmetric iron condor by per-side credit target; stop per side =
+    the condor's total credit (same rule as the band condor)."""
+    m = cfg["meic"]
+    d = day_row["date"]
+    spot = spot_of(chain)
+    base = dict(slot=slot, strategy="MEIC", structure="IRON_CONDOR",
+                spot=_fmt(spot), width=m["wing_width"])
+    sides = []
+    for side in ("PUT", "CALL"):
+        cmap = contract_map(chain, expiry, side.lower())
+        pick, skip = walk_strikes(cmap, side, spot, m["wing_width"],
+                                  m["side_credit"], m["min_side_credit"])
+        if skip:
+            st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                             skip_reason=skip, side=side, **base))
+            print(f"[{slot}] MEIC SKIP/{skip} ({side})", flush=True)
+            return
+        sides.append(dict(side=side, **pick))
+
+    total = sum(x["credit"] for x in sides)
+    stop_level = total
+    new_risk = sum(stop_risk(x["credit"], stop_level, m["contracts"]) for x in sides)
+    budget = float(day_row.get("risk_budget") or 0)
+    if not risk_ok(open_stop_risk(), new_risk, budget):
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="RISK", side="BOTH", **base))
+        print(f"[{slot}] MEIC SKIP/RISK", flush=True)
+        return
+
+    ts = iso(now_et())
+    p0, p1 = sides
+    st.append("signals", _signal_row(
+        cfg, day_row, ts=ts, action="SELL_CONDOR", side="BOTH",
+        short_strike=p0["short_strike"], long_strike=p0["long_strike"],
+        short_strike_2=p1["short_strike"], long_strike_2=p1["long_strike"],
+        credit_theo=_fmt(total), short_delta=_fmt(p0["short_delta"], 3),
+        short_mid=_fmt(p0["short_mid"]), long_mid=_fmt(p0["long_mid"]),
+        stop_level=_fmt(stop_level), **base))
+    e = sim_cfg(cfg)
+    for x in sides:
+        pid = f"{d}-MEIC-{slot}-{x['side']}"
+        st.append("positions", {
+            "position_id": pid, "signal_ts": ts, "strategy": "MEIC",
+            "side": x["side"], "contracts": m["contracts"],
+            "short_strike": x["short_strike"], "long_strike": x["long_strike"],
+            "credit_theo": _fmt(x["credit"]), "stop_level": _fmt(stop_level)})
+        if e:
+            st.update_position(pid, {
+                "credit_actual": _fmt(sim_entry_credit(x["credit"], e["entry_slippage"])),
+                "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
+    print(f"[{slot}] MEIC IRON_CONDOR credit {total:.2f} stop/side {stop_level:.2f}",
+          flush=True)
+
+
+def do_orb_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
+                or_high: float, or_low: float):
+    """ORB: first close beyond the 09:30-10:00 range (checked at fixed slots)
+    buys a debit vertical in the breakout direction; stop at
+    stop_loss_frac of the debit; hold to expiry. Once per day."""
+    o = cfg["orb"]
+    d = day_row["date"]
+    spot = spot_of(chain)
+    direction = orb_signal(spot, or_high, or_low)
+    base = dict(slot=slot, strategy="ORB", spot=_fmt(spot), width=o["width"],
+                band_lower=_fmt(or_low), band_upper=_fmt(or_high))
+    if direction is None:
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="TRIGGER", **base))
+        print(f"[{slot}] ORB SKIP/TRIGGER (inside range)", flush=True)
+        return
+    cmap = contract_map(chain, expiry, direction.lower())
+    pick = pick_debit_vertical(cmap, direction, spot, o["width"])
+    if pick is None:
+        _skip_row(cfg, day_row, "ORB", slot, "DATA", "no debit vertical quotes")
+        return
+    debit = pick["debit"]
+    credit = -debit                                   # sign convention
+    stop_level = -debit * (1 - o["stop_loss_frac"])
+    new_risk = stop_risk(credit, stop_level, o["contracts"])
+    budget = float(day_row.get("risk_budget") or 0)
+    if not risk_ok(open_stop_risk(), new_risk, budget):
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="RISK", side=direction, **base))
+        print(f"[{slot}] ORB SKIP/RISK", flush=True)
+        return
+
+    ts = iso(now_et())
+    st.append("signals", _signal_row(
+        cfg, day_row, ts=ts, action="BUY_VERTICAL", side=direction,
+        structure=f"{direction}_DEBIT", state="UP" if direction == "CALL" else "DOWN",
+        short_strike=pick["sell"], long_strike=pick["buy"],
+        credit_theo=_fmt(credit), short_mid=_fmt(pick["sell_mid"]),
+        long_mid=_fmt(pick["buy_mid"]), stop_level=_fmt(stop_level), **base))
+    pid = f"{d}-ORB-{direction}"
+    st.append("positions", {
+        "position_id": pid, "signal_ts": ts, "strategy": "ORB",
+        "side": direction, "contracts": o["contracts"],
+        "short_strike": pick["sell"], "long_strike": pick["buy"],
+        "credit_theo": _fmt(credit), "stop_level": _fmt(stop_level)})
+    e = sim_cfg(cfg)
+    if e:
+        st.update_position(pid, {
+            "credit_actual": _fmt(sim_entry_credit(credit, e["entry_slippage"])),
+            "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
+    print(f"[{slot}] ORB BUY {direction} {pick['buy']}/{pick['sell']} "
+          f"debit {debit:.2f} stop {abs(stop_level):.2f}", flush=True)
+
+
 def _close_position(cfg: dict, p: dict, exit_value: float, reason: str):
     contracts = int(float(p.get("contracts") or 1))
     pnl = vertical_pnl(float(p["credit_theo"]), exit_value, contracts)
@@ -577,7 +760,8 @@ def _close_position(cfg: dict, p: dict, exit_value: float, reason: str):
 
 def do_tracking(cfg: dict, chain: dict, expiry: str):
     """§6.4 — reprice each open side from chain mids; stop / TP."""
-    tp = cfg["band"]["take_profit_short"]
+    tps = {"BAND": cfg["band"]["take_profit_short"],
+           "MEIC": cfg.get("meic", {}).get("take_profit_short", 0.05)}
     for p in st.open_positions():
         side = p["side"]
         cmap = contract_map(chain, expiry, side.lower())
@@ -590,7 +774,7 @@ def do_tracking(cfg: dict, chain: dict, expiry: str):
         value = ms - ml
         if stop_triggered(value, float(p["stop_level"])):
             _close_position(cfg, p, value, "STOPPED")
-        elif p["strategy"] == "BAND" and ms <= tp:
+        elif p["strategy"] in tps and ms <= tps[p["strategy"]]:
             _close_position(cfg, p, value, "TP")
         # METF hold_to_expiry: no take-profit; stop only.
 
@@ -673,6 +857,39 @@ def cmd_run(cfg: dict):
                 except pd_.PaperDataError as e:
                     _skip_row(cfg, day_row, "METF", slot, "DATA", str(e))
 
+        # ── MEIC slots ──
+        if cfg.get("meic", {}).get("enabled"):
+            for slot in pending_meic_slots(cfg, ds):
+                t = at(slot, d)
+                if now < t:
+                    continue
+                if now - t > grace:
+                    _skip_row(cfg, day_row, "MEIC", slot, "DATA",
+                              "slot missed (engine offline)")
+                    continue
+                try:
+                    chain, expiry = get_chain()
+                    do_meic_slot(cfg, day_row, slot, chain, expiry)
+                except pd_.PaperDataError as e:
+                    _skip_row(cfg, day_row, "MEIC", slot, "DATA", str(e))
+
+        # ── ORB check slots ──
+        if cfg.get("orb", {}).get("enabled"):
+            for slot in pending_orb_slots(cfg, ds):
+                t = at(slot, d)
+                if now < t:
+                    continue
+                if now - t > grace:
+                    _skip_row(cfg, day_row, "ORB", slot, "DATA",
+                              "slot missed (engine offline)")
+                    continue
+                try:
+                    chain, expiry = get_chain()
+                    orh, orl = pd_.opening_range()
+                    do_orb_slot(cfg, day_row, slot, chain, expiry, orh, orl)
+                except pd_.PaperDataError as e:
+                    _skip_row(cfg, day_row, "ORB", slot, "DATA", str(e))
+
         # ── band snapshot + entry ──
         if cfg["band"]["enabled"]:
             bt, et_ = at(cfg["band"]["band_time"], d), at(cfg["band"]["entry_time"], d)
@@ -729,6 +946,10 @@ def cmd_run(cfg: dict):
         # ── sleep until the next scheduled thing (tracking tick at most) ──
         pending = [at(s, d) for s in pending_metf_slots(cfg, ds)
                    if cfg["metf"]["enabled"]]
+        if cfg.get("meic", {}).get("enabled"):
+            pending += [at(s, d) for s in pending_meic_slots(cfg, ds)]
+        if cfg.get("orb", {}).get("enabled"):
+            pending += [at(s, d) for s in pending_orb_slots(cfg, ds)]
         if cfg["band"]["enabled"]:
             if band_row_for(ds) is None:
                 pending.append(at(cfg["band"]["band_time"], d))
