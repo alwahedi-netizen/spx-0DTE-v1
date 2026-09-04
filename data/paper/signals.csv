@@ -1,7 +1,0 @@
-ts,date,slot,strategy,action,side,structure,state,ema_fast,ema_slow,spot,short_strike,long_strike,short_strike_2,long_strike_2,width,credit_theo,short_delta,short_mid,long_mid,stop_level,skip_reason,gex_sign,vix,band_lower,band_upper,skew,containment_rc,size_factor
-2026-09-04T13:32:52-04:00,2026-09-04,10:00,METF,SKIP,,,,,,,,,,,,,,,,,DATA,unknown,,,,,,
-2026-09-04T13:32:52-04:00,2026-09-04,10:45,METF,SKIP,,,,,,,,,,,,,,,,,DATA,unknown,,,,,,
-2026-09-04T13:32:52-04:00,2026-09-04,11:30,METF,SKIP,,,,,,,,,,,,,,,,,DATA,unknown,,,,,,
-2026-09-04T13:32:52-04:00,2026-09-04,12:30,METF,SKIP,,,,,,,,,,,,,,,,,DATA,unknown,,,,,,
-2026-09-04T13:32:53-04:00,2026-09-04,13:30,METF,SKIP,,,,,,,,,,,,,,,,,DATA,unknown,,,,,,
-2026-09-04T13:32:53-04:00,2026-09-04,10:35,BAND,SKIP,,,,,,,,,,,,,,,,,DATA,unknown,,,,,,
