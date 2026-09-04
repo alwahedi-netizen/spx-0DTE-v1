@@ -50,6 +50,43 @@ def _vix_bucket(v):
     return ">20"
 
 
+def pnl_summary(today: str = None, week_start: str = None) -> dict:
+    """Daily/weekly P&L per strategy from positions.csv (closed rows only,
+    pnl_actual when present, else pnl_theo). Pure CSV, no API. Used by the
+    dashboard's P&L card and the CLI report."""
+    closed = [p for p in st.read("positions") if (p.get("exit_ts") or "").strip()]
+    by_day = {}
+    for p in closed:
+        d = (p.get("signal_ts") or "")[:10]
+        v = _f(p.get("pnl_actual"))
+        if v is None:
+            v = _f(p.get("pnl_theo"))
+        if not d or v is None:
+            continue
+        strat = p.get("strategy") or "?"
+        rec = by_day.setdefault(d, {})
+        rec[strat] = rec.get(strat, 0.0) + v
+
+    def bucket(pred):
+        out = {}
+        for d, rec in by_day.items():
+            if pred(d):
+                for k, v in rec.items():
+                    out[k] = round(out.get(k, 0.0) + v, 2)
+        out["TOTAL"] = round(sum(v for k, v in out.items() if k != "TOTAL"), 2)
+        return out
+
+    days = [dict(date=d, TOTAL=round(sum(rec.values()), 2),
+                 **{k: round(v, 2) for k, v in rec.items()})
+            for d, rec in sorted(by_day.items(), reverse=True)]
+    res = {"days": days[:10], "all": bucket(lambda d: True)}
+    if today:
+        res["today"] = bucket(lambda d: d == today)
+    if week_start:
+        res["week"] = bucket(lambda d: d >= week_start)
+    return res
+
+
 def run_report(weeks: int = 1):
     since = (date.today() - timedelta(weeks=weeks)).isoformat()
     signals = [r for r in st.read("signals") if r.get("date", "") >= since]
@@ -137,6 +174,14 @@ def run_report(weeks: int = 1):
                     for p in closed if _f(p.get("exit_value_actual")) is not None])
     print(f"  slippage: entry {_fmt(slip_c)} / exit {_fmt(slip_e)} "
           f"(mean actual - theo, per spread)")
+
+    # ── daily P&L (closed trades; actual, theo fallback) ──
+    ps = pnl_summary()
+    if ps["days"]:
+        rows = " | ".join(
+            f"{d['date'][5:]}: M {d.get('METF', 0):+.0f} B {d.get('BAND', 0):+.0f} Σ {d['TOTAL']:+.0f}"
+            for d in ps["days"][::-1])
+        print(f"  P/L by day: {rows}")
 
     # ── band containment, rolling 20d ──
     contained = [int(r["contained"]) for r in band_rows

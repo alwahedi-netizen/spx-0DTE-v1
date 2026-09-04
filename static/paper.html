@@ -88,6 +88,12 @@
       <div class="kv"><span>EM / skew</span><b id="bandEm">–</b></div>
       <div class="kv"><span>Close / contained</span><b id="bandContained">–</b></div>
     </div>
+    <div class="card">
+      <h3>P&amp;L <span class="mut">(closed trades)</span></h3>
+      <div class="kv"><span>Today</span><b id="pnlToday">–</b></div>
+      <div class="kv"><span>This week</span><b id="pnlWeek">–</b></div>
+      <div class="kv"><span>All time</span><b id="pnlAll">–</b></div>
+    </div>
   </div>
 
   <section>
@@ -98,6 +104,15 @@
       <tbody></tbody>
     </table></div>
     <div class="mut" id="sigEmpty" style="display:none">No signals yet today.</div>
+  </section>
+
+  <section>
+    <h2>Daily P&amp;L <span class="mut" style="text-transform:none">(closed trades — actual fills, theo where unfilled)</span></h2>
+    <div class="tblwrap"><table id="pnlTable">
+      <thead><tr><th>Date</th><th>METF</th><th>BAND</th><th>Total</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="mut" id="pnlEmpty" style="display:none">No closed trades yet.</div>
   </section>
 
   <section>
@@ -171,6 +186,24 @@ async function refresh(){
   $("bandEm").textContent = b.em ? `${b.em} / ${b.skew}` : "–";
   $("bandContained").textContent = b.spx_close
     ? `${b.spx_close} / ${b.contained === "1" ? "YES" : b.contained === "0" ? "NO" : "…"}` : "–";
+
+  const pnl = s.pnl || {};
+  const pm = v => {
+    if (v === undefined || v === null) return "–";
+    const cls = v > 0 ? "pos" : (v < 0 ? "neg" : "mut");
+    return `<span class="${cls}">${v >= 0 ? "+" : "−"}$${Math.abs(v).toFixed(0)}</span>`;
+  };
+  const bucketFmt = b => b && Object.keys(b).length > 1
+    ? `${pm(b.TOTAL)} <span class="mut" style="font-weight:400">(M ${pm(b.METF ?? 0)} · B ${pm(b.BAND ?? 0)})</span>`
+    : (b && "TOTAL" in b && b.TOTAL !== 0 ? pm(b.TOTAL) : "–");
+  $("pnlToday").innerHTML = bucketFmt(pnl.today);
+  $("pnlWeek").innerHTML  = bucketFmt(pnl.week);
+  $("pnlAll").innerHTML   = bucketFmt(pnl.all);
+  const days = pnl.days || [];
+  $("pnlEmpty").style.display = days.length ? "none" : "block";
+  $("pnlTable").querySelector("tbody").innerHTML = days.map(d => `
+    <tr><td>${esc(d.date)}</td><td>${pm(d.METF)}</td><td>${pm(d.BAND)}</td>
+        <td><b>${pm(d.TOTAL)}</b></td></tr>`).join("");
 
   const sigs = s.signals || [];
   $("sigEmpty").style.display = sigs.length ? "none" : "block";

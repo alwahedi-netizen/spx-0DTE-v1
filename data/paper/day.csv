@@ -1,0 +1,2 @@
+date,status,vix,vix_chg_5d,prior_close,atr20,gex_sign,risk_budget,notes
+2026-09-04,OK,,,,,unknown,1500.00,vix: Schwab auth failed: no tokens at /home/user/spx-paper-trader/tokens.json — run `python3 schwab_auth.py auth`; spx daily: Schwab auth failed: no tokens at /home/user/spx-paper-trader/tokens.json — run `python3 schwab_auth.py auth`

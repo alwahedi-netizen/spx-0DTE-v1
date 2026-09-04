@@ -273,6 +273,21 @@ def test_store():
     except ValueError:
         ok("band settlement fills contained; other columns append-only")
 
+    # daily/weekly P&L rollup (dashboard card + report line)
+    st.append("positions", {"position_id": f"{d}-BAND-CALL", "signal_ts": f"{d}T10:35:02-04:00",
+                            "strategy": "BAND", "side": "CALL", "contracts": 1,
+                            "short_strike": 6040.0, "long_strike": 6070.0,
+                            "credit_theo": "1.40", "stop_level": "2.80",
+                            "exit_ts": f"{d}T14:00:00-04:00", "exit_value_theo": "2.85",
+                            "exit_reason": "STOPPED", "pnl_theo": "-145.00",
+                            "pnl_actual": "-155.00"})
+    ps = pr.pnl_summary(today=d, week_start=d)
+    # METF closed row has pnl_theo 165 (no pnl_actual), BAND has pnl_actual -155
+    assert ps["today"]["METF"] == 165.0 and ps["today"]["BAND"] == -155.0
+    assert ps["today"]["TOTAL"] == 10.0 and ps["week"]["TOTAL"] == 10.0
+    assert ps["days"][0]["date"] == d and ps["days"][0]["TOTAL"] == 10.0
+    ok("daily/weekly P&L per strategy (actual first, theo fallback)")
+
     # report runs on the CSVs alone (no API) — §9
     pr.run_report(weeks=1)
     ok("report runs offline on the journal CSVs")

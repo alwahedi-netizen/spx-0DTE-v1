@@ -101,8 +101,11 @@ def api_state():
     p = _proc["p"]
     running = p is not None and p.poll() is None
     should, why = _engine_window(now)
+    from datetime import timedelta
+    week_start = (now - timedelta(days=now.weekday())).date().isoformat()
     return jsonify({
         "now": pe.iso(now), "date": ds,
+        "pnl": paper_report.pnl_summary(today=ds, week_start=week_start),
         "engine": {"running": running,
                    "state": "running" if running else (why or "idle (will start in window)"),
                    "last_exit": _proc["last_exit"]},
