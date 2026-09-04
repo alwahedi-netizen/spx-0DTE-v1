@@ -56,6 +56,9 @@
         overflow-x:auto; font-size:12px; line-height:1.5; margin:0;
         max-height:340px; overflow-y:auto; }
   .msg { font-size:12px; margin-left:8px; }
+  .pnl-sub { font-size:11px; color:var(--mut); text-align:right;
+             margin:-3px 0 3px; white-space:nowrap;
+             font-variant-numeric:tabular-nums; }
   footer { color:var(--mut); font-size:11px; padding:6px 2px 20px; }
 </style>
 </head>
@@ -91,8 +94,11 @@
     <div class="card">
       <h3>P&amp;L <span class="mut">(closed trades)</span></h3>
       <div class="kv"><span>Today</span><b id="pnlToday">–</b></div>
+      <div class="pnl-sub" id="pnlTodaySub"></div>
       <div class="kv"><span>This week</span><b id="pnlWeek">–</b></div>
+      <div class="pnl-sub" id="pnlWeekSub"></div>
       <div class="kv"><span>All time</span><b id="pnlAll">–</b></div>
+      <div class="pnl-sub" id="pnlAllSub"></div>
     </div>
   </div>
 
@@ -193,12 +199,14 @@ async function refresh(){
     const cls = v > 0 ? "pos" : (v < 0 ? "neg" : "mut");
     return `<span class="${cls}">${v >= 0 ? "+" : "−"}$${Math.abs(v).toFixed(0)}</span>`;
   };
-  const bucketFmt = b => b && Object.keys(b).length > 1
-    ? `${pm(b.TOTAL)} <span class="mut" style="font-weight:400">(M ${pm(b.METF ?? 0)} · B ${pm(b.BAND ?? 0)})</span>`
-    : (b && "TOTAL" in b && b.TOTAL !== 0 ? pm(b.TOTAL) : "–");
-  $("pnlToday").innerHTML = bucketFmt(pnl.today);
-  $("pnlWeek").innerHTML  = bucketFmt(pnl.week);
-  $("pnlAll").innerHTML   = bucketFmt(pnl.all);
+  const bucket = (b, main, sub) => {
+    const has = b && Object.keys(b).length > 1;
+    $(main).innerHTML = has ? pm(b.TOTAL) : "–";
+    $(sub).innerHTML = has ? `METF ${pm(b.METF ?? 0)} · BAND ${pm(b.BAND ?? 0)}` : "";
+  };
+  bucket(pnl.today, "pnlToday", "pnlTodaySub");
+  bucket(pnl.week,  "pnlWeek",  "pnlWeekSub");
+  bucket(pnl.all,   "pnlAll",   "pnlAllSub");
   const days = pnl.days || [];
   $("pnlEmpty").style.display = days.length ? "none" : "block";
   $("pnlTable").querySelector("tbody").innerHTML = days.map(d => `
