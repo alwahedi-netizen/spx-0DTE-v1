@@ -1,0 +1,14 @@
+date,status,vix,vix_chg_5d,prior_close,atr20,gex_sign,risk_budget,notes
+2026-08-31,OK,15.38,0.25,7711.76,59.51,unknown,1500.00,
+2026-09-01,OK,15.88,0.03,7686.14,55.83,unknown,1500.00,
+2026-09-02,OK,16.32,0.87,7631.47,51.69,unknown,1500.00,
+2026-09-03,OK,15.03,-0.18,7666.60,50.50,unknown,1500.00,
+2026-09-04,OK,14.16,-0.35,7747.71,52.77,positive,1500.00,
+2026-09-07,OK,15.18,0.75,7718.60,52.32,unknown,3000.00,
+2026-09-08,OK,,,,,unknown,3000.00,vix: Schwab auth failed: token refresh failed: HTTP 400; spx daily: Schwab auth failed: token refresh failed: HTTP 400
+2026-09-09,OK,16.24,-0.10,7673.52,53.37,negative,3000.00,
+2026-09-10,OK,17.76,2.56,7636.36,53.32,negative,3000.00,
+2026-09-11,OK,15.95,1.63,7591.70,54.25,unknown,3000.00,
+2026-09-14,OK,17.72,3.19,7656.98,55.10,negative,3000.00,
+2026-09-15,OK,16.89,1.59,7619.98,56.65,negative,3000.00,
+2026-09-16,SKIPPED_CALENDAR,,,,,,,calendar skip
