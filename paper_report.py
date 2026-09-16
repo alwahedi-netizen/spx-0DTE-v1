@@ -100,7 +100,7 @@ def run_report(weeks: int = 1):
           f"────────────────────────────────")
 
     # ── trades / skips per strategy ──
-    strategies = ("METF", "BAND", "MEIC", "ORB")
+    strategies = ("METF", "BAND", "MEIC", "LATE", "FLY", "ORB")
     for strat in strategies:
         srows = [r for r in signals if r.get("strategy") == strat]
         trades = [r for r in srows if r.get("action") != "SKIP"]
@@ -135,7 +135,7 @@ def run_report(weeks: int = 1):
     # ── double-stop rate (band: both sides stopped same day) ──
     band_by_day = defaultdict(list)
     for p in closed:
-        if p.get("strategy") in ("BAND", "MEIC"):
+        if p.get("strategy") in ("BAND", "MEIC", "LATE"):
             band_by_day[((p.get("signal_ts") or "")[:16])].append(p)
     condor_days = [d for d, ps in band_by_day.items() if len(ps) >= 2]
     dbl = [d for d in condor_days

@@ -59,7 +59,7 @@ FOMC_2026 = {"2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17",
 DEFAULTS = {
     "timezone": "America/New_York",
     "account_equity": 100000,
-    "daily_risk_pct": 0.03,
+    "daily_risk_pct": 0.05,
     "skip_dates": [],
     "metf": {
         "enabled": True,
@@ -94,6 +94,20 @@ DEFAULTS = {
         "enabled": True,
         "range_end": "10:00", "check_slots": ["10:30", "11:30", "13:00"],
         "width": 30, "stop_loss_frac": 0.50, "contracts": 1,
+    },
+    # FLY — 13:00 ATM iron butterfly ("pin" trade): sells the straddle with
+    # wings, managed as ONE structure: TP at tp_frac of credit, stop at
+    # sl_frac loss (whole-fly value vs whole-fly credit).
+    "fly": {
+        "enabled": True, "entry_time": "13:00", "wing_width": 40,
+        "tp_frac": 0.25, "sl_frac": 0.25, "contracts": 1,
+    },
+    # LATE — final-hour tight condors: tests the "last hours are the most
+    # profitable" finding. Same mechanics as MEIC, narrower and later.
+    "late": {
+        "enabled": True, "slots": ["15:00", "15:30"],
+        "side_credit": 0.80, "min_side_credit": 0.60, "wing_width": 15,
+        "take_profit_short": 0.05, "contracts": 1,
     },
     # Simulated execution: the engine fills its own orders into the *_actual
     # columns at theo price minus a slippage penalty (paperMoney has no API —
@@ -310,6 +324,18 @@ def pick_debit_vertical(cmap: dict, side: str, spot: float, width: float):
     return {"buy": buy, "sell": sell, "debit": debit, "buy_mid": mb, "sell_mid": ms_}
 
 
+# ── FLY logic (whole-structure management) ───────────────────────────────────
+
+def fly_group_action(total_value: float, total_credit: float,
+                     tp_frac: float, sl_frac: float):
+    """'TP' | 'STOPPED' | None for an iron fly managed as one structure."""
+    if total_value >= total_credit * (1 + sl_frac):
+        return "STOPPED"
+    if total_value <= total_credit * (1 - tp_frac):
+        return "TP"
+    return None
+
+
 # ── risk / stops / settlement ────────────────────────────────────────────────
 
 def stop_risk(credit: float, stop_level: float, contracts: int) -> float:
@@ -381,9 +407,17 @@ def band_signal_pending(cfg: dict, d: str) -> bool:
     return not st.signals_for(d, "BAND")
 
 
+def pending_condor_slots(cfg: dict, d: str, strat: str) -> list:
+    done = {r.get("slot") for r in st.signals_for(d, strat)}
+    return [x for x in cfg[strat.lower()]["slots"] if x not in done]
+
+
 def pending_meic_slots(cfg: dict, d: str) -> list:
-    done = {r.get("slot") for r in st.signals_for(d, "MEIC")}
-    return [x for x in cfg["meic"]["slots"] if x not in done]
+    return pending_condor_slots(cfg, d, "MEIC")
+
+
+def fly_pending(d: str) -> bool:
+    return not st.signals_for(d, "FLY")
 
 
 def orb_traded(d: str) -> bool:
@@ -629,13 +663,14 @@ def do_band_entry(cfg: dict, day_row: dict, brow: dict, chain: dict, expiry: str
           f"stop/side {stop_level:.2f} size {size}", flush=True)
 
 
-def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str):
-    """MEIC: symmetric iron condor by per-side credit target; stop per side =
-    the condor's total credit (same rule as the band condor)."""
-    m = cfg["meic"]
+def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
+                 strat: str = "MEIC"):
+    """Symmetric iron condor by per-side credit target; stop per side = the
+    condor's total credit ("breakeven" management). Used by MEIC and LATE."""
+    m = cfg[strat.lower()]
     d = day_row["date"]
     spot = spot_of(chain)
-    base = dict(slot=slot, strategy="MEIC", structure="IRON_CONDOR",
+    base = dict(slot=slot, strategy=strat, structure="IRON_CONDOR",
                 spot=_fmt(spot), width=m["wing_width"])
     sides = []
     for side in ("PUT", "CALL"):
@@ -645,7 +680,7 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str):
         if skip:
             st.append("signals", _signal_row(cfg, day_row, action="SKIP",
                                              skip_reason=skip, side=side, **base))
-            print(f"[{slot}] MEIC SKIP/{skip} ({side})", flush=True)
+            print(f"[{slot}] {strat} SKIP/{skip} ({side})", flush=True)
             return
         sides.append(dict(side=side, **pick))
 
@@ -656,7 +691,7 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str):
     if not risk_ok(open_stop_risk(), new_risk, budget):
         st.append("signals", _signal_row(cfg, day_row, action="SKIP",
                                          skip_reason="RISK", side="BOTH", **base))
-        print(f"[{slot}] MEIC SKIP/RISK", flush=True)
+        print(f"[{slot}] {strat} SKIP/RISK", flush=True)
         return
 
     ts = iso(now_et())
@@ -670,9 +705,9 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str):
         stop_level=_fmt(stop_level), **base))
     e = sim_cfg(cfg)
     for x in sides:
-        pid = f"{d}-MEIC-{slot}-{x['side']}"
+        pid = f"{d}-{strat}-{slot}-{x['side']}"
         st.append("positions", {
-            "position_id": pid, "signal_ts": ts, "strategy": "MEIC",
+            "position_id": pid, "signal_ts": ts, "strategy": strat,
             "side": x["side"], "contracts": m["contracts"],
             "short_strike": x["short_strike"], "long_strike": x["long_strike"],
             "credit_theo": _fmt(x["credit"]), "stop_level": _fmt(stop_level)})
@@ -680,7 +715,7 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str):
             st.update_position(pid, {
                 "credit_actual": _fmt(sim_entry_credit(x["credit"], e["entry_slippage"])),
                 "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
-    print(f"[{slot}] MEIC IRON_CONDOR credit {total:.2f} stop/side {stop_level:.2f}",
+    print(f"[{slot}] {strat} IRON_CONDOR credit {total:.2f} stop/side {stop_level:.2f}",
           flush=True)
 
 
@@ -738,6 +773,68 @@ def do_orb_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
           f"debit {debit:.2f} stop {abs(stop_level):.2f}", flush=True)
 
 
+def do_fly_entry(cfg: dict, day_row: dict, chain: dict, expiry: str):
+    """FLY: ATM iron butterfly, whole-structure TP/SL (see fly_group_action)."""
+    fcfg = cfg["fly"]
+    d = day_row["date"]
+    slot = fcfg["entry_time"]
+    spot = spot_of(chain)
+    k_atm = round(spot / STRIKE_STEP) * STRIKE_STEP
+    wing = fcfg["wing_width"]
+    base = dict(slot=slot, strategy="FLY", structure="IRON_FLY",
+                spot=_fmt(spot), width=wing)
+    sides = []
+    for side, ks, kl in (("PUT", k_atm, k_atm - wing), ("CALL", k_atm, k_atm + wing)):
+        cmap = contract_map(chain, expiry, side.lower())
+        cs, cl = cmap.get(ks), cmap.get(kl)
+        if cs is None or cl is None or mid(cs) is None or mid(cl) is None:
+            _skip_row(cfg, day_row, "FLY", slot, "DATA", f"missing {ks}/{kl} {side}")
+            return
+        credit = mid(cs) - mid(cl)
+        if credit <= 0:
+            _skip_row(cfg, day_row, "FLY", slot, "CREDIT", f"{side} side")
+            return
+        sides.append({"side": side, "short": ks, "long": kl, "credit": credit,
+                      "short_mid": mid(cs), "long_mid": mid(cl),
+                      "short_delta": cs.get("delta")})
+    total = sum(x["credit"] for x in sides)
+    # Per-side stop_level = side_credit*(1+sl_frac): tracking manages the fly
+    # as a group, but this keeps open_stop_risk summing to total*sl_frac*100.
+    new_risk = sum(stop_risk(x["credit"], x["credit"] * (1 + fcfg["sl_frac"]),
+                             fcfg["contracts"]) for x in sides)
+    budget = float(day_row.get("risk_budget") or 0)
+    if not risk_ok(open_stop_risk(), new_risk, budget):
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="RISK", side="BOTH", **base))
+        print(f"[{slot}] FLY SKIP/RISK", flush=True)
+        return
+    ts = iso(now_et())
+    p0, p1 = sides
+    st.append("signals", _signal_row(
+        cfg, day_row, ts=ts, action="SELL_CONDOR", side="BOTH",
+        short_strike=p0["short"], long_strike=p0["long"],
+        short_strike_2=p1["short"], long_strike_2=p1["long"],
+        credit_theo=_fmt(total), short_delta=_fmt(p0["short_delta"], 3),
+        short_mid=_fmt(p0["short_mid"]), long_mid=_fmt(p0["long_mid"]),
+        stop_level=_fmt(total * (1 + fcfg["sl_frac"])), **base))
+    e = sim_cfg(cfg)
+    for x in sides:
+        pid = f"{d}-FLY-{x['side']}"
+        st.append("positions", {
+            "position_id": pid, "signal_ts": ts, "strategy": "FLY",
+            "side": x["side"], "contracts": fcfg["contracts"],
+            "short_strike": x["short"], "long_strike": x["long"],
+            "credit_theo": _fmt(x["credit"]),
+            "stop_level": _fmt(x["credit"] * (1 + fcfg["sl_frac"]))})
+        if e:
+            st.update_position(pid, {
+                "credit_actual": _fmt(sim_entry_credit(x["credit"], e["entry_slippage"])),
+                "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
+    print(f"[{slot}] FLY IRON_FLY @ {k_atm:.0f} credit {total:.2f} "
+          f"TP {total*(1-fcfg['tp_frac']):.2f} SL {total*(1+fcfg['sl_frac']):.2f}",
+          flush=True)
+
+
 def _close_position(cfg: dict, p: dict, exit_value: float, reason: str):
     contracts = int(float(p.get("contracts") or 1))
     pnl = vertical_pnl(float(p["credit_theo"]), exit_value, contracts)
@@ -759,19 +856,42 @@ def _close_position(cfg: dict, p: dict, exit_value: float, reason: str):
 
 
 def do_tracking(cfg: dict, chain: dict, expiry: str):
-    """§6.4 — reprice each open side from chain mids; stop / TP."""
+    """§6.4 — reprice each open side from chain mids; stop / TP.
+    FLY is managed as a whole structure; everything else per side."""
     tps = {"BAND": cfg["band"]["take_profit_short"],
-           "MEIC": cfg.get("meic", {}).get("take_profit_short", 0.05)}
+           "MEIC": cfg.get("meic", {}).get("take_profit_short", 0.05),
+           "LATE": cfg.get("late", {}).get("take_profit_short", 0.05)}
+    priced = []                              # (position, value, short_mid)
     for p in st.open_positions():
-        side = p["side"]
-        cmap = contract_map(chain, expiry, side.lower())
+        cmap = contract_map(chain, expiry, p["side"].lower())
         cs, cl = cmap.get(float(p["short_strike"])), cmap.get(float(p["long_strike"]))
         if cs is None or cl is None:
             continue
         ms, ml = mid(cs), mid(cl)
         if ms is None or ml is None:
             continue
-        value = ms - ml
+        priced.append((p, ms - ml, ms))
+
+    # FLY: act on the combined structure only when both sides priced
+    fcfg = cfg.get("fly", {})
+    groups = {}
+    for p, v, _ in priced:
+        if p["strategy"] == "FLY":
+            groups.setdefault(p.get("signal_ts"), []).append((p, v))
+    for sides in groups.values():
+        if len(sides) != 2:
+            continue
+        total_value = sum(v for _, v in sides)
+        total_credit = sum(float(p["credit_theo"]) for p, _ in sides)
+        act = fly_group_action(total_value, total_credit,
+                               fcfg.get("tp_frac", 0.25), fcfg.get("sl_frac", 0.25))
+        if act:
+            for p, v in sides:
+                _close_position(cfg, p, v, act)
+
+    for p, value, ms in priced:
+        if p["strategy"] == "FLY":
+            continue
         if stop_triggered(value, float(p["stop_level"])):
             _close_position(cfg, p, value, "STOPPED")
         elif p["strategy"] in tps and ms <= tps[p["strategy"]]:
@@ -890,6 +1010,37 @@ def cmd_run(cfg: dict):
                 except pd_.PaperDataError as e:
                     _skip_row(cfg, day_row, "ORB", slot, "DATA", str(e))
 
+        # ── LATE final-hour condors ──
+        if cfg.get("late", {}).get("enabled"):
+            for slot in pending_condor_slots(cfg, ds, "LATE"):
+                t = at(slot, d)
+                if now < t:
+                    continue
+                if now - t > grace:
+                    _skip_row(cfg, day_row, "LATE", slot, "DATA",
+                              "slot missed (engine offline)")
+                    continue
+                try:
+                    chain, expiry = get_chain()
+                    do_meic_slot(cfg, day_row, slot, chain, expiry, strat="LATE")
+                except pd_.PaperDataError as e:
+                    _skip_row(cfg, day_row, "LATE", slot, "DATA", str(e))
+
+        # ── FLY entry ──
+        if cfg.get("fly", {}).get("enabled") and fly_pending(ds):
+            t = at(cfg["fly"]["entry_time"], d)
+            if now >= t:
+                if now - t > grace:
+                    _skip_row(cfg, day_row, "FLY", cfg["fly"]["entry_time"],
+                              "DATA", "entry missed (engine offline)")
+                else:
+                    try:
+                        chain, expiry = get_chain()
+                        do_fly_entry(cfg, day_row, chain, expiry)
+                    except pd_.PaperDataError as e:
+                        _skip_row(cfg, day_row, "FLY", cfg["fly"]["entry_time"],
+                                  "DATA", str(e))
+
         # ── band snapshot + entry ──
         if cfg["band"]["enabled"]:
             bt, et_ = at(cfg["band"]["band_time"], d), at(cfg["band"]["entry_time"], d)
@@ -950,6 +1101,10 @@ def cmd_run(cfg: dict):
             pending += [at(s, d) for s in pending_meic_slots(cfg, ds)]
         if cfg.get("orb", {}).get("enabled"):
             pending += [at(s, d) for s in pending_orb_slots(cfg, ds)]
+        if cfg.get("late", {}).get("enabled"):
+            pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "LATE")]
+        if cfg.get("fly", {}).get("enabled") and fly_pending(ds):
+            pending.append(at(cfg["fly"]["entry_time"], d))
         if cfg["band"]["enabled"]:
             if band_row_for(ds) is None:
                 pending.append(at(cfg["band"]["band_time"], d))

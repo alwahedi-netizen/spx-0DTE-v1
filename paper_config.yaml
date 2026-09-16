@@ -3,8 +3,8 @@
 
 timezone: America/New_York
 account_equity: 100000          # for daily risk budget calc only
-daily_risk_pct: 0.03            # 3% — sum of ALL strategies' stop losses; raised
-                                # from 1.5% when MEIC + ORB joined the experiment
+daily_risk_pct: 0.05            # 5% — sum of ALL strategies' stop losses
+                                # (six parallel experiments share this budget)
 skip_dates: []                  # FOMC minutes, CPI — YYYY-MM-DD (FOMC decision days
                                 # are added automatically from trade_builder.FOMC_2026)
 
@@ -58,4 +58,21 @@ orb:                              # Opening Range Breakout — directional DEBIT
   check_slots: ["10:30", "11:30", "13:00"]
   width: 30
   stop_loss_frac: 0.50            # stop when the vertical loses half its debit
+  contracts: 1
+
+fly:                              # 13:00 ATM iron butterfly ("pin" trade)
+  enabled: true
+  entry_time: "13:00"
+  wing_width: 40
+  tp_frac: 0.25                   # take profit at 25% of the fly's credit
+  sl_frac: 0.25                   # stop at a 25% loss of the fly's credit
+  contracts: 1
+
+late:                             # final-hour tight condors (last-hour theta)
+  enabled: true
+  slots: ["15:00", "15:30"]
+  side_credit: 0.80
+  min_side_credit: 0.60
+  wing_width: 15
+  take_profit_short: 0.05
   contracts: 1

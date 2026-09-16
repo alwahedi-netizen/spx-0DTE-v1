@@ -226,6 +226,24 @@ def test_meic_orb():
     ok("simulated debit fill pays debit + slippage")
 
 
+# ── FLY + LATE (premium-selling additions) ───────────────────────────────────
+def test_fly_late():
+    print("FLY / LATE")
+    cfg = pe.load_config(path="/nonexistent")
+    assert cfg["fly"]["enabled"] and cfg["late"]["enabled"]
+    ok("both enabled in defaults")
+
+    assert pe.fly_group_action(36.0, 36.0, 0.25, 0.25) is None
+    assert pe.fly_group_action(26.9, 36.0, 0.25, 0.25) == "TP"      # <= 27.0
+    assert pe.fly_group_action(45.1, 36.0, 0.25, 0.25) == "STOPPED" # >= 45.0
+    ok("fly managed as one structure: TP at -25% value, stop at +25%")
+
+    # per-side stop_level credit*(1+sl) makes open risk sum to total*sl*100
+    r = pe.stop_risk(18.3, 18.3 * 1.25, 1) + pe.stop_risk(17.7, 17.7 * 1.25, 1)
+    assert abs(r - 36.0 * 0.25 * 100) < 1e-6
+    ok("fly risk accounting = sl_frac of total credit")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -268,7 +286,12 @@ def test_store():
     st.append("signals", {"ts": f"{d}T11:30:03-04:00", "date": d, "slot": "11:30",
                           "strategy": "ORB", "action": "BUY_VERTICAL"})
     assert pe.pending_orb_slots(cfg, d) == []    # traded once -> done for the day
-    ok("MEIC slots idempotent; ORB triggers at most once per day")
+    assert pe.pending_condor_slots(cfg, d, "LATE") == cfg["late"]["slots"]
+    assert pe.fly_pending(d)
+    st.append("signals", {"ts": f"{d}T13:00:03-04:00", "date": d, "slot": "13:00",
+                          "strategy": "FLY", "action": "SELL_CONDOR"})
+    assert not pe.fly_pending(d)
+    ok("MEIC/LATE slots idempotent; ORB and FLY at most once per day")
 
     assert pe.band_signal_pending(cfg, d)
     st.append("signals", {"ts": f"{d}T10:35:02-04:00", "date": d, "slot": "10:35",
@@ -342,7 +365,7 @@ def test_store():
 
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
-              test_risk_and_stops, test_sim_execution, test_meic_orb,
+              test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
               test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
