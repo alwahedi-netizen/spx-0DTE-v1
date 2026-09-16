@@ -39,7 +39,8 @@ git -C "$CLONE" fetch origin main --quiet 2>&1 || { log "fetch failed"; exit 0; 
 
 r=$(git -C "$CLONE" rev-parse origin/main)
 cur=$(cat "$MARKER" 2>/dev/null || echo none)
-[ "$cur" = "$r" ] && exit 0
+if [ "$cur" != "$r" ]; then
+
 log "deployed=$cur origin=$r — updating"
 
 # ff-only on purpose: local edits in the clone must never be silently
@@ -48,6 +49,14 @@ if ! git -C "$CLONE" merge --ff-only origin/main --quiet 2>&1; then
   log "NOT fast-forwardable (local commits/edits in $CLONE?) — left untouched"
   exit 0
 fi
+
+# Journal-snapshot commits touch only data/ — record them as deployed
+# without re-running tests or restarting anything.
+if [ "$cur" != "none" ] && \
+   ! git -C "$CLONE" diff --name-only "$cur" "$r" 2>/dev/null | grep -qv '^data/'; then
+  echo "$r" > "$MARKER"
+  log "data-only change (journal snapshot) — no redeploy needed"
+else
 
 # Gate the deploy on the offline regression suite: a push that breaks the
 # rules engine must never reach the live journal.
@@ -72,4 +81,36 @@ log "deployed $(git -C "$CLONE" rev-parse --short HEAD); logicon-paper restarted
 if git -C "$CLONE" diff --name-only "$cur" "$r" 2>/dev/null | grep -q '^deploy/'; then
   log "NOTE: this commit also changed deploy/ scripts — those are not"
   log "auto-applied; run the relevant 'sudo bash deploy/...' step by hand."
+fi
+
+fi  # end data-only vs full-deploy
+fi  # end deploy stage ($cur != $r)
+
+# ── journal backup: commit the live CSVs into the repo (hourly) ─────────────
+# Gives the paper-test record an off-server copy and lets analysis run from
+# anywhere. Only data/ changes are pushed; the data-only short-circuit above
+# keeps these snapshots from triggering redeploys.
+if [ -d "$APP_DIR/data/paper" ]; then
+  last=$(git -C "$CLONE" log -1 --format=%ct -- data 2>/dev/null)
+  [ -n "$last" ] || last=0
+  if [ $(( $(date +%s) - last )) -ge 3600 ]; then
+    mkdir -p "$CLONE/data/paper"
+    rsync -a --exclude 'logs' "$APP_DIR/data/paper/" "$CLONE/data/paper/"
+    if [ -n "$(git -C "$CLONE" status --porcelain -- data)" ]; then
+      git -C "$CLONE" add data
+      git -C "$CLONE" -c user.name="Logicon Hub" -c user.email="alwahedi@logicon.ae"         commit -q -m "journal snapshot $(TZ=America/New_York date '+%F %H:%M ET')
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01CNijtbEomNEwJhzqoeQPkc" -- data || true
+      if git -C "$CLONE" push -q origin main 2>/dev/null || \
+         { git -C "$CLONE" pull --rebase -q origin main 2>/dev/null && \
+           git -C "$CLONE" push -q origin main 2>/dev/null; }; then
+        git -C "$CLONE" rev-parse origin/main > /dev/null
+        log "journal snapshot pushed"
+      else
+        log "journal push FAILED (no push credentials?) — resetting so deploys stay unwedged"
+        git -C "$CLONE" reset --hard -q origin/main
+      fi
+    fi
+  fi
 fi
