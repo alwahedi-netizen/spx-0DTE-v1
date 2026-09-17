@@ -1,0 +1,24 @@
+waiting 282s for 09:00 ET pre-market step
+paper run 2026-08-31 | budget $1500 | gex unknown
+[10:00] METF SELL PUT 7645.0/7615.0 credit 1.68 stop 3.35
+[10:30] band 7645-7685 em 18.2 skew 0.845
+[10:35] BAND IRON_CONDOR credit 5.70 stop/side 5.70 size 1.0
+[10:45] METF SELL PUT 7645.0/7615.0 credit 1.65 stop 3.30
+  2026-08-31-BAND-CALL STOPPED @ 6.08 pnl -320
+tracking cycle skipped: Schwab auth failed: SCHWAB_APP_KEY / SCHWAB_APP_SECRET not set — copy .env.example to .env and fill them in
+paper run 2026-08-31 | budget $1500 | gex unknown
+[11:30] METF SELL PUT 7655.0/7625.0 credit 2.00 stop 4.00
+[12:30] METF SELL PUT 7660.0/7630.0 credit 1.95 stop 3.90
+[13:30] METF SELL PUT 7660.0/7630.0 credit 1.98 stop 3.95
+[14:15] METF SELL PUT 7675.0/7645.0 credit 2.15 stop 4.30
+  2026-08-31-METF-14:15-PUT STOPPED @ 5.38 pnl -322
+  2026-08-31-BAND-PUT TP @ 0.03 pnl +280
+  2026-08-31-METF-10:00-PUT EXPIRED @ 0.00 pnl +168
+  2026-08-31-METF-10:45-PUT EXPIRED @ 0.00 pnl +165
+  2026-08-31-METF-11:30-PUT EXPIRED @ 0.00 pnl +200
+  2026-08-31-METF-12:30-PUT EXPIRED @ 0.00 pnl +195
+  2026-08-31-METF-13:30-PUT EXPIRED @ 0.00 pnl +198
+[16:05] contained=0 close 7686.14 band 7645-7685
+paper run: day complete.
+paper run 2026-08-31 | budget $1500 | gex unknown
+paper run: day complete.

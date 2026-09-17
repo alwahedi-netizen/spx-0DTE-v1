@@ -1,0 +1,33 @@
+waiting 292s for 09:00 ET pre-market step
+paper run 2026-09-04 | budget $1500 | gex positive
+[10:00] METF SELL CALL 7765.0/7795.0 credit 1.50 stop 3.00
+[10:30] band 7710-7750 em 16.9 skew 1.211
+[10:35] BAND IRON_CONDOR credit 5.40 stop/side 5.40 size 1.0
+[10:45] METF SELL CALL 7740.0/7770.0 credit 2.05 stop 4.10
+  2026-09-04-BAND-PUT STOPPED @ 5.67 pnl -164
+[11:30] METF SELL CALL 7730.0/7760.0 credit 1.55 stop 3.10
+  2026-09-04-METF-11:30-CALL STOPPED @ 3.32 pnl -177
+[12:30] METF SELL CALL 7735.0/7765.0 credit 2.00 stop 4.00
+[13:30] METF SELL CALL 7720.0/7750.0 credit 2.65 stop 5.30
+paper run 2026-09-04 | budget $1500 | gex positive
+paper run 2026-09-04 | budget $1500 | gex positive
+paper run 2026-09-04 | budget $1500 | gex positive
+[12:00] MEIC SKIP/DATA slot missed (engine offline)
+[12:30] MEIC SKIP/DATA slot missed (engine offline)
+[13:00] MEIC SKIP/DATA slot missed (engine offline)
+[13:30] MEIC SKIP/DATA slot missed (engine offline)
+[10:30] ORB SKIP/DATA slot missed (engine offline)
+[11:30] ORB SKIP/DATA slot missed (engine offline)
+[13:00] ORB SKIP/DATA slot missed (engine offline)
+[14:00] MEIC SKIP/RISK
+[14:15] METF SKIP/RISK
+[14:30] MEIC SKIP/RISK
+  2026-09-04-BAND-CALL TP @ 0.00 pnl +138
+  2026-09-04-METF-10:00-CALL EXPIRED @ 0.00 pnl +150
+  2026-09-04-METF-10:45-CALL EXPIRED @ 0.00 pnl +205
+  2026-09-04-METF-12:30-CALL EXPIRED @ 0.00 pnl +200
+  2026-09-04-METF-13:30-CALL EXPIRED @ 0.00 pnl +265
+[16:05] contained=1 close 7718.60 band 7710-7750
+paper run: day complete.
+paper run 2026-09-04 | budget $1500 | gex positive
+paper run: day complete.

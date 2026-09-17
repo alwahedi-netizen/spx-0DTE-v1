@@ -1,0 +1,109 @@
+waiting 282s for 09:00 ET pre-market step
+paper run 2026-09-15 | budget $3000 | gex negative
+[10:00] METF SELL CALL 7635.0/7665.0 credit 1.55 stop 3.10
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+[10:30] ORB SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+band snapshot failed: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+band snapshot failed: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+band snapshot failed: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+band snapshot failed: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+band snapshot failed: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+[10:35] BAND SKIP/DATA no 10:30 band (engine offline?)
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+[10:45] METF SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+[11:30] METF SELL CALL 7610.0/7640.0 credit 1.55 stop 3.10
+[11:30] ORB BUY PUT 7585.0/7555.0 debit 7.03 stop 3.51
+[12:00] MEIC IRON_CONDOR credit 3.25 stop/side 3.25
+[12:30] METF SELL CALL 7605.0/7635.0 credit 1.78 stop 3.55
+[12:30] MEIC IRON_CONDOR credit 3.92 stop/side 3.92
+[13:00] MEIC IRON_CONDOR credit 3.60 stop/side 3.60
+  2026-09-15-MEIC-13:00-PUT STOPPED @ 4.17 pnl -212
+[13:30] METF SELL CALL 7590.0/7620.0 credit 2.25 stop 4.50
+[13:30] MEIC IRON_CONDOR credit 4.50 stop/side 4.50
+[14:00] MEIC IRON_CONDOR credit 4.22 stop/side 4.22
+  2026-09-15-ORB-PUT STOPPED @ -3.33 pnl -370
+  2026-09-15-MEIC-14:00-CALL STOPPED @ 4.43 pnl -176
+  2026-09-15-METF-13:30-CALL STOPPED @ 4.73 pnl -248
+  2026-09-15-MEIC-13:30-CALL STOPPED @ 4.73 pnl -248
+[14:15] METF SELL CALL 7595.0/7625.0 credit 2.60 stop 5.20
+[14:30] MEIC IRON_CONDOR credit 4.57 stop/side 4.57
+  2026-09-15-MEIC-14:30-PUT STOPPED @ 4.98 pnl -221
+  2026-09-15-MEIC-12:00-CALL TP @ 0.00 pnl +150
+  2026-09-15-MEIC-12:30-CALL TP @ 0.00 pnl +178
+  2026-09-15-MEIC-13:00-CALL TP @ 0.00 pnl +155
+  2026-09-15-MEIC-14:30-CALL TP @ 0.00 pnl +180
+  2026-09-15-MEIC-12:00-PUT TP @ 0.00 pnl +175
+  2026-09-15-MEIC-12:30-PUT TP @ 0.00 pnl +215
+  2026-09-15-MEIC-13:30-PUT TP @ 0.00 pnl +225
+  2026-09-15-MEIC-14:00-PUT TP @ 0.00 pnl +155
+  2026-09-15-METF-10:00-CALL EXPIRED @ 0.00 pnl +155
+  2026-09-15-METF-11:30-CALL EXPIRED @ 0.00 pnl +155
+  2026-09-15-METF-12:30-CALL EXPIRED @ 0.00 pnl +178
+  2026-09-15-METF-14:15-CALL EXPIRED @ 0.00 pnl +260
+paper run: day complete.
+paper run 2026-09-15 | budget $3000 | gex negative
+paper run: day complete.

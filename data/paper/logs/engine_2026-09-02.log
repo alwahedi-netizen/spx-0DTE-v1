@@ -1,0 +1,22 @@
+waiting 289s for 09:00 ET pre-market step
+paper run 2026-09-02 | budget $1500 | gex unknown
+[10:00] METF SELL CALL 7670.0/7700.0 credit 1.90 stop 3.80
+  2026-09-02-METF-10:00-CALL STOPPED @ 4.05 pnl -215
+[10:30] band 7650-7690 em 17.9 skew 1.001
+[10:35] BAND IRON_CONDOR credit 6.10 stop/side 6.10 size 1.0
+[10:45] METF SELL CALL 7705.0/7735.0 credit 1.90 stop 3.80
+[11:30] METF SELL CALL 7700.0/7730.0 credit 1.55 stop 3.10
+[12:30] METF SELL CALL 7680.0/7710.0 credit 1.80 stop 3.60
+[13:30] METF SELL CALL 7675.0/7705.0 credit 1.70 stop 3.40
+[14:15] METF SELL CALL 7675.0/7705.0 credit 1.90 stop 3.80
+  2026-09-02-METF-13:30-CALL STOPPED @ 3.65 pnl -195
+  2026-09-02-BAND-CALL TP @ 0.00 pnl +332
+  2026-09-02-BAND-PUT TP @ 0.00 pnl +277
+  2026-09-02-METF-10:45-CALL EXPIRED @ 0.00 pnl +190
+  2026-09-02-METF-11:30-CALL EXPIRED @ 0.00 pnl +155
+  2026-09-02-METF-12:30-CALL EXPIRED @ 0.00 pnl +180
+  2026-09-02-METF-14:15-CALL EXPIRED @ 0.00 pnl +190
+[16:05] contained=1 close 7666.59 band 7650-7690
+paper run: day complete.
+paper run 2026-09-02 | budget $1500 | gex unknown
+paper run: day complete.

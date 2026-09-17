@@ -1,0 +1,22 @@
+waiting 290s for 09:00 ET pre-market step
+paper run 2026-09-07 | budget $3000 | gex unknown
+[10:00] METF SKIP/DATA no 0DTE SPX expiry listed today (listed: ['2026-09-08', '2026-09-09', '2026-09-10'])
+[10:30] ORB SKIP/DATA no 0DTE SPX expiry listed today (listed: ['2026-09-08', '2026-09-09', '2026-09-10'])
+band snapshot failed: no 0DTE SPX expiry listed today (listed: ['2026-09-08', '2026-09-09', '2026-09-10'])
+[10:45] METF SKIP/DATA no 0DTE SPX expiry listed today (listed: ['2026-09-08', '2026-09-09', '2026-09-10'])
+[10:35] BAND SKIP/DATA no 10:30 band (engine offline?)
+[11:30] METF SKIP/DATA no 0DTE SPX expiry listed today (listed: ['2026-09-08', '2026-09-09', '2026-09-10'])
+[11:30] ORB SKIP/DATA no 0DTE SPX expiry listed today (listed: ['2026-09-08', '2026-09-09', '2026-09-10'])
+[12:00] MEIC SKIP/DATA no 0DTE SPX expiry listed today (listed: ['2026-09-08', '2026-09-09', '2026-09-10'])
+[12:30] METF SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[12:30] MEIC SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[13:00] MEIC SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[13:00] ORB SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[13:30] METF SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[13:30] MEIC SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[14:00] MEIC SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[14:15] METF SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[14:30] MEIC SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+paper run: day complete.
+paper run 2026-09-07 | budget $3000 | gex unknown
+paper run: day complete.

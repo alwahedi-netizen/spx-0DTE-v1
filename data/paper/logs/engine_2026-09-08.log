@@ -1,0 +1,44 @@
+waiting 287s for 09:00 ET pre-market step
+2026-09-08 13:00:01 | INFO     | Access token expired, refreshing...
+2026-09-08 13:00:01 | INFO     | Refreshing access token...
+2026-09-08 13:00:01 | ERROR    | Token refresh failed: 400
+2026-09-08 13:00:01 | ERROR    | Response: {"error":"unsupported_token_type","error_description":"400 Bad Request: \"{\"error_description\":\"Refresh token is invalid, expired or revoked\",\"error\":\"invalid_grant\"}\""}
+paper run 2026-09-08 | budget $3000 | gex unknown
+[10:00] METF SELL PUT 7655.0/7625.0 credit 1.60 stop 3.20
+[10:30] ORB BUY PUT 7680.0/7650.0 debit 6.80 stop 3.40
+[10:30] band 7665-7700 em 16.5 skew 1.008
+[10:35] BAND IRON_CONDOR credit 5.62 stop/side 5.62 size 1.0
+[10:45] METF SELL PUT 7660.0/7630.0 credit 1.55 stop 3.10
+  2026-09-08-ORB-PUT STOPPED @ -3.38 pnl -342
+  2026-09-08-BAND-CALL STOPPED @ 6.00 pnl -300
+[11:30] METF SELL PUT 7675.0/7645.0 credit 1.95 stop 3.90
+[12:00] MEIC IRON_CONDOR credit 4.40 stop/side 4.40
+[12:30] METF SELL PUT 7670.0/7640.0 credit 1.57 stop 3.15
+[12:30] MEIC IRON_CONDOR credit 3.12 stop/side 3.12
+[13:00] MEIC IRON_CONDOR credit 3.45 stop/side 3.45
+  2026-09-08-MEIC-13:00-CALL STOPPED @ 4.65 pnl -275
+  2026-09-08-MEIC-12:30-CALL STOPPED @ 3.17 pnl -162
+[13:30] METF SELL PUT 7680.0/7650.0 credit 1.63 stop 3.25
+[13:30] MEIC IRON_CONDOR credit 3.18 stop/side 3.18
+[14:00] MEIC IRON_CONDOR credit 4.22 stop/side 4.22
+[14:15] METF SELL PUT 7690.0/7660.0 credit 2.48 stop 4.95
+[14:30] MEIC SKIP/RISK
+  2026-09-08-METF-14:15-PUT STOPPED @ 5.65 pnl -317
+  2026-09-08-METF-13:30-PUT STOPPED @ 3.47 pnl -184
+  2026-09-08-MEIC-13:30-PUT STOPPED @ 3.47 pnl -184
+  2026-09-08-MEIC-14:00-PUT STOPPED @ 5.62 pnl -340
+  2026-09-08-METF-11:30-PUT STOPPED @ 4.73 pnl -278
+  2026-09-08-MEIC-12:00-PUT STOPPED @ 4.73 pnl -258
+  2026-09-08-METF-12:30-PUT STOPPED @ 3.15 pnl -158
+  2026-09-08-MEIC-12:30-PUT STOPPED @ 3.15 pnl -158
+  2026-09-08-MEIC-12:00-CALL TP @ 0.00 pnl +225
+  2026-09-08-MEIC-13:30-CALL TP @ 0.00 pnl +155
+  2026-09-08-MEIC-14:00-CALL TP @ 0.00 pnl +200
+  2026-09-08-BAND-PUT TP @ 0.00 pnl +262
+  2026-09-08-METF-10:00-PUT EXPIRED @ 0.00 pnl +160
+  2026-09-08-METF-10:45-PUT EXPIRED @ 0.00 pnl +155
+  2026-09-08-MEIC-13:00-PUT EXPIRED @ 0.00 pnl +155
+[16:05] contained=1 close 7673.52 band 7665-7700
+paper run: day complete.
+paper run 2026-09-08 | budget $3000 | gex unknown
+paper run: day complete.
