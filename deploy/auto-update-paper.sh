@@ -95,7 +95,7 @@ if [ -d "$APP_DIR/data/paper" ]; then
   [ -n "$last" ] || last=0
   if [ $(( $(date +%s) - last )) -ge 3600 ]; then
     mkdir -p "$CLONE/data/paper"
-    rsync -a --exclude 'logs' "$APP_DIR/data/paper/" "$CLONE/data/paper/"
+    rsync -a "$APP_DIR/data/paper/" "$CLONE/data/paper/"   # incl. engine logs (small, invaluable for remote diagnosis)
     if [ -n "$(git -C "$CLONE" status --porcelain -- data)" ]; then
       git -C "$CLONE" add data
       git -C "$CLONE" -c user.name="Logicon Hub" -c user.email="alwahedi@logicon.ae"         commit -q -m "journal snapshot $(TZ=America/New_York date '+%F %H:%M ET')
