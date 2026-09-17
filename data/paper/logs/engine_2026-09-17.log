@@ -117,3 +117,8 @@ tracking cycle skipped: GET /chains: HTTP 400
 paper run 2026-09-17 | budget $5000 | gex negative
 [13:00] MEIC IRON_CONDOR credit 3.35 stop/side 3.35
 [13:00] FLY IRON_FLY @ 7635 credit 12.80 TP 9.60 SL 16.00
+[13:30] METF SELL PUT 7620.0/7590.0 credit 1.60 stop 3.20
+[13:30] MEIC IRON_CONDOR credit 4.05 stop/side 4.05
+  2026-09-17-FLY-PUT TP @ 4.47 pnl +130
+  2026-09-17-FLY-CALL TP @ 5.03 pnl +199
+[14:00] MEIC IRON_CONDOR credit 3.55 stop/side 3.55
