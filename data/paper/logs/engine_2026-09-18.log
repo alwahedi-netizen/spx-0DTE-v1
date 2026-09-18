@@ -14,3 +14,8 @@ paper run 2026-09-18 | budget $5000 | gex negative
 [13:00] MEIC IRON_CONDOR credit 4.10 stop/side 4.10
 [13:00] ORB SKIP/TRIGGER (inside range)
 [13:00] FLY IRON_FLY @ 7625 credit 12.65 TP 9.49 SL 15.81
+[13:30] METF SELL PUT 7615.0/7585.0 credit 2.02 stop 4.05
+[13:30] MEIC IRON_CONDOR credit 3.62 stop/side 3.62
+  2026-09-18-FLY-PUT TP @ 3.75 pnl +308
+  2026-09-18-FLY-CALL TP @ 5.73 pnl +10
+[14:00] MEIC IRON_CONDOR credit 3.72 stop/side 3.72
