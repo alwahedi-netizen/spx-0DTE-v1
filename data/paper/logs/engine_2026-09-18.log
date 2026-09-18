@@ -46,3 +46,7 @@ paper run 2026-09-18 | budget $5000 | gex negative
   2026-09-18-METF-13:30-PUT EXPIRED @ 0.00 pnl +202
   2026-09-18-METF-14:15-PUT EXPIRED @ 0.00 pnl +155
   2026-09-18-LATE-15:00-CALL EXPIRED @ 0.00 pnl +140
+[16:05] contained=0 close 7650.50 band 7605-7645
+paper run: day complete.
+paper run 2026-09-18 | budget $5000 | gex negative
+paper run: day complete.
