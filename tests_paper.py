@@ -244,6 +244,51 @@ def test_fly_late():
     ok("fly risk accounting = sl_frac of total credit")
 
 
+# ── FLYR (reload fly) ────────────────────────────────────────────────────────
+def test_flyr():
+    print("FLYR reload fly")
+    cfg = pe.load_config(path="/nonexistent")
+    assert cfg["flyr"]["enabled"] and cfg["flyr"]["max_reloads"] == 2
+    ok("enabled in defaults, 2 reloads max")
+
+    def pair(strat, ts, r1=None, r2=None):
+        return [{"strategy": strat, "signal_ts": ts, "side": s,
+                 "exit_ts": ts if r else "", "exit_reason": r or ""}
+                for s, r in (("PUT", r1), ("CALL", r2))]
+
+    # chain-state parsing: order, openness, group exit reason
+    rows = pair("FLY", "2026-09-21T13:00:00-04:00", "TP", "TP") + \
+        pair("FLYR", "2026-09-21T13:41:00-04:00")
+    groups, n_flyr = pe.fly_chain_state(rows)
+    assert [g["strategy"] for g in groups] == ["FLY", "FLYR"] and n_flyr == 1
+    assert groups[0]["exit_reason"] == "TP" and not groups[0]["open"]
+    assert groups[1]["open"] and groups[1]["exit_reason"] == ""
+    ok("fly chain groups by (ts, strategy) in entry order")
+
+    act = pe.flyr_reload_action
+    tp = [{"strategy": "FLY", "open": False, "exit_reason": "TP"}]
+    assert act(tp, 0, 2, "13:41", "14:45") is True
+    ok("reload fires after a TP inside the window")
+    assert act([], 0, 2, "13:41", "14:45") is False           # no fly today
+    assert act(tp, 2, 2, "13:41", "14:45") is False           # budget spent
+    assert act(tp, 0, 2, "14:46", "14:45") is False           # too late
+    stopped = [{"strategy": "FLY", "open": False, "exit_reason": "STOPPED"}]
+    assert act(stopped, 0, 2, "13:41", "14:45") is False      # never chase
+    open_ = [{"strategy": "FLY", "open": True, "exit_reason": ""}]
+    assert act(open_, 0, 2, "13:41", "14:45") is False        # still working
+    mixed = [{"strategy": "FLY", "open": False, "exit_reason": "TP"},
+             {"strategy": "FLYR", "open": False, "exit_reason": "EXPIRED"}]
+    assert act(mixed, 1, 2, "14:00", "14:45") is False        # last not TP
+    ok("no reload without a fresh TP: empty/spent/late/stopped/open/expired")
+
+    # a TP'd reload chains once more while budget and clock allow
+    chain2 = [{"strategy": "FLY", "open": False, "exit_reason": "TP"},
+              {"strategy": "FLYR", "open": False, "exit_reason": "TP"}]
+    assert act(chain2, 1, 2, "14:20", "14:45") is True
+    assert act(chain2, 2, 2, "14:20", "14:45") is False
+    ok("chain continues on TP up to max_reloads, then stops")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -366,7 +411,7 @@ def test_store():
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
-              test_env_fallback, test_store):
+              test_flyr, test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)

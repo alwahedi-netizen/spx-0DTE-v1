@@ -100,7 +100,7 @@ def run_report(weeks: int = 1):
           f"────────────────────────────────")
 
     # ── trades / skips per strategy ──
-    strategies = ("METF", "BAND", "MEIC", "LATE", "FLY", "ORB")
+    strategies = ("METF", "BAND", "MEIC", "LATE", "FLY", "FLYR", "ORB")
     for strat in strategies:
         srows = [r for r in signals if r.get("strategy") == strat]
         trades = [r for r in srows if r.get("action") != "SKIP"]

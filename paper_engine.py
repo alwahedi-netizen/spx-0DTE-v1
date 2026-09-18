@@ -102,6 +102,17 @@ DEFAULTS = {
         "enabled": True, "entry_time": "13:00", "wing_width": 40,
         "tp_frac": 0.25, "sl_frac": 0.25, "contracts": 1,
     },
+    # FLYR — reload fly, a FLY derivative: whenever the day's fly chain
+    # (FLY, then earlier reloads) closes at TAKE-PROFIT with afternoon left,
+    # re-center a fresh ATM fly at the current spot, same TP/SL. Fires only
+    # after a TP (never after a stop — no chasing losses), at most
+    # max_reloads per day, never past reload_until. FLY itself is untouched,
+    # so the journal isolates exactly the reload's incremental edge.
+    "flyr": {
+        "enabled": True, "wing_width": 40,
+        "tp_frac": 0.25, "sl_frac": 0.25, "contracts": 1,
+        "max_reloads": 2, "reload_until": "14:45",
+    },
     # LATE — final-hour tight condors: tests the "last hours are the most
     # profitable" finding. Same mechanics as MEIC, narrower and later.
     "late": {
@@ -336,6 +347,37 @@ def fly_group_action(total_value: float, total_credit: float,
     return None
 
 
+def fly_chain_state(rows) -> tuple:
+    """(groups, n_flyr) from one day's position rows. groups = the day's fly
+    chain (FLY + FLYR structures) in entry order, each
+    {'strategy', 'open', 'exit_reason'} — exit_reason 'TP' only when BOTH
+    sides took profit."""
+    g = {}
+    for p in rows:
+        if p.get("strategy") in ("FLY", "FLYR"):
+            g.setdefault(((p.get("signal_ts") or ""), p["strategy"]), []).append(p)
+    groups = []
+    for (_ts, strat), sides in sorted(g.items()):
+        open_ = any(not (p.get("exit_ts") or "").strip() for p in sides)
+        reasons = {(p.get("exit_reason") or "").strip() for p in sides}
+        groups.append({"strategy": strat, "open": open_,
+                       "exit_reason": "" if open_ else
+                       ("TP" if reasons == {"TP"} else ",".join(sorted(reasons)))})
+    return groups, sum(1 for x in groups if x["strategy"] == "FLYR")
+
+
+def flyr_reload_action(groups, n_attempts: int, max_reloads: int,
+                       now_hm: str, reload_until: str) -> bool:
+    """True when a reload fly should be entered NOW: the last structure in
+    the day's fly chain closed at take-profit, the reload budget isn't
+    exhausted, and there is still afternoon left. A stopped or expired chain
+    never reloads."""
+    if not groups or n_attempts >= max_reloads or now_hm > reload_until:
+        return False
+    last = groups[-1]
+    return (not last["open"]) and last["exit_reason"] == "TP"
+
+
 # ── risk / stops / settlement ────────────────────────────────────────────────
 
 def stop_risk(credit: float, stop_level: float, contracts: int) -> float:
@@ -418,6 +460,23 @@ def pending_meic_slots(cfg: dict, d: str) -> list:
 
 def fly_pending(d: str) -> bool:
     return not st.signals_for(d, "FLY")
+
+
+def flyr_due(cfg: dict, d: str) -> bool:
+    """True when a reload fly should be entered this cycle. Attempts are
+    counted from FLYR signal rows (entries AND skips), so a risk/credit skip
+    consumes the reload instead of re-firing every tracking tick — the same
+    slot-consumed convention the other strategies use."""
+    fl = cfg.get("flyr", {})
+    if not fl.get("enabled"):
+        return False
+    attempts = len(st.signals_for(d, "FLYR"))
+    rows = [p for p in st.read("positions")
+            if (p.get("signal_ts") or "")[:10] == d]
+    groups, _ = fly_chain_state(rows)
+    return flyr_reload_action(groups, attempts, int(fl.get("max_reloads", 2)),
+                              now_et().strftime("%H:%M"),
+                              fl.get("reload_until", "14:45"))
 
 
 def orb_traded(d: str) -> bool:
@@ -773,26 +832,34 @@ def do_orb_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
           f"debit {debit:.2f} stop {abs(stop_level):.2f}", flush=True)
 
 
-def do_fly_entry(cfg: dict, day_row: dict, chain: dict, expiry: str):
-    """FLY: ATM iron butterfly, whole-structure TP/SL (see fly_group_action)."""
-    fcfg = cfg["fly"]
+def do_fly_entry(cfg: dict, day_row: dict, chain: dict, expiry: str,
+                 strat: str = "FLY"):
+    """FLY: ATM iron butterfly, whole-structure TP/SL (see fly_group_action).
+    strat='FLYR': same structure entered as a reload at the current time —
+    position ids carry the reload index (FLYR1, FLYR2, ...)."""
+    fcfg = cfg[strat.lower()]
     d = day_row["date"]
-    slot = fcfg["entry_time"]
+    if strat == "FLY":
+        slot = fcfg["entry_time"]
+        pid_stem = f"{d}-FLY"
+    else:
+        slot = now_et().strftime("%H:%M")
+        pid_stem = f"{d}-FLYR{len(st.signals_for(d, 'FLYR')) + 1}"
     spot = spot_of(chain)
     k_atm = round(spot / STRIKE_STEP) * STRIKE_STEP
     wing = fcfg["wing_width"]
-    base = dict(slot=slot, strategy="FLY", structure="IRON_FLY",
+    base = dict(slot=slot, strategy=strat, structure="IRON_FLY",
                 spot=_fmt(spot), width=wing)
     sides = []
     for side, ks, kl in (("PUT", k_atm, k_atm - wing), ("CALL", k_atm, k_atm + wing)):
         cmap = contract_map(chain, expiry, side.lower())
         cs, cl = cmap.get(ks), cmap.get(kl)
         if cs is None or cl is None or mid(cs) is None or mid(cl) is None:
-            _skip_row(cfg, day_row, "FLY", slot, "DATA", f"missing {ks}/{kl} {side}")
+            _skip_row(cfg, day_row, strat, slot, "DATA", f"missing {ks}/{kl} {side}")
             return
         credit = mid(cs) - mid(cl)
         if credit <= 0:
-            _skip_row(cfg, day_row, "FLY", slot, "CREDIT", f"{side} side")
+            _skip_row(cfg, day_row, strat, slot, "CREDIT", f"{side} side")
             return
         sides.append({"side": side, "short": ks, "long": kl, "credit": credit,
                       "short_mid": mid(cs), "long_mid": mid(cl),
@@ -806,7 +873,7 @@ def do_fly_entry(cfg: dict, day_row: dict, chain: dict, expiry: str):
     if not risk_ok(open_stop_risk(), new_risk, budget):
         st.append("signals", _signal_row(cfg, day_row, action="SKIP",
                                          skip_reason="RISK", side="BOTH", **base))
-        print(f"[{slot}] FLY SKIP/RISK", flush=True)
+        print(f"[{slot}] {strat} SKIP/RISK", flush=True)
         return
     ts = iso(now_et())
     p0, p1 = sides
@@ -819,9 +886,9 @@ def do_fly_entry(cfg: dict, day_row: dict, chain: dict, expiry: str):
         stop_level=_fmt(total * (1 + fcfg["sl_frac"])), **base))
     e = sim_cfg(cfg)
     for x in sides:
-        pid = f"{d}-FLY-{x['side']}"
+        pid = f"{pid_stem}-{x['side']}"
         st.append("positions", {
-            "position_id": pid, "signal_ts": ts, "strategy": "FLY",
+            "position_id": pid, "signal_ts": ts, "strategy": strat,
             "side": x["side"], "contracts": fcfg["contracts"],
             "short_strike": x["short"], "long_strike": x["long"],
             "credit_theo": _fmt(x["credit"]),
@@ -830,7 +897,7 @@ def do_fly_entry(cfg: dict, day_row: dict, chain: dict, expiry: str):
             st.update_position(pid, {
                 "credit_actual": _fmt(sim_entry_credit(x["credit"], e["entry_slippage"])),
                 "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
-    print(f"[{slot}] FLY IRON_FLY @ {k_atm:.0f} credit {total:.2f} "
+    print(f"[{slot}] {strat} IRON_FLY @ {k_atm:.0f} credit {total:.2f} "
           f"TP {total*(1-fcfg['tp_frac']):.2f} SL {total*(1+fcfg['sl_frac']):.2f}",
           flush=True)
 
@@ -872,15 +939,15 @@ def do_tracking(cfg: dict, chain: dict, expiry: str):
             continue
         priced.append((p, ms - ml, ms))
 
-    # FLY: act on the combined structure only when both sides priced
-    fcfg = cfg.get("fly", {})
+    # FLY / FLYR: act on the combined structure only when both sides priced
     groups = {}
     for p, v, _ in priced:
-        if p["strategy"] == "FLY":
-            groups.setdefault(p.get("signal_ts"), []).append((p, v))
-    for sides in groups.values():
+        if p["strategy"] in ("FLY", "FLYR"):
+            groups.setdefault((p["strategy"], p.get("signal_ts")), []).append((p, v))
+    for (strat, _ts), sides in groups.items():
         if len(sides) != 2:
             continue
+        fcfg = cfg.get(strat.lower(), {})
         total_value = sum(v for _, v in sides)
         total_credit = sum(float(p["credit_theo"]) for p, _ in sides)
         act = fly_group_action(total_value, total_credit,
@@ -890,7 +957,7 @@ def do_tracking(cfg: dict, chain: dict, expiry: str):
                 _close_position(cfg, p, v, act)
 
     for p, value, ms in priced:
-        if p["strategy"] == "FLY":
+        if p["strategy"] in ("FLY", "FLYR"):
             continue
         if stop_triggered(value, float(p["stop_level"])):
             _close_position(cfg, p, value, "STOPPED")
@@ -1041,6 +1108,17 @@ def cmd_run(cfg: dict):
                         _skip_row(cfg, day_row, "FLY", cfg["fly"]["entry_time"],
                                   "DATA", str(e))
 
+        # ── FLYR reload: fresh ATM fly right after the chain takes profit ──
+        # Event-driven (no slot): checked every cycle; flyr_due is False
+        # until the last FLY/FLYR structure closes at TP, and a data error
+        # here just retries next tick — the TP condition doesn't expire.
+        if flyr_due(cfg, ds):
+            try:
+                chain, expiry = get_chain()
+                do_fly_entry(cfg, day_row, chain, expiry, strat="FLYR")
+            except pd_.PaperDataError as e:
+                print(f"FLYR reload delayed (data): {e}", flush=True)
+
         # ── band snapshot + entry ──
         if cfg["band"]["enabled"]:
             bt, et_ = at(cfg["band"]["band_time"], d), at(cfg["band"]["entry_time"], d)
@@ -1105,6 +1183,8 @@ def cmd_run(cfg: dict):
             pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "LATE")]
         if cfg.get("fly", {}).get("enabled") and fly_pending(ds):
             pending.append(at(cfg["fly"]["entry_time"], d))
+        if flyr_due(cfg, ds):   # reload waiting on data — retry soon
+            pending.append(now + timedelta(seconds=TRACK_INTERVAL_S))
         if cfg["band"]["enabled"]:
             if band_row_for(ds) is None:
                 pending.append(at(cfg["band"]["band_time"], d))

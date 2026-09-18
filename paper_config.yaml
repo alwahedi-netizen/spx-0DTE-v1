@@ -68,6 +68,15 @@ fly:                              # 13:00 ATM iron butterfly ("pin" trade)
   sl_frac: 0.25                   # stop at a 25% loss of the fly's credit
   contracts: 1
 
+flyr:                             # reload fly — FLY derivative: after the fly
+  enabled: true                   # chain takes profit, re-center a fresh ATM
+  wing_width: 40                  # fly at the current spot (never after a
+  tp_frac: 0.25                   # stop; no chasing losses)
+  sl_frac: 0.25
+  contracts: 1
+  max_reloads: 2                  # at most this many reloads per day
+  reload_until: "14:45"           # no new reload after this ET time
+
 late:                             # final-hour tight condors (last-hour theta)
   enabled: true
   slots: ["15:00", "15:30"]
