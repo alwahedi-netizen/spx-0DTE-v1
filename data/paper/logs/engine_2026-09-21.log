@@ -5,3 +5,5 @@ paper run 2026-09-21 | budget $5000 | gex positive
 [10:30] band 7705-7735 em 14.3 skew 0.935
 [10:35] BAND IRON_CONDOR credit 4.88 stop/side 4.88 size 1.0
 [10:45] METF SELL PUT 7700.0/7670.0 credit 1.55 stop 3.10
+  2026-09-21-BAND-CALL STOPPED @ 5.53 pnl -284
+[11:30] METF SELL PUT 7715.0/7685.0 credit 2.05 stop 4.10
