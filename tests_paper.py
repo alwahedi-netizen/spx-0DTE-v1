@@ -289,6 +289,78 @@ def test_flyr():
     ok("chain continues on TP up to max_reloads, then stops")
 
 
+# ── MEIC live mirror (order builders + mirror logic; no network) ─────────────
+def test_live_meic():
+    print("MEIC live mirror")
+    import live_meic as lm
+
+    assert lm.osi_symbol("SPXW", "2026-09-22", "P", 6600) == "SPXW  260922P06600000"
+    assert lm.osi_symbol("SPXW", "2026-09-22", "CALL", 6602.5) == "SPXW  260922C06602500"
+    ok("OSI symbols (root padded, strike*1000)")
+
+    o = lm.vertical_order("PUT", 6600, 6570, "2026-09-22", 1, "OPEN", 1.85)
+    assert o["orderType"] == "NET_CREDIT" and o["price"] == "1.85"
+    assert o["complexOrderStrategyType"] == "VERTICAL"
+    assert [l["instruction"] for l in o["orderLegCollection"]] == \
+        ["SELL_TO_OPEN", "BUY_TO_OPEN"]
+    c = lm.vertical_order("CALL", 6650, 6680, "2026-09-22", 1, "CLOSE", 3.40)
+    assert c["orderType"] == "NET_DEBIT" and \
+        [l["instruction"] for l in c["orderLegCollection"]] == \
+        ["BUY_TO_CLOSE", "SELL_TO_CLOSE"]
+    ok("vertical open=NET_CREDIT / close=NET_DEBIT with correct legs")
+
+    filled = {"orderLegCollection": [
+                 {"legId": 1, "instruction": "SELL_TO_OPEN"},
+                 {"legId": 2, "instruction": "BUY_TO_OPEN"}],
+              "orderActivityCollection": [{"executionLegs": [
+                 {"legId": 1, "price": 2.10, "quantity": 1},
+                 {"legId": 2, "price": 0.30, "quantity": 1}]}]}
+    assert abs(lm.fill_price(filled) - 1.80) < 1e-9
+    ok("net fill price = sells - buys")
+
+    NOW = "2026-09-22T12:31:00-04:00"
+    fresh = {"position_id": "P1", "side": "PUT", "short_strike": "6600",
+             "long_strike": "6570", "credit_theo": "1.90", "stop_level": "3.40",
+             "signal_ts": "2026-09-22T12:30:05-04:00", "exit_ts": "",
+             "exit_reason": "", "exit_value_theo": ""}
+    stale = dict(fresh, position_id="P0",
+                 signal_ts="2026-09-22T12:00:00-04:00")
+    a = lm.plan_actions([fresh, stale], {}, NOW,
+                        armed=True, paused=False, halted=False)
+    assert a == [("open", fresh)]
+    ok("mirrors only FRESH signals (stale after downtime is skipped)")
+
+    for kw in ({"armed": False, "paused": False, "halted": False},
+               {"armed": True, "paused": True, "halted": False},
+               {"armed": True, "paused": False, "halted": True}):
+        assert lm.plan_actions([fresh], {}, NOW, **kw) == []
+    ok("disarmed / paused / halted -> no new entries")
+
+    late = "2026-09-22T15:05:00-04:00"
+    fresh2 = dict(fresh, signal_ts="2026-09-22T15:04:30-04:00")
+    assert lm.plan_actions([fresh2], {}, late,
+                           armed=True, paused=False, halted=False) == []
+    cap_ledger = {f"L{i}": {"status": "OPEN"} for i in range(lm.ENTRY_CAP)}
+    assert lm.plan_actions([fresh], cap_ledger, NOW,
+                           armed=True, paused=False, halted=False) == []
+    ok("entry window and daily side cap enforced")
+
+    stopped = dict(fresh, exit_ts=NOW, exit_reason="STOPPED",
+                   exit_value_theo="3.55")
+    expired = dict(fresh, position_id="P2", exit_ts=NOW,
+                   exit_reason="EXPIRED", exit_value_theo="0.00")
+    led = {"P1": {"status": "OPEN"}, "P2": {"status": "OPEN"}}
+    a = lm.plan_actions([stopped, expired], led, NOW,
+                        armed=True, paused=True, halted=True)
+    assert ("close", "P1", "STOPPED", 3.55) in a and ("expire", "P2", 0.0) in a
+    ok("open live sides are managed even while paused/halted")
+
+    already = dict(fresh, exit_ts=NOW, exit_reason="TP", exit_value_theo="0.05")
+    assert lm.plan_actions([already], {}, NOW,
+                           armed=True, paused=False, halted=False) == []
+    ok("a signal that already exited on paper is never opened live")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -411,7 +483,7 @@ def test_store():
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
-              test_flyr, test_env_fallback, test_store):
+              test_flyr, test_live_meic, test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)

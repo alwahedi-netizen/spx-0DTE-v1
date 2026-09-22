@@ -25,6 +25,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
 
+import live_meic
 import paper_engine as pe
 import paper_report
 import paper_store as st
@@ -38,6 +39,21 @@ RESTART_BACKOFF_S = 180   # engine exits clean when the day is done; don't spin
 
 app = Flask(__name__, static_folder=str(BASE_DIR / "static"))
 _proc = {"p": None, "log": None, "started": 0.0, "last_exit": None}
+
+
+# ── MEIC live mirror loop ────────────────────────────────────────────────────
+
+def _live_loop():
+    """One live-mirror pass every 30 s inside the session window. Free while
+    disarmed (sync_once returns immediately without touching the network)."""
+    while True:
+        try:
+            now = pe.now_et()
+            if now.weekday() < 5 and "11:50" <= now.strftime("%H:%M") <= "16:20":
+                live_meic.sync_once()
+        except Exception as e:
+            print(f"live loop: {e}", flush=True)
+        time.sleep(30)
 
 
 # ── engine supervisor ────────────────────────────────────────────────────────
@@ -159,6 +175,79 @@ def api_report():
     return jsonify({"text": buf.getvalue()})
 
 
+@app.get("/suggested")
+def suggested_page():
+    return send_from_directory(app.static_folder, "suggested.html")
+
+
+@app.get("/api/suggested")
+def api_suggested():
+    """Today's suggested trades across every strategy, joined with the paper
+    position outcome and (for MEIC) the live pilot ledger."""
+    ds = pe.now_et().date().isoformat()
+    positions = {p["position_id"]: p for p in st.read("positions")
+                 if (p.get("signal_ts") or "")[:10] == ds}
+    ledger = live_meic.read_ledger(ds)
+    rows = []
+    for s_ in st.signals_for(ds):
+        if s_.get("action") == "SKIP":
+            continue
+        base_id = f"{ds}-{s_.get('strategy')}"
+        linked = [p for p in positions.values()
+                  if p.get("signal_ts") == s_.get("ts")]
+        for p in linked or [None]:
+            live = ledger.get((p or {}).get("position_id") or "")
+            rows.append({
+                "time": (s_.get("ts") or "")[11:16], "strategy": s_.get("strategy"),
+                "structure": s_.get("structure") or s_.get("action"),
+                "side": (p or {}).get("side") or s_.get("side"),
+                "short_strike": (p or {}).get("short_strike") or s_.get("short_strike"),
+                "long_strike": (p or {}).get("long_strike") or s_.get("long_strike"),
+                "credit_theo": (p or {}).get("credit_theo") or s_.get("credit_theo"),
+                "stop_level": (p or {}).get("stop_level") or s_.get("stop_level"),
+                "position_id": (p or {}).get("position_id"),
+                "exit_reason": (p or {}).get("exit_reason") or "",
+                "pnl_theo": (p or {}).get("pnl_actual") or (p or {}).get("pnl_theo") or "",
+                "live": ({"status": live.get("status"),
+                          "credit_fill": live.get("credit_fill"),
+                          "close_fill": live.get("close_fill"),
+                          "pnl_live": live.get("pnl_live"),
+                          "note": live.get("note")} if live else None),
+            })
+    return jsonify({"date": ds, "rows": rows, "live": live_meic.sync_summary()})
+
+
+@app.post("/api/live/arm")
+def api_live_arm():
+    j = request.get_json(force=True, silent=True) or {}
+    try:
+        return jsonify(live_meic.arm(j.get("account_tail", ""),
+                                     j.get("confirm", ""),
+                                     bool(j.get("dry_run"))))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.post("/api/live/disarm")
+def api_live_disarm():
+    return jsonify(live_meic.disarm())
+
+
+@app.post("/api/live/pause")
+def api_live_pause():
+    j = request.get_json(force=True, silent=True) or {}
+    return jsonify(live_meic.set_paused(bool(j.get("on"))))
+
+
+@app.post("/api/live/close")
+def api_live_close():
+    j = request.get_json(force=True, silent=True) or {}
+    try:
+        return jsonify(live_meic.close_now(j.get("position_id", "")))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
 @app.post("/api/auth/start")
 def api_auth_start():
     """Standalone-token mode only: returns the Schwab login URL. In shared
@@ -188,6 +277,7 @@ def api_auth_complete():
 
 def main():
     threading.Thread(target=_supervisor, daemon=True).start()
+    threading.Thread(target=_live_loop, daemon=True).start()
     print(f"SPX Paper Trader dashboard: http://{HOST}:{PORT}/", flush=True)
     app.run(host=HOST, port=PORT, debug=False, threaded=True)
 
