@@ -201,3 +201,4 @@ ts,date,slot,strategy,action,side,structure,state,ema_fast,ema_slow,spot,short_s
 2026-09-22T10:30:03-04:00,2026-09-22,10:30,ORB,BUY_VERTICAL,CALL,CALL_DEBIT,UP,,,7766.16,7800.0,7770.0,,,30,-5.62,,0.93,6.55,-2.81,,positive,14.65,7691.19,7708.31,,,
 2026-09-22T10:35:04-04:00,2026-09-22,10:35,BAND,SKIP,,,,,,,,,,,,,,,,,DATA,positive,14.65,,,,,
 2026-09-22T10:45:04-04:00,2026-09-22,10:45,METF,SKIP,,,,,,,,,,,,,,,,,DATA,positive,14.65,,,,,
+2026-09-22T11:30:02-04:00,2026-09-22,11:30,METF,SKIP,,,,,,,,,,,,,,,,,DATA,positive,14.65,,,,,
