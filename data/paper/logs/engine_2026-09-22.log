@@ -157,3 +157,22 @@ tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
 [14:15] METF SELL CALL 7775.0/7805.0 credit 2.10 stop 4.20
 [14:30] MEIC IRON_CONDOR credit 5.53 stop/side 5.53
 [15:00] LATE IRON_CONDOR credit 2.75 stop/side 2.75
+[15:30] LATE IRON_CONDOR credit 3.12 stop/side 3.12
+  2026-09-22-LATE-15:00-CALL STOPPED @ 3.73 pnl -268
+  2026-09-22-LATE-15:30-CALL STOPPED @ 3.73 pnl -164
+  2026-09-22-MEIC-13:00-CALL STOPPED @ 4.62 pnl -248
+  2026-09-22-METF-14:15-CALL STOPPED @ 4.62 pnl -252
+  2026-09-22-MEIC-14:30-CALL STOPPED @ 5.72 pnl -327
+  2026-09-22-MEIC-13:00-PUT TP @ 0.00 pnl +180
+paper run 2026-09-22 | budget $5000 | gex positive
+  2026-09-22-MEIC-13:30-PUT TP @ 0.00 pnl +232
+  2026-09-22-MEIC-14:00-PUT TP @ 0.00 pnl +190
+  2026-09-22-LATE-15:00-PUT TP @ 0.00 pnl +170
+  2026-09-22-MEIC-14:00-CALL TP @ 0.00 pnl +165
+  2026-09-22-LATE-15:30-PUT STOPPED @ 4.42 pnl -338
+  2026-09-22-METF-10:00-CALL EXPIRED @ 0.00 pnl +160
+  2026-09-22-MEIC-14:30-PUT EXPIRED @ 4.66 pnl -158
+[16:05] contained=1 close 7764.64 band 7750-7785
+paper run: day complete.
+paper run 2026-09-22 | budget $5000 | gex positive
+paper run: day complete.
