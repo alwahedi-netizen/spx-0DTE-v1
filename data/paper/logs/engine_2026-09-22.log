@@ -154,3 +154,6 @@ tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
   2026-09-22-METF-13:30-CALL STOPPED @ 6.03 pnl -315
   2026-09-22-MEIC-13:30-CALL STOPPED @ 6.03 pnl -315
 [14:00] MEIC IRON_CONDOR credit 3.55 stop/side 3.55
+[14:15] METF SELL CALL 7775.0/7805.0 credit 2.10 stop 4.20
+[14:30] MEIC IRON_CONDOR credit 5.53 stop/side 5.53
+[15:00] LATE IRON_CONDOR credit 2.75 stop/side 2.75
