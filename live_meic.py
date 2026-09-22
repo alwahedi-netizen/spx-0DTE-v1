@@ -222,9 +222,11 @@ class Broker:
         self._hash = None
 
     def _headers(self):
+        # No Content-Type here: Schwab's trader gateway 400s a GET that
+        # carries it without a body. requests adds it itself on json= POSTs.
         import schwab_auth
         return {"Authorization": f"Bearer {schwab_auth.get_access_token()}",
-                "Accept": "application/json", "Content-Type": "application/json"}
+                "Accept": "application/json"}
 
     def account_hash(self) -> str:
         if self._hash:
