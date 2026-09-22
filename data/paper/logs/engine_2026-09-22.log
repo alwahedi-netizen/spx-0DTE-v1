@@ -1,2 +1,32 @@
 waiting 288s for 09:00 ET pre-market step
 paper run 2026-09-22 | budget $5000 | gex positive
+[10:00] METF SELL CALL 7795.0/7825.0 credit 1.60 stop 3.20
+[10:30] ORB BUY CALL 7770.0/7800.0 debit 5.62 stop 2.81
+[10:30] band 7750-7785 em 15.2 skew 1.166
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+[10:35] BAND SKIP/DATA GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+[10:45] METF SKIP/DATA GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
+tracking cycle skipped: GET /chains: HTTP 400
