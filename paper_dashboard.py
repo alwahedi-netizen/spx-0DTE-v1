@@ -44,13 +44,19 @@ _proc = {"p": None, "log": None, "started": 0.0, "last_exit": None}
 # ── MEIC live mirror loop ────────────────────────────────────────────────────
 
 def _live_loop():
-    """One live-mirror pass every 30 s inside the session window. Free while
-    disarmed (sync_once returns immediately without touching the network)."""
+    """One live-mirror pass every 30 s inside the session window, plus a
+    bookkeeping pass every 10 min outside it (and once at boot) so cash
+    settlements get booked even while disarmed."""
+    last_idle = 0.0
     while True:
         try:
             now = pe.now_et()
-            if now.weekday() < 5 and "11:50" <= now.strftime("%H:%M") <= "16:20":
+            in_win = (now.weekday() < 5
+                      and "11:50" <= now.strftime("%H:%M") <= "16:20")
+            if in_win or time.time() - last_idle > 600:
                 live_meic.sync_once()
+                if not in_win:
+                    last_idle = time.time()
         except Exception as e:
             print(f"live loop: {e}", flush=True)
         time.sleep(30)

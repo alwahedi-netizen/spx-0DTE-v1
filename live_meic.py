@@ -547,6 +547,16 @@ def sync_once() -> dict:
                "halted": bool(state.get("halted")), "day": ds,
                "realized": realized_today(ledger), "sides": len(ledger)}
     if not info:
+        # Accounting never requires being armed: still book cash-settled
+        # sides at intrinsic (dry broker — no orders can be sent).
+        try:
+            _reconcile_settlement(Broker("0", dry_run=True), ledger, ds,
+                                  _now().strftime("%H:%M"))
+            _write_ledger({**read_ledger(), **ledger})
+            _save_state(state)
+            summary["realized"] = realized_today(ledger)
+        except Exception as e:
+            log(f"disarmed reconcile: {e}")
         return summary
     br = Broker(info["account_tail"], dry_run=bool(info.get("dry_run")))
     try:
