@@ -65,6 +65,7 @@ input{font:13px monospace;padding:6px 8px;border:1px solid var(--line);
   <div class="row" id="liveBar">
     <span id="armState">…</span>
     <span class="stat">live P&amp;L today <b id="livePnl">—</b></span>
+    <span class="stat" title="Schwab's own currentDayProfitLoss over SPXW positions — ground truth">Schwab P&amp;L <b id="schwabPnl">—</b></span>
     <span class="stat">sides <b id="liveSides">—</b></span>
     <span style="flex:1"></span>
     <button id="pauseBtn" onclick="togglePause()" style="display:none">Pause</button>
@@ -105,10 +106,17 @@ async function refresh(){
   document.getElementById('hdr').textContent=d.date+' · auto-refreshes every 15 s';
   const st=document.getElementById('armState');
   if(LIVE.armed){
+    const sc=LIVE.schwab;
     st.innerHTML=`<span class="badge b-open">ARMED …${esc(LIVE.account_tail)}${LIVE.dry_run?' · DRY-RUN':''}</span>`
       +(LIVE.halted?' <span class="badge b-bad">HALTED (daily stop)</span>':'')
-      +(LIVE.paused?' <span class="badge b-work">PAUSED</span>':'');
+      +(LIVE.paused?' <span class="badge b-work">PAUSED</span>':'')
+      +((sc&&((sc.missing||[]).length||(sc.unknown||[]).length))
+        ?` <span class="badge b-bad" title="ledger vs Schwab positions mismatch — new entries held. missing: ${esc((sc.missing||[]).join(','))} unknown: ${esc((sc.unknown||[]).join(','))}">DESYNC — entries held</span>`
+        :(sc?' <span class="badge b-done" title="ledger matches Schwab positions">schwab ✓</span>':''));
   } else st.innerHTML='<span class="badge b-done">DISARMED — bot will not trade</span>';
+  const sp=document.getElementById('schwabPnl');
+  if(LIVE.schwab&&LIVE.schwab.day_pl!=null){sp.textContent=fmt(LIVE.schwab.day_pl);sp.className=LIVE.schwab.day_pl>=0?'pos':'neg';}
+  else sp.textContent='—';
   document.getElementById('armForm').style.display=LIVE.armed?'none':'flex';
   document.getElementById('disarmBtn').style.display=LIVE.armed?'':'none';
   const pb=document.getElementById('pauseBtn');

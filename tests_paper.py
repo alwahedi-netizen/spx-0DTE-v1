@@ -371,6 +371,34 @@ def test_live_meic():
                            armed=True, paused=False, halted=False) == []
     ok("a signal that already exited on paper is never opened live")
 
+    # Schwab-sync audit: our ledger vs the account's real positions
+    row = {"position_id": "L1", "status": "OPEN", "side": "PUT", "qty": "1",
+           "short_strike": "7695", "long_strike": "7665",
+           "expiry": "2026-09-23"}
+    sym = lm.osi_symbol("SPXW", "2026-09-23", "P", 7695)
+    pos_ok = [{"instrument": {"symbol": sym}, "shortQuantity": 1,
+               "currentDayProfitLoss": 123.4}]
+    a = lm.schwab_audit([row], pos_ok, "2026-09-23")
+    assert a["ok"] and a["missing"] == [] and a["unknown"] == []
+    assert abs(a["day_pl"] - 123.4) < 1e-9
+    ok("audit matches ledger short leg to Schwab position")
+
+    a = lm.schwab_audit([row], [], "2026-09-23")
+    assert not a["ok"] and a["missing"] == ["L1"]
+    ok("audit flags a ledger side missing at Schwab")
+
+    stranger = [{"instrument": {"symbol": lm.osi_symbol("SPXW", "2026-09-23", "C", 7770)},
+                 "shortQuantity": 1, "currentDayProfitLoss": 0}]
+    a = lm.schwab_audit([], stranger, "2026-09-23")
+    assert not a["ok"] and len(a["unknown"]) == 1
+    ok("audit flags an unknown same-day SPXW short (entries held)")
+
+    other_exp = [{"instrument": {"symbol": lm.osi_symbol("SPXW", "2026-10-17", "C", 7770)},
+                  "shortQuantity": 1, "currentDayProfitLoss": 0}]
+    a = lm.schwab_audit([], other_exp, "2026-09-23")
+    assert a["ok"] and a["unknown"] == []
+    ok("other-expiry SPXW positions are the owner's business, not flagged")
+
 
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():

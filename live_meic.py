@@ -136,6 +136,36 @@ def fill_price(order_json: dict) -> float:
     return round(tot / qty, 4) if qty else 0.0
 
 
+def schwab_audit(ledger_rows: list, positions: list, ds: str) -> dict:
+    """Pure: compare our live book against Schwab's actual SPXW positions
+    (ground truth). missing = we say OPEN, Schwab doesn't hold the short
+    leg (manual close?). unknown = Schwab shorts a same-day SPXW we don't
+    know. day_pl = Schwab's own currentDayProfitLoss over SPXW positions."""
+    held = {}
+    for p in positions:
+        sym = ((p.get("instrument") or {}).get("symbol") or "")
+        if not sym.startswith("SPXW"):
+            continue
+        held[sym] = {"short": float(p.get("shortQuantity") or 0),
+                     "day_pl": float(p.get("currentDayProfitLoss") or 0)}
+    missing, matched = [], set()
+    for r in ledger_rows:
+        if r["status"] not in ("OPEN", "CLOSING", "STUCK"):
+            continue
+        pc = "P" if r["side"] == "PUT" else "C"
+        s_sym = osi_symbol("SPXW", r["expiry"], pc, float(r["short_strike"]))
+        if held.get(s_sym, {}).get("short", 0) >= int(r["qty"]):
+            matched.add(s_sym)
+        else:
+            missing.append(r["position_id"])
+    today_tag = f"{ds[2:4]}{ds[5:7]}{ds[8:10]}"
+    unknown = [s for s, h in held.items()
+               if h["short"] > 0 and s not in matched and s[6:12] == today_tag]
+    return {"missing": missing, "unknown": unknown,
+            "day_pl": round(sum(h["day_pl"] for h in held.values()), 2),
+            "ok": not missing and not unknown}
+
+
 def plan_actions(paper_sides: list, ledger: dict, now_iso: str, *,
                  armed: bool, paused: bool, halted: bool) -> list:
     """Pure mirror logic: what to do this cycle.
@@ -272,6 +302,31 @@ class Broker:
         import requests
         r = requests.get(f"{TRADER_BASE}/accounts/{self.account_hash()}/orders/{order_id}",
                          headers=self._headers(), timeout=20)
+        r.raise_for_status()
+        return r.json()
+
+    def positions(self) -> list:
+        if self.dry:
+            return []
+        import requests
+        r = requests.get(f"{TRADER_BASE}/accounts/{self.account_hash()}",
+                         headers=self._headers(), params={"fields": "positions"},
+                         timeout=20)
+        r.raise_for_status()
+        return (r.json().get("securitiesAccount") or {}).get("positions") or []
+
+    def orders_today(self) -> list:
+        if self.dry:
+            return []
+        import requests
+        from datetime import timezone
+        day0 = _now().replace(hour=0, minute=0, second=0, microsecond=0)
+        fmt = "%Y-%m-%dT%H:%M:%S.000Z"
+        r = requests.get(f"{TRADER_BASE}/accounts/{self.account_hash()}/orders",
+                         headers=self._headers(),
+                         params={"fromEnteredTime": day0.astimezone(timezone.utc).strftime(fmt),
+                                 "toEnteredTime": _now().astimezone(timezone.utc).strftime(fmt)},
+                         timeout=20)
         r.raise_for_status()
         return r.json()
 
@@ -413,6 +468,42 @@ def _poll_closing(br, r):
         _close_side(br, r, r["exit_reason"], exit_theo, rung + 1)
 
 
+def _absorb_external_closes(br, ledger, missing_pids):
+    """A side we say is OPEN doesn't exist at Schwab: find the real closing
+    fill in today's orders (e.g. the owner closed it by hand) and book its
+    true P&L; otherwise flag the row for a human."""
+    try:
+        orders = br.orders_today()
+    except Exception as e:
+        log(f"orders fetch: {e}")
+        return
+    for pid in missing_pids:
+        r = ledger.get(pid)
+        if not r:
+            continue
+        pc = "P" if r["side"] == "PUT" else "C"
+        s_sym = osi_symbol("SPXW", r["expiry"], pc, float(r["short_strike"]))
+        for o in orders:
+            if o.get("status") != "FILLED":
+                continue
+            if any((l.get("instrument") or {}).get("symbol") == s_sym
+                   and l.get("instruction") == "BUY_TO_CLOSE"
+                   for l in (o.get("orderLegCollection") or [])):
+                px = abs(fill_price(o))
+                pnl = (float(r["credit_fill"] or 0) - px) * 100 * int(r["qty"])
+                r.update(status="CLOSED", close_fill=f"{px:.2f}",
+                         pnl_live=f"{pnl:.2f}",
+                         exit_reason=r.get("exit_reason") or "MANUAL",
+                         closed_ts=_now().isoformat(timespec="seconds"),
+                         note=((r.get("note") or "") + " | closed at Schwab").strip(" |"))
+                log(f"{pid} absorbed external close @ {px:.2f} pnl {pnl:+.0f}")
+                break
+        else:
+            if "missing at Schwab" not in (r.get("note") or ""):
+                r["note"] = ((r.get("note") or "") + " | missing at Schwab").strip(" |")
+                log(f"{pid} OPEN in ledger but missing at Schwab — entries held")
+
+
 def _reconcile_settlement(br, ledger, ds, hm):
     """Cash-settled sides can't stay working: any row still OPEN/CLOSING/
     STUCK after its expiry's 16:00 settlement is booked at intrinsic vs
@@ -476,10 +567,25 @@ def sync_once() -> dict:
                 if r["status"] == "OPEN":
                     _close_side(br, r, "HALT", 0.0, rung=2)
 
-        # 3. mirror the paper journal
+        # 3. Schwab is ground truth: audit our open book against the real
+        # positions; absorb external closes, hold new entries on any mismatch
+        desync = False
+        if not br.dry:
+            try:
+                audit = schwab_audit(list(ledger.values()), br.positions(), ds)
+                state["schwab"] = {"ts": _now().isoformat(timespec="seconds"),
+                                   **audit}
+                if audit["missing"]:
+                    _absorb_external_closes(br, ledger, audit["missing"])
+                desync = not audit["ok"]
+            except Exception as e:
+                log(f"schwab audit: {e}")
+
+        # 4. mirror the paper journal
         acts = plan_actions(_paper_meic_today(ds), ledger,
                             _now().isoformat(),
-                            armed=True, paused=bool(state.get("paused")),
+                            armed=True,
+                            paused=bool(state.get("paused")) or desync,
                             halted=bool(state.get("halted")))
         for a in acts:
             if a[0] == "open":
@@ -495,7 +601,7 @@ def sync_once() -> dict:
                          pnl_live=f"{pnl:.2f}", exit_reason="EXPIRED",
                          closed_ts=_now().isoformat(timespec="seconds"))
                 log(f"{pid} EXPIRED (cash settle {exit_theo:.2f}) pnl {pnl:+.0f}")
-        # 4. after cash settlement, book anything still working at intrinsic
+        # 5. after cash settlement, book anything still working at intrinsic
         _reconcile_settlement(br, ledger, ds, _now().strftime("%H:%M"))
     except Exception as e:
         log(f"sync error: {e}")
@@ -517,7 +623,8 @@ def sync_summary() -> dict:
             "paused": bool(state.get("paused")),
             "halted": bool(state.get("halted") and state.get("day") == ds),
             "day": ds, "realized": realized_today(ledger),
-            "sides": len(ledger), "daily_stop": DAILY_STOP, "qty": QTY}
+            "sides": len(ledger), "daily_stop": DAILY_STOP, "qty": QTY,
+            "schwab": state.get("schwab") if state.get("day") == ds else None}
 
 
 # ── control surface (called by the dashboard API) ────────────────────────────
