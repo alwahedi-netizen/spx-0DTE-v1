@@ -76,6 +76,19 @@ def log(msg):
 
 # ── pure builders (unit-tested offline) ──────────────────────────────────────
 
+def spx_tick(price: float, up: bool) -> float:
+    """Snap a limit to a valid SPX option increment — 0.05 below $3.00,
+    0.10 at/above (the grids meet at exactly 3.00). Schwab REJECTS any
+    off-tick price (2026-09-23: every 1.72/1.97/4.48-style order bounced).
+    up=True rounds toward paying more (marketable debits); up=False rounds
+    credits down (stay fillable)."""
+    import math
+    tick = 0.05 if price < 3.0 else 0.10
+    n = price / tick
+    n = math.ceil(n - 1e-9) if up else math.floor(n + 1e-9)
+    return max(0.05, round(n * tick, 2))
+
+
 def osi_symbol(root: str, expiry: str, putcall: str, strike: float) -> str:
     """21-char OSI symbol: ROOT(6) + YYMMDD + C/P + strike*1000 (8 digits)."""
     y, m, d = expiry.split("-")
@@ -282,7 +295,7 @@ def _paper_meic_today(ds: str) -> list:
 def _open_side(br, ledger, p, ds):
     pid = p["position_id"]
     credit = float(p["credit_theo"])
-    limit = round(credit - ENTRY_SLIP, 2)
+    limit = spx_tick(credit - ENTRY_SLIP, up=False)
     if limit <= 0.05:
         ledger[pid] = dict.fromkeys(LEDGER_COLS, "")
         ledger[pid].update(position_id=pid, status="SKIPPED", note="credit too small")
@@ -318,15 +331,16 @@ def _poll_opening(br, r):
         log(f"{r['position_id']} FILLED @ {px:.2f} (theo limit {r['credit_limit']})")
         return
     if s in ("CANCELED", "REJECTED", "EXPIRED"):
-        r.update(status="SKIPPED", note=f"open {s}")
-        log(f"{r['position_id']} open {s}")
+        why = (j.get("statusDescription") or s)[:80]
+        r.update(status="SKIPPED", note=f"open {s}: {why}")
+        log(f"{r['position_id']} open {s} ({why})")
         return
     age = (_now() - datetime.fromisoformat(r["opened_ts"])).total_seconds()
     if age > ORDER_WAIT_S and not r.get("note"):
         # one reprice, deeper concession
         br.cancel(r["order_id"])
         credit0 = float(r["credit_limit"]) + ENTRY_SLIP
-        limit = round(credit0 - REPRICE_SLIP, 2)
+        limit = spx_tick(credit0 - REPRICE_SLIP, up=False)
         try:
             o = vertical_order(r["side"], float(r["short_strike"]),
                                float(r["long_strike"]), r["expiry"],
@@ -348,7 +362,7 @@ def _close_side(br, r, reason, exit_theo, rung=0):
         # more, so this is a market-speed close with a sane ceiling.
         limit = abs(float(r["short_strike"]) - float(r["long_strike"]))
     else:
-        limit = max(0.05, round(exit_theo + CLOSE_SLIPS[min(rung, 2)], 2))
+        limit = spx_tick(exit_theo + CLOSE_SLIPS[min(rung, 2)], up=True)
     o = vertical_order(r["side"], float(r["short_strike"]), float(r["long_strike"]),
                        r["expiry"], int(r["qty"]), "CLOSE", limit)
     try:
@@ -378,7 +392,18 @@ def _poll_closing(br, r):
         log(f"{r['position_id']} CLOSED @ {px:.2f} pnl {pnl:+.0f}")
         return
     if s in ("CANCELED", "REJECTED", "EXPIRED"):
-        r.update(status="OPEN", note=f"close {s} — retrying")
+        # Escalate at most twice, then STUCK: never loop rejected orders
+        # (2026-09-23: an off-tick close resubmitted every cycle for 2h).
+        why = (j.get("statusDescription") or s)[:80]
+        n = int((r.get("note") or "x0").rsplit("x", 1)[-1] or 0) + 1 \
+            if "close rejected" in (r.get("note") or "") else 1
+        if n >= 3:
+            r.update(status="STUCK", note=f"close rejected x{n}: {why}")
+            log(f"{r['position_id']} close rejected x{n} ({why}) — STUCK, "
+                "will cash-settle")
+        else:
+            r.update(status="OPEN", note=f"close rejected x{n}: {why}")
+            log(f"{r['position_id']} close {s} ({why}) — retry {n}/3")
         return
     age = (_now() - datetime.fromisoformat(r["closed_ts"])).total_seconds()
     rung = int((r.get("note") or "rung0")[-1] or 0) if (r.get("note") or "").startswith("rung") else 0
@@ -386,6 +411,37 @@ def _poll_closing(br, r):
         br.cancel(r["close_order_id"])
         exit_theo = float(r["close_limit"]) - CLOSE_SLIPS[rung]
         _close_side(br, r, r["exit_reason"], exit_theo, rung + 1)
+
+
+def _reconcile_settlement(br, ledger, ds, hm):
+    """Cash-settled sides can't stay working: any row still OPEN/CLOSING/
+    STUCK after its expiry's 16:00 settlement is booked at intrinsic vs
+    that day's SPX close (band row), today and for any past day whose loop
+    window closed before the close price landed."""
+    import paper_engine as pe
+    past = {pid: r for pid, r in read_ledger().items() if pid not in ledger}
+    fixed_past = False
+    for r in list(ledger.values()) + list(past.values()):
+        day = r.get("expiry") or ""
+        if (not day or day > ds or (day == ds and hm < "16:07")
+                or r["status"] not in ("OPEN", "CLOSING", "STUCK")):
+            continue
+        brow = pe.band_row_for(day)
+        if not brow or not (brow.get("spx_close") or "").strip():
+            continue
+        if r.get("close_order_id") and day == ds:
+            br.cancel(r["close_order_id"])
+        v = pe.settle_value(r["side"], float(r["short_strike"]),
+                            float(r["long_strike"]), float(brow["spx_close"]))
+        pnl = (float(r["credit_fill"] or 0) - v) * 100 * int(r["qty"])
+        r.update(status="EXPIRED", close_fill=f"{v:.2f}", pnl_live=f"{pnl:.2f}",
+                 exit_reason=r.get("exit_reason") or "EXPIRED",
+                 closed_ts=_now().isoformat(timespec="seconds"),
+                 note=((r.get("note") or "") + " | cash settle").strip(" |"))
+        fixed_past = fixed_past or r["position_id"] in past
+        log(f"{r['position_id']} settled at intrinsic {v:.2f} pnl {pnl:+.0f}")
+    if fixed_past:
+        _write_ledger({**read_ledger(), **past})
 
 
 def sync_once() -> dict:
@@ -439,6 +495,8 @@ def sync_once() -> dict:
                          pnl_live=f"{pnl:.2f}", exit_reason="EXPIRED",
                          closed_ts=_now().isoformat(timespec="seconds"))
                 log(f"{pid} EXPIRED (cash settle {exit_theo:.2f}) pnl {pnl:+.0f}")
+        # 4. after cash settlement, book anything still working at intrinsic
+        _reconcile_settlement(br, ledger, ds, _now().strftime("%H:%M"))
     except Exception as e:
         log(f"sync error: {e}")
     _write_ledger({**read_ledger(), **ledger})

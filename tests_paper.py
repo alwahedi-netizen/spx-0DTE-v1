@@ -294,6 +294,17 @@ def test_live_meic():
     print("MEIC live mirror")
     import live_meic as lm
 
+    # SPX tick grid: 0.05 below $3.00, 0.10 at/above (off-tick = REJECTED)
+    assert lm.spx_tick(1.72, up=False) == 1.70
+    assert lm.spx_tick(1.72, up=True) == 1.75
+    assert lm.spx_tick(4.48, up=True) == 4.50
+    assert lm.spx_tick(4.48, up=False) == 4.40
+    assert lm.spx_tick(2.98, up=True) == 3.00
+    assert lm.spx_tick(3.02, up=False) == 3.00
+    assert lm.spx_tick(1.85, up=False) == 1.85      # already on grid
+    assert lm.spx_tick(0.01, up=False) == 0.05      # floor
+    ok("limits snap to the SPX 0.05/0.10 tick grid")
+
     assert lm.osi_symbol("SPXW", "2026-09-22", "P", 6600) == "SPXW  260922P06600000"
     assert lm.osi_symbol("SPXW", "2026-09-22", "CALL", 6602.5) == "SPXW  260922C06602500"
     ok("OSI symbols (root padded, strike*1000)")
