@@ -31,3 +31,25 @@ paper run 2026-09-23 | budget $5000 | gex positive
   2026-09-23-FLY-CALL TP @ 7.28 pnl -20
 [14:38] FLYR IRON_FLY @ 7705 credit 10.90 TP 8.18 SL 13.62
 [15:00] LATE IRON_CONDOR credit 1.93 stop/side 1.93
+  2026-09-23-FLYR1-PUT TP @ 2.80 pnl +178
+  2026-09-23-FLYR1-CALL TP @ 5.33 pnl +100
+[15:30] LATE IRON_CONDOR credit 2.95 stop/side 2.95
+  2026-09-23-MEIC-14:00-CALL TP @ 0.00 pnl +165
+  2026-09-23-MEIC-12:00-CALL TP @ 0.03 pnl +222
+  2026-09-23-MEIC-12:30-CALL TP @ 0.03 pnl +172
+  2026-09-23-MEIC-13:30-PUT TP @ 0.00 pnl +162
+  2026-09-23-MEIC-14:30-PUT STOPPED @ 8.03 pnl -556
+  2026-09-23-MEIC-14:30-CALL TP @ 0.00 pnl +235
+  2026-09-23-LATE-15:00-PUT STOPPED @ 3.98 pnl -310
+  2026-09-23-LATE-15:00-CALL TP @ 0.00 pnl +105
+  2026-09-23-LATE-15:30-PUT STOPPED @ 3.98 pnl -273
+  2026-09-23-LATE-15:30-CALL TP @ 0.00 pnl +170
+  2026-09-23-METF-10:00-CALL EXPIRED @ 0.00 pnl +180
+  2026-09-23-METF-11:30-CALL EXPIRED @ 0.00 pnl +170
+  2026-09-23-METF-12:30-CALL EXPIRED @ 0.00 pnl +175
+  2026-09-23-METF-14:15-CALL EXPIRED @ 0.00 pnl +202
+paper run 2026-09-23 | budget $5000 | gex positive
+[16:05] contained=1 close 7706.05 band 7695-7740
+paper run: day complete.
+paper run 2026-09-23 | budget $5000 | gex positive
+paper run: day complete.
