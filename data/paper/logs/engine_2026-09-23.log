@@ -1,2 +1,10 @@
 waiting 290s for 09:00 ET pre-market step
 paper run 2026-09-23 | budget $5000 | gex positive
+[10:00] METF SELL CALL 7760.0/7790.0 credit 1.80 stop 3.60
+[10:30] ORB BUY PUT 7715.0/7685.0 debit 6.77 stop 3.39
+[10:30] band 7695-7740 em 19.3 skew 0.956
+[10:35] BAND IRON_CONDOR credit 5.62 stop/side 5.62 size 1.0
+[10:45] METF SELL CALL 7750.0/7780.0 credit 1.55 stop 3.10
+  2026-09-23-ORB-PUT STOPPED @ -3.22 pnl -354
+  2026-09-23-BAND-CALL STOPPED @ 6.10 pnl -252
+  2026-09-23-METF-10:45-CALL STOPPED @ 3.37 pnl -182
