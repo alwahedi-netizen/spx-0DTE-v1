@@ -223,6 +223,11 @@ def api_suggested():
     return jsonify({"date": ds, "rows": rows, "live": live_meic.sync_summary()})
 
 
+@app.get("/api/live/report")
+def api_live_report():
+    return jsonify(live_meic.live_report())
+
+
 @app.post("/api/live/arm")
 def api_live_arm():
     j = request.get_json(force=True, silent=True) or {}

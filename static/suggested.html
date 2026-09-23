@@ -85,6 +85,22 @@ input{font:13px monospace;padding:6px 8px;border:1px solid var(--line);
 </div>
 
 <div class="card">
+  <div class="row" style="justify-content:space-between">
+    <b style="font-family:Cinzel,Georgia,serif;font-size:13px;letter-spacing:.12em">LIVE RESULTS — BY MODEL</b>
+    <span class="stat">all-time, Schwab-synced fills · total <b id="lrTotal">—</b></span>
+  </div>
+  <table style="margin-top:8px">
+    <thead><tr><th>Model</th><th>Trades</th><th>Wins</th><th>Win %</th><th>P&amp;L</th></tr></thead>
+    <tbody id="lrModels"><tr><td colspan="5" class="mut">no live trades yet</td></tr></tbody>
+  </table>
+  <table style="margin-top:12px">
+    <thead><tr><th>Day</th><th>ID</th><th>Strikes</th><th>Entry</th><th>Exit</th><th>Result</th><th>P&amp;L</th></tr></thead>
+    <tbody id="lrRows"></tbody>
+  </table>
+  <div class="note" id="lrNote"></div>
+</div>
+
+<div class="card">
 <table id="tbl">
   <thead><tr>
     <th>Time</th><th>Strategy</th><th>Structure</th><th>Strikes</th>
@@ -171,7 +187,28 @@ async function arm(){
 async function disarm(){ if(confirm('Disarm the MEIC bot? Open live positions stay open — close them first if needed.')) {await post('api/live/disarm'); refresh();} }
 async function togglePause(){ await post('api/live/pause',{on:!LIVE.paused}); refresh(); }
 async function closeNow(pid){ if(confirm('Close '+pid+' at market now?')){ await post('api/live/close',{position_id:pid}); refresh(); } }
-refresh(); setInterval(refresh,15000);
+async function refreshReport(){
+  let d;
+  try{ d=await (await fetch('api/live/report')).json(); }catch(e){ return; }
+  const t=document.getElementById('lrTotal');
+  t.textContent=fmt(d.total); t.className=(d.total||0)>=0?'pos':'neg';
+  const bm=document.getElementById('lrModels');
+  if((d.by_model||[]).length){
+    bm.innerHTML=d.by_model.map(m=>`<tr><td><span class="strat">${esc(m.model)}</span></td>
+      <td>${m.trades}</td><td>${m.wins}</td><td>${m.trades?Math.round(100*m.wins/m.trades):0}%</td>
+      <td class="${m.pnl>=0?'pos':'neg'}">${fmt(m.pnl)}</td></tr>`).join('');
+  }
+  const rr=document.getElementById('lrRows');
+  rr.innerHTML=(d.rows||[]).slice(0,40).map(r=>`<tr>
+    <td>${esc(r.day.slice(5))}</td><td>${esc(r.position_id.slice(11))}</td>
+    <td>${esc(r.strikes)}</td><td>${esc(r.entry)}</td><td>${esc(r.exit||'—')}</td>
+    <td>${r.open?'<span class="badge b-open">OPEN</span>':esc(r.reason||'')}</td>
+    <td class="${(r.pnl??0)>=0?'pos':'neg'}">${r.pnl==null?'—':fmt(r.pnl)}</td></tr>`).join('')
+    ||'<tr><td colspan="7" class="mut">no filled live trades yet</td></tr>';
+  document.getElementById('lrNote').textContent=
+    d.skipped?`${d.skipped} attempted entries never filled (rejected/unfilled) — excluded from P&L.`:'';
+}
+refresh(); refreshReport(); setInterval(refresh,15000); setInterval(refreshReport,30000);
 </script>
 </body>
 </html>

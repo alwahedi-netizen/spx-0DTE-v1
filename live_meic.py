@@ -622,6 +622,45 @@ def sync_once() -> dict:
     return summary
 
 
+def live_report() -> dict:
+    """Trade-by-trade live results, Schwab-synced, rolled up by model.
+    Strategy comes from the position id (YYYY-MM-DD-STRAT-...). Only rows
+    that actually filled count as trades; SKIPPED/FAILED are listed apart."""
+    rows, skipped = [], 0
+    by_model, by_day = {}, {}
+    for pid, r in sorted(read_ledger().items()):
+        strat = (pid.split("-")[3] if len(pid.split("-")) > 3 else "?")
+        day = pid[:10]
+        if not (r.get("credit_fill") or "").strip():
+            skipped += 1
+            continue
+        pnl = None
+        try:
+            pnl = float(r.get("pnl_live"))
+        except (TypeError, ValueError):
+            pass
+        rows.append({"day": day, "model": strat, "position_id": pid,
+                     "side": r.get("side"), "strikes": f"{r.get('short_strike')}/{r.get('long_strike')}",
+                     "entry": r.get("credit_fill"), "exit": r.get("close_fill"),
+                     "reason": r.get("exit_reason") or r.get("status"),
+                     "pnl": pnl, "open": r.get("status") in ("OPEN", "CLOSING", "STUCK")})
+        if pnl is not None:
+            m = by_model.setdefault(strat, {"model": strat, "trades": 0,
+                                            "wins": 0, "pnl": 0.0})
+            m["trades"] += 1
+            m["wins"] += 1 if pnl > 0 else 0
+            m["pnl"] = round(m["pnl"] + pnl, 2)
+            d = by_day.setdefault(day, {"day": day, "pnl": 0.0, "trades": 0})
+            d["pnl"] = round(d["pnl"] + pnl, 2)
+            d["trades"] += 1
+    return {"rows": rows[::-1], "by_model": sorted(by_model.values(),
+                                                   key=lambda m: -m["pnl"]),
+            "by_day": sorted(by_day.values(), key=lambda d: d["day"],
+                             reverse=True),
+            "skipped": skipped,
+            "total": round(sum(m["pnl"] for m in by_model.values()), 2)}
+
+
 def sync_summary() -> dict:
     """Read-only status for the UI (no orders, no network)."""
     info = armed_info()
