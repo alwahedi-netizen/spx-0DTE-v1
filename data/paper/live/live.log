@@ -1696,3 +1696,835 @@
 [2026-09-24T15:03:14-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
 [2026-09-24T15:03:14-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
 [2026-09-24T15:03:15-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:03:46-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:03:46-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:03:47-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:03:47-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:03:48-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:03:49-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:03:49-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:03:50-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:21-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:21-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:22-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:22-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:23-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:23-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:24-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:25-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:56-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:56-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:57-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:57-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:04:58-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:58-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:59-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:04:59-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:05:31-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:05:31-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:05:32-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:05:32-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:05:33-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:05:33-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:05:34-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:05:34-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:06-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:06-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:06-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:07-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:08-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:08-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:09-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:09-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:41-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:41-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:41-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:42-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:06:42-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:43-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:44-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:06:44-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:15-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:16-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:16-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:17-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:17-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:18-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:18-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:19-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:50-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:50-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:51-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:51-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:07:52-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:52-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:53-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:07:53-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:08:25-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:08:25-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:08:25-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:08:26-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:08:26-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:08:27-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:08:27-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:08:28-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:08:59-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:08:59-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:09:00-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:09:00-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:09:01-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:09:01-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:09:02-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:09:02-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:09:34-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:09:34-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:09:34-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:09:35-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:09:35-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:09:36-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:09:36-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:09:37-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:08-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:09-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:09-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:10-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:10-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:11-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:11-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:12-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:43-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:44-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:45-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:45-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:10:46-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:46-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:46-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:10:47-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:18-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:19-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:19-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:19-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:20-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:21-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:21-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:21-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:53-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:53-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:53-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:54-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:11:54-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:55-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:55-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:11:56-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:12:27-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:12:27-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:12:28-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:12:28-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:12:29-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:12:29-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:12:30-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:12:30-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:02-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:02-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:03-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:03-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:04-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:04-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:05-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:05-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:37-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:37-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:37-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:38-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:13:38-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:39-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:39-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:13:40-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:11-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:12-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:12-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:12-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:13-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:14-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:14-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:15-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:46-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:47-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:47-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:47-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:14:48-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:49-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:49-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:14:49-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:21-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:21-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:21-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:22-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:23-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:23-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:24-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:24-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:55-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:56-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:56-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:57-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:15:57-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:58-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:58-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:15:59-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:16:30-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:16:31-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:16:32-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:16:32-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:16:32-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:16:33-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:16:34-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:16:34-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:06-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:06-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:06-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:07-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:08-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:08-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:09-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:10-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:41-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:42-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:42-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:43-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:17:44-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:44-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:45-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:17:45-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:17-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:17-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:17-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:18-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:18-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:19-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:19-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:20-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:51-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:52-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:53-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:53-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:18:54-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:54-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:55-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:18:55-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:19:27-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:19:28-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:19:28-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:19:29-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:19:29-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:19:30-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:19:30-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:19:31-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:03-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:03-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:04-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:04-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:05-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:05-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:06-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:06-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:38-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:38-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:39-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:39-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:20:39-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:40-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:41-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:20:41-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:13-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:13-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:14-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:15-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:15-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:15-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:16-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:17-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:48-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:48-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:49-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:49-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:21:50-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:50-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:51-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:21:52-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:22:23-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:23-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:24-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:24-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:25-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:22:25-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:22:26-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:22:26-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:22:57-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:58-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:58-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:59-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:22:59-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:23:00-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:23:00-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:23:01-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:23:32-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:23:33-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:23:33-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:23:34-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:23:34-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:23:35-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:23:35-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:23:36-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:07-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:08-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:08-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:09-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:10-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:10-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:11-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:11-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:43-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:44-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:44-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:44-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:24:45-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:45-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:46-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:24:46-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:18-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:18-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:19-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:19-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:20-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:20-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:21-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:21-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:53-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:53-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:54-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:54-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:25:55-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:55-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:56-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:25:56-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:26:28-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:26:28-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:26:28-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:26:29-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:26:30-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:26:30-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:26:31-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:26:31-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:03-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:03-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:04-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:04-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:05-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:05-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:06-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:06-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:37-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:38-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:38-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:39-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:27:39-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:40-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:40-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:27:41-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:12-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:13-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:13-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:13-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:14-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:14-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:15-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:16-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:47-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:47-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:48-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:48-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:28:49-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:49-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:50-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:28:50-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:29:21-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:22-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:22-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:23-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:23-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:29:24-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:29:24-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:29:25-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:29:56-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:57-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:57-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:58-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:29:58-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:29:59-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:29:59-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:30:00-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:30:31-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:30:32-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:30:32-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:30:33-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:30:33-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:30:34-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:30:35-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:30:35-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:07-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:08-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:08-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:08-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:09-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:10-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:10-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:11-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:42-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:42-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:43-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:43-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:31:43-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:44-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:44-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:31:45-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:16-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:17-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:17-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:17-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:18-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:18-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:19-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:19-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:51-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:51-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:51-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:52-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:32:52-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:53-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:53-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:32:54-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:33:25-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:33:26-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:33:26-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:33:27-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:33:27-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:33:28-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:33:28-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:33:29-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:00-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:01-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:02-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:02-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:02-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:03-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:03-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:04-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:35-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:36-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:36-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:37-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:34:38-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:38-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:40-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:34:40-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:12-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:12-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:13-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:13-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:13-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:14-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:15-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:15-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:46-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:47-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:47-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:47-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:35:48-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:48-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:49-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:35:49-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:20-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:21-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:21-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:22-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:22-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:23-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:23-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:24-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:55-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:55-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:56-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:56-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:36:57-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:57-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:58-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:36:58-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:37:30-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:37:30-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:37:31-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:37:31-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:37:32-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:37:32-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:37:33-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:37:33-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:04-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:05-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:05-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:06-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:06-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:07-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:07-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:08-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:39-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:39-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:40-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:40-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:38:41-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:42-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:42-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:38:43-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:14-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:15-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:15-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:16-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:16-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:17-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:17-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:18-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:49-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:50-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:50-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:51-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:39:51-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:52-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:52-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:39:52-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:40:24-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:40:24-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:40:25-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:40:25-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:40:26-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:40:26-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:40:27-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:40:27-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:40:59-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:40:59-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:40:59-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:41:00-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:41:00-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:41:01-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:41:01-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:41:02-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:41:33-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:41:33-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:41:34-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:41:34-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:41:35-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:41:35-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:41:36-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:41:36-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:07-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:08-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:08-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:09-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:09-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:10-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:10-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:10-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:42-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:42-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:42-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:43-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:42:43-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:44-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:44-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:42:45-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:16-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:16-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:17-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:18-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:18-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:18-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:19-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:19-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:51-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:52-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:52-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:53-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:43:53-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:54-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:54-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:43:55-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:44:26-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:44:27-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:44:27-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:44:28-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:44:28-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:44:29-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:44:29-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:44:30-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:01-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:02-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:02-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:03-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:03-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:03-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:04-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:05-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:36-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:37-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:37-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:37-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:45:38-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:39-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:39-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:45:40-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:11-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:12-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:12-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:12-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:13-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:13-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:14-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:14-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:46-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:46-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:46-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:47-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:46:47-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:48-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:48-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:46:49-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:20-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:20-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:21-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:21-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:22-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:22-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:22-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:23-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:54-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:55-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:55-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:55-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:47:56-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:56-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:57-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:47:57-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:48:29-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:48:29-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:48:30-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:48:30-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:48:31-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:48:31-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:48:32-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:48:32-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:04-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:04-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:05-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:05-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:06-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:06-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:07-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:07-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:39-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:39-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:39-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:40-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:49:40-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:41-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:41-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:49:42-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:13-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:14-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:14-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:14-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:15-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:15-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:16-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:17-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:48-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:48-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:49-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:49-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:50:50-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:50-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:50-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:50:51-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:51:22-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:23-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:23-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:23-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:24-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:51:25-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:51:25-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:51:25-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:51:56-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:57-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:57-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:58-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:51:58-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:51:59-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:51:59-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:52:00-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:52:31-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:52:31-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:52:32-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:52:32-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:52:33-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:52:33-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:52:34-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:52:34-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:05-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:06-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:06-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:07-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:07-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:08-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:08-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:09-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:40-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:40-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:41-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:41-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:53:42-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:42-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:43-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:53:43-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:14-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:15-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:15-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:16-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:16-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:17-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:17-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:18-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:49-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:49-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:50-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:50-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:54:51-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:51-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:52-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:54:53-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:55:24-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:55:24-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:55:25-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:55:25-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:55:26-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:55:26-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:55:27-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:55:27-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:55:58-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:55:59-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:55:59-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:55:59-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:56:00-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:56:00-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:56:01-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:56:02-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:56:33-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:56:33-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:56:34-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:56:34-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:56:35-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:56:35-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:56:35-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:56:36-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:07-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:08-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:08-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:09-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:09-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:10-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:10-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:11-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:42-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:42-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:43-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:43-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:57:44-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:45-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:45-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:57:46-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:17-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:18-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:18-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:18-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:19-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:19-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:20-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:20-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:52-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:52-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:53-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:53-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:58:54-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:54-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:55-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:58:55-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:59:26-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:59:27-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:59:27-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:59:28-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T15:59:28-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:59:29-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:59:29-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T15:59:30-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:02-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:02-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:03-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:04-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:04-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:05-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:06-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:06-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:38-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:38-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:39-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:39-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:00:40-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:40-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:41-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:00:41-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:13-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:14-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:14-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:15-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:15-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:16-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:16-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:17-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:48-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:49-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:49-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:50-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:01:50-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:51-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:51-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:01:52-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:02:23-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:02:24-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:02:24-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:02:24-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:02:25-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:02:25-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:02:26-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:02:26-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:02:58-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:02:58-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:02:59-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:02:59-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:03:00-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:03:00-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:03:01-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:03:01-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:03:33-04:00] 2026-09-24-MEIC-12:00-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:03:33-04:00] 2026-09-24-MEIC-12:30-PUT close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:03:33-04:00] 2026-09-24-MEIC-13:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:03:34-04:00] 2026-09-24-MEIC-14:00-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-24T16:03:34-04:00] 2026-09-24-MEIC-12:00-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:03:35-04:00] 2026-09-24-MEIC-12:30-PUT CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:03:36-04:00] 2026-09-24-MEIC-13:00-CALL CLOSE (HALT) submitted @ 30.00
+[2026-09-24T16:03:37-04:00] 2026-09-24-MEIC-14:00-CALL CLOSE (HALT) submitted @ 30.00
