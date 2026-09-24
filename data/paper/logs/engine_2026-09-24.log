@@ -77,3 +77,7 @@ tracking cycle skipped: GET /chains: HTTP 400
   2026-09-24-MEIC-14:30-CALL TP @ 0.00 pnl +223
   2026-09-24-LATE-15:30-PUT TP @ 0.00 pnl +82
   2026-09-24-LATE-15:30-CALL TP @ 0.00 pnl +90
+[16:05] contained=1 close 7704.13 band 7670-7710
+paper run: day complete.
+paper run 2026-09-24 | budget $5000 | gex negative
+paper run: day complete.
