@@ -55,3 +55,14 @@ tracking cycle skipped: GET /chains: HTTP 400
 tracking cycle skipped: GET /chains: HTTP 400
 tracking cycle skipped: GET /chains: HTTP 400
 [14:00] MEIC IRON_CONDOR credit 4.03 stop/side 4.03
+  2026-09-24-MEIC-14:00-PUT STOPPED @ 4.53 pnl -268
+  2026-09-24-MEIC-13:00-PUT STOPPED @ 3.42 pnl -190
+[14:15] METF SELL CALL 7715.0/7745.0 credit 2.20 stop 4.40
+  2026-09-24-MEIC-14:00-CALL STOPPED @ 4.40 pnl -223
+  2026-09-24-METF-14:15-CALL STOPPED @ 4.40 pnl -220
+  2026-09-24-FLY-PUT TP @ 8.48 pnl +120
+  2026-09-24-FLY-CALL TP @ 6.03 pnl +400
+[14:28] FLYR IRON_FLY @ 7710 credit 14.55 TP 10.91 SL 18.19
+[14:30] MEIC IRON_CONDOR credit 4.32 stop/side 4.32
+[15:00] LATE IRON_CONDOR credit 2.15 stop/side 2.15
+  2026-09-24-LATE-15:00-PUT STOPPED @ 2.47 pnl -129
