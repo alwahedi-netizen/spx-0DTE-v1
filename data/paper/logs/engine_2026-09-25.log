@@ -23,3 +23,8 @@ paper run 2026-09-25 | budget $5000 | gex negative
 [14:00] MEIC IRON_CONDOR credit 4.45 stop/side 4.45
 [14:15] METF SELL PUT 7735.0/7705.0 credit 1.85 stop 3.70
   2026-09-25-METF-14:15-PUT STOPPED @ 5.60 pnl -375
+[14:30] MEIC IRON_CONDOR credit 4.70 stop/side 4.70
+  2026-09-25-FLYR1-PUT TP @ 2.98 pnl +210
+  2026-09-25-FLYR1-CALL TP @ 6.33 pnl +100
+[15:00] LATE IRON_CONDOR credit 2.60 stop/side 2.60
+  2026-09-25-MEIC-12:30-CALL TP @ 0.00 pnl +195
