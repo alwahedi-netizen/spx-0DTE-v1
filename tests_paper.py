@@ -305,6 +305,12 @@ def test_live_meic():
     assert lm.spx_tick(0.01, up=False) == 0.05      # floor
     ok("limits snap to the SPX 0.05/0.10 tick grid")
 
+    # fee model: pnl_live is net of ~$1.18/leg so it matches Schwab's cash
+    assert lm.net_pnl(2.20, 0.00, 1, 2) == 217.64      # rode to expiry
+    assert lm.net_pnl(1.60, 7.60, 1, 4) == -604.72     # stopped (4 legs)
+    assert lm.net_pnl(1.85, 4.25, 1, 4) == -244.72
+    ok("net_pnl deducts measured per-leg costs (expiry legs free)")
+
     assert lm.osi_symbol("SPXW", "2026-09-22", "P", 6600) == "SPXW  260922P06600000"
     assert lm.osi_symbol("SPXW", "2026-09-22", "CALL", 6602.5) == "SPXW  260922C06602500"
     ok("OSI symbols (root padded, strike*1000)")

@@ -49,6 +49,9 @@ ENTRY_LAST = "15:00"     # no new entries after (MEIC's last slot is 14:30)
 ENTRY_SLIP = 0.05        # first limit: theo credit - this
 REPRICE_SLIP = 0.15      # second try
 CLOSE_SLIPS = (0.10, 0.30, 0.75)   # closing limit ladder over theo exit
+FEE_PER_LEG = 1.18       # all-in commission + index/regulatory fees, measured
+                         # from the 2026-09-24 fills (Schwab cash -388.68 vs
+                         # gross -365.00 over 20 legs). Expired legs cost 0.
 ORDER_WAIT_S = 240       # per rung on the ladder
 
 LEDGER_COLS = ["position_id", "side", "short_strike", "long_strike", "expiry",
@@ -164,6 +167,14 @@ def schwab_audit(ledger_rows: list, positions: list, ds: str) -> dict:
     return {"missing": missing, "unknown": unknown,
             "day_pl": round(sum(h["day_pl"] for h in held.values()), 2),
             "ok": not missing and not unknown}
+
+
+def net_pnl(credit_fill: float, exit_px: float, qty: int, traded_legs: int) -> float:
+    """Spread P&L net of estimated per-leg costs, so pnl_live matches
+    Schwab's cash. traded_legs: 4 for entry+close, 2 when the exit was
+    cash settlement (expiry costs nothing)."""
+    return round((credit_fill - exit_px) * 100 * qty
+                 - FEE_PER_LEG * traded_legs * qty, 2)
 
 
 def plan_actions(paper_sides: list, ledger: dict, now_iso: str, *,
@@ -441,7 +452,7 @@ def _poll_closing(br, r):
     s = j.get("status")
     if s == "FILLED":
         px = abs(fill_price(j)) or float(r["close_limit"])
-        pnl = (float(r["credit_fill"] or 0) - px) * 100 * int(r["qty"])
+        pnl = net_pnl(float(r["credit_fill"] or 0), px, int(r["qty"]), 4)
         r.update(status="CLOSED", close_fill=f"{px:.2f}", pnl_live=f"{pnl:.2f}",
                  closed_ts=_now().isoformat(timespec="seconds"))
         log(f"{r['position_id']} CLOSED @ {px:.2f} pnl {pnl:+.0f}")
@@ -490,7 +501,7 @@ def _absorb_external_closes(br, ledger, missing_pids):
                    and l.get("instruction") == "BUY_TO_CLOSE"
                    for l in (o.get("orderLegCollection") or [])):
                 px = abs(fill_price(o))
-                pnl = (float(r["credit_fill"] or 0) - px) * 100 * int(r["qty"])
+                pnl = net_pnl(float(r["credit_fill"] or 0), px, int(r["qty"]), 4)
                 r.update(status="CLOSED", close_fill=f"{px:.2f}",
                          pnl_live=f"{pnl:.2f}",
                          exit_reason=r.get("exit_reason") or "MANUAL",
@@ -524,7 +535,7 @@ def _reconcile_settlement(br, ledger, ds, hm):
             br.cancel(r["close_order_id"])
         v = pe.settle_value(r["side"], float(r["short_strike"]),
                             float(r["long_strike"]), float(brow["spx_close"]))
-        pnl = (float(r["credit_fill"] or 0) - v) * 100 * int(r["qty"])
+        pnl = net_pnl(float(r["credit_fill"] or 0), v, int(r["qty"]), 2)
         r.update(status="EXPIRED", close_fill=f"{v:.2f}", pnl_live=f"{pnl:.2f}",
                  exit_reason=r.get("exit_reason") or "EXPIRED",
                  closed_ts=_now().isoformat(timespec="seconds"),
@@ -606,7 +617,7 @@ def sync_once() -> dict:
             elif a[0] == "expire":
                 _, pid, exit_theo = a
                 r = ledger[pid]
-                pnl = (float(r["credit_fill"] or 0) - exit_theo) * 100 * int(r["qty"])
+                pnl = net_pnl(float(r["credit_fill"] or 0), exit_theo, int(r["qty"]), 2)
                 r.update(status="EXPIRED", close_fill=f"{exit_theo:.2f}",
                          pnl_live=f"{pnl:.2f}", exit_reason="EXPIRED",
                          closed_ts=_now().isoformat(timespec="seconds"))
