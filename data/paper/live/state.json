@@ -1,1 +1,1 @@
-{"day": "2026-09-25", "halted": false, "paused": false, "schwab": {"ts": "2026-09-25T15:28:21-04:00", "missing": [], "unknown": [], "day_pl": 1162.5, "ok": true}}
+{"day": "2026-09-25", "halted": false, "paused": false, "schwab": {"ts": "2026-09-25T16:21:30-04:00", "missing": [], "unknown": ["SPXW  260925C07755000", "SPXW  260925C07760000", "SPXW  260925P07725000", "SPXW  260925C07750000", "SPXW  260925P07730000"], "day_pl": 880.0, "ok": false}}

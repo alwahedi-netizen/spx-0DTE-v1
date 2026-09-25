@@ -2613,3 +2613,129 @@
 [2026-09-25T14:34:42-04:00] 2026-09-25-MEIC-14:30-PUT repriced to 1.85
 [2026-09-25T14:37:50-04:00] 2026-09-25-MEIC-14:30-PUT FILLED @ 1.85 (theo limit 1.85)
 [2026-09-25T15:27:50-04:00] 2026-09-25-MEIC-12:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:32:03-04:00] 2026-09-25-MEIC-12:30-CALL CLOSE (TP) submitted @ 0.30
+[2026-09-25T15:36:15-04:00] 2026-09-25-MEIC-12:30-CALL CLOSE (TP) submitted @ 0.75
+[2026-09-25T15:36:47-04:00] 2026-09-25-MEIC-12:30-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-25T15:36:48-04:00] 2026-09-25-MEIC-12:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:40:58-04:00] 2026-09-25-MEIC-12:30-CALL CLOSE (TP) submitted @ 0.30
+[2026-09-25T15:45:10-04:00] 2026-09-25-MEIC-12:30-CALL CLOSE (TP) submitted @ 0.75
+[2026-09-25T15:45:41-04:00] 2026-09-25-MEIC-12:30-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-25T15:45:42-04:00] 2026-09-25-MEIC-12:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:47:47-04:00] 2026-09-25-MEIC-12:30-CALL CLOSED @ 0.05 pnl +180
+[2026-09-25T15:47:49-04:00] 2026-09-25-MEIC-14:30-CALL CLOSE (STOPPED) submitted @ 5.90
+[2026-09-25T15:48:19-04:00] 2026-09-25-MEIC-14:30-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-25T15:48:20-04:00] 2026-09-25-MEIC-12:30-PUT CLOSE (TP) submitted @ 0.15
+[2026-09-25T15:48:21-04:00] 2026-09-25-MEIC-13:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:48:21-04:00] 2026-09-25-MEIC-14:30-CALL CLOSE (STOPPED) submitted @ 5.90
+[2026-09-25T15:48:53-04:00] 2026-09-25-MEIC-14:30-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-25T15:48:54-04:00] 2026-09-25-MEIC-14:30-CALL CLOSE (STOPPED) submitted @ 5.90
+[2026-09-25T15:49:26-04:00] 2026-09-25-MEIC-14:30-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-25T15:49:26-04:00] 2026-09-25-MEIC-14:30-CALL CLOSE (STOPPED) submitted @ 5.90
+[2026-09-25T15:49:58-04:00] 2026-09-25-MEIC-14:30-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-25T15:50:00-04:00] 2026-09-25-MEIC-14:30-CALL CLOSE (STOPPED) submitted @ 5.90
+[2026-09-25T15:50:31-04:00] 2026-09-25-MEIC-12:30-PUT CLOSED @ 0.05 pnl +180
+[2026-09-25T15:50:31-04:00] 2026-09-25-MEIC-14:30-CALL close REJECTED (Your limit price is significantly away from the current market price. Please adj) — retry 1/3
+[2026-09-25T15:50:33-04:00] 2026-09-25-MEIC-14:30-CALL CLOSE (STOPPED) submitted @ 5.90
+[2026-09-25T15:51:03-04:00] 2026-09-25-MEIC-13:00-PUT CLOSED @ 0.05 pnl +160
+[2026-09-25T15:51:04-04:00] 2026-09-25-MEIC-14:30-CALL CLOSED @ 5.85 pnl -260
+[2026-09-25T15:56:43-04:00] 2026-09-25-MEIC-13:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:57:46-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:57:47-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:57:48-04:00] 2026-09-25-MEIC-14:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T15:58:53-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T15:59:59-04:00] 2026-09-25-MEIC-14:00-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:00:30-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:00:31-04:00] 2026-09-25-MEIC-13:30-CALL close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:00:32-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:00:34-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:00:34-04:00] 2026-09-25-MEIC-13:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:00:35-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:01:06-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:01:06-04:00] 2026-09-25-MEIC-13:30-CALL close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:01:07-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:01:09-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:01:09-04:00] 2026-09-25-MEIC-13:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:01:10-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:01:40-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:01:42-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:01:43-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:01:44-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:02:14-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:02:16-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.30
+[2026-09-25T16:02:16-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:02:18-04:00] 2026-09-25-MEIC-14:30-PUT CLOSE (TP) submitted @ 0.30
+[2026-09-25T16:02:19-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:02:20-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:02:50-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:02:51-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:02:52-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:02:52-04:00] 2026-09-25-MEIC-14:30-PUT close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:02:53-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:02:54-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:02:54-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:02:55-04:00] 2026-09-25-MEIC-14:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:03:25-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:03:26-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:03:26-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:03:27-04:00] 2026-09-25-MEIC-14:30-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:03:28-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:03:28-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:03:29-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:03:29-04:00] 2026-09-25-MEIC-14:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:04:00-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:04:00-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:04:01-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:04:03-04:00] 2026-09-25-MEIC-14:00-CALL CLOSE (TP) submitted @ 0.30
+[2026-09-25T16:04:04-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:04:04-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:04:05-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:04:35-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:04:36-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:04:37-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:04:37-04:00] 2026-09-25-MEIC-14:00-CALL close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:04:38-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:04:39-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:04:39-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:04:40-04:00] 2026-09-25-MEIC-14:00-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:05:11-04:00] 2026-09-25-MEIC-13:00-CALL close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:05:11-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:05:12-04:00] 2026-09-25-MEIC-13:30-CALL CLOSE (TP) submitted @ 0.30
+[2026-09-25T16:05:13-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:05:13-04:00] 2026-09-25-MEIC-14:00-CALL close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:05:15-04:00] 2026-09-25-MEIC-13:00-CALL CLOSE (TP) submitted @ 0.15
+[2026-09-25T16:05:15-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:05:15-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:05:16-04:00] 2026-09-25-MEIC-14:00-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:05:47-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:05:47-04:00] 2026-09-25-MEIC-13:30-CALL close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:05:48-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:05:48-04:00] 2026-09-25-MEIC-14:00-CALL close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:05:50-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:05:50-04:00] 2026-09-25-MEIC-13:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:05:51-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:05:51-04:00] 2026-09-25-MEIC-14:00-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:06:22-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:06:23-04:00] 2026-09-25-MEIC-13:30-CALL close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:06:23-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:06:23-04:00] 2026-09-25-MEIC-14:00-CALL close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:06:25-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:06:25-04:00] 2026-09-25-MEIC-13:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:06:26-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:06:26-04:00] 2026-09-25-MEIC-14:00-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:06:57-04:00] 2026-09-25-MEIC-13:30-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:06:58-04:00] 2026-09-25-MEIC-13:30-CALL close REJECTED (Your order was not placed. It was direct routed to a market center that does not) — retry 1/3
+[2026-09-25T16:06:58-04:00] 2026-09-25-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-09-25T16:06:58-04:00] 2026-09-25-MEIC-14:00-CALL close REJECTED (This option contract is no longer valid. Please check the expiration date.) — retry 1/3
+[2026-09-25T16:07:00-04:00] 2026-09-25-MEIC-13:30-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:07:00-04:00] 2026-09-25-MEIC-13:30-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:07:01-04:00] 2026-09-25-MEIC-14:00-PUT CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:07:01-04:00] 2026-09-25-MEIC-14:00-CALL CLOSE (TP) submitted @ 0.10
+[2026-09-25T16:07:02-04:00] 2026-09-25-MEIC-13:00-CALL settled at intrinsic 0.00 pnl +178
+[2026-09-25T16:07:02-04:00] 2026-09-25-MEIC-13:30-PUT settled at intrinsic 0.00 pnl +178
+[2026-09-25T16:07:03-04:00] cancel 1008076914050: HTTP 400
+[2026-09-25T16:07:03-04:00] 2026-09-25-MEIC-13:30-CALL settled at intrinsic 0.00 pnl +168
+[2026-09-25T16:07:03-04:00] cancel 1008076914052: HTTP 400
+[2026-09-25T16:07:03-04:00] 2026-09-25-MEIC-14:00-PUT settled at intrinsic 0.00 pnl +198
+[2026-09-25T16:07:04-04:00] cancel 1008076914054: HTTP 400
+[2026-09-25T16:07:04-04:00] 2026-09-25-MEIC-14:00-CALL settled at intrinsic 0.00 pnl +238
+[2026-09-25T16:07:04-04:00] 2026-09-25-MEIC-14:30-PUT settled at intrinsic 0.00 pnl +183
