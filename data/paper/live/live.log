@@ -2744,3 +2744,5 @@
 [2026-09-26T20:48:11-04:00] schwab audit: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
 [2026-09-26T20:58:12-04:00] schwab audit: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
 [2026-09-26T21:08:13-04:00] schwab audit: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
+[2026-09-26T22:48:21-04:00] schwab audit: 500 Server Error: Internal Server Error for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
+[2026-09-26T22:58:21-04:00] schwab audit: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
