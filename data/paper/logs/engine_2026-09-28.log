@@ -32,3 +32,19 @@ paper run 2026-09-28 | budget $5000 | gex positive
 [15:30] LATE IRON_CONDOR credit 1.75 stop/side 1.75
   2026-09-28-MEIC-12:30-CALL TP @ 0.00 pnl +160
   2026-09-28-LATE-15:30-PUT STOPPED @ 1.77 pnl -82
+  2026-09-28-MEIC-14:00-PUT STOPPED @ 3.42 pnl -189
+  2026-09-28-MEIC-14:30-PUT STOPPED @ 3.42 pnl -187
+  2026-09-28-MEIC-13:30-CALL TP @ 0.00 pnl +185
+  2026-09-28-MEIC-14:00-CALL TP @ 0.00 pnl +150
+  2026-09-28-MEIC-14:30-CALL TP @ 0.00 pnl +170
+  2026-09-28-LATE-15:00-CALL TP @ 0.00 pnl +90
+  2026-09-28-MEIC-12:00-PUT TP @ 0.00 pnl +150
+  2026-09-28-LATE-15:30-CALL TP @ 0.00 pnl +80
+  2026-09-28-MEIC-13:00-PUT TP @ 0.00 pnl +200
+  2026-09-28-MEIC-13:30-PUT TP @ 0.00 pnl +185
+  2026-09-28-METF-11:30-PUT EXPIRED @ 0.00 pnl +152
+  2026-09-28-METF-13:30-PUT EXPIRED @ 0.00 pnl +185
+[16:05] contained=1 close 7683.68 band 7680-7725
+paper run: day complete.
+paper run 2026-09-28 | budget $5000 | gex positive
+paper run: day complete.
