@@ -3,3 +3,8 @@ paper run 2026-09-28 | budget $5000 | gex positive
 [10:00] METF SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
 [10:30] ORB BUY PUT 7700.0/7670.0 debit 7.12 stop 3.56
 [10:30] band 7680-7725 em 18.9 skew 0.913
+[10:35] BAND IRON_CONDOR credit 5.45 stop/side 5.45 size 1.0
+  2026-09-28-BAND-PUT STOPPED @ 5.52 pnl -250
+[10:45] METF SELL PUT 7645.0/7615.0 credit 1.80 stop 3.60
+  2026-09-28-METF-10:45-PUT STOPPED @ 3.72 pnl -192
+[11:30] METF SELL PUT 7645.0/7615.0 credit 1.52 stop 3.05
