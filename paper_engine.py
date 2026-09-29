@@ -69,7 +69,10 @@ DEFAULTS = {
         "stop_multiple": 1.0, "hold_to_expiry": True, "contracts": 1,
     },
     "band": {
-        "enabled": True,
+        "enabled": True,          # keeps the 10:30 band snapshot + 16:05
+        "trade_enabled": False,   # containment MEASUREMENT; trading retired
+                                  # 2026-09-29 (17 condors, PF 0.42, 88%
+                                  # probability of a real negative edge)
         "band_time": "10:30", "entry_time": "10:35",
         "em_factor": 0.85, "wing_width": 30,
         "skew_lo": 0.80, "skew_hi": 1.25,
@@ -84,6 +87,27 @@ DEFAULTS = {
         "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
         "side_credit": 1.50, "min_side_credit": 1.25, "wing_width": 30,
         "take_profit_short": 0.05, "contracts": 1,
+    },
+    # MNG — MEIC gated on the morning GEX tag: identical mechanics, but it
+    # trades ONLY on negative-GEX days. Controlled test of the lab's
+    # strongest regime finding (through 2026-09-29 MEIC made +2230 on
+    # negative days and -1821 on positive ones). Unknown tag = no trade.
+    "mng": {
+        "enabled": True,
+        "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
+        "side_credit": 1.50, "min_side_credit": 1.25, "wing_width": 30,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
+    # PBW — put broken-wing butterfly: sell 2 puts near short_delta, buy one
+    # width_up above and one width_down below, for a net credit. Zero upside
+    # risk, jackpot on a pin at the shorts, small bounded left tail
+    # (width_down - width_up - credit). No stops, no TP: rides to cash
+    # settlement (per-side stop_levels are set unreachable; the credit row's
+    # carries the structure's true max loss so the risk budget stays honest).
+    "pbw": {
+        "enabled": True, "entry_time": "10:15",
+        "short_delta": 0.20, "width_up": 25, "width_down": 30,
+        "min_credit": 0.30, "contracts": 1,
     },
     # ORB — Opening Range Breakout, directional DEBIT vertical (long gamma:
     # profits on the trend days that hurt the premium sellers). Checked at
@@ -116,7 +140,9 @@ DEFAULTS = {
     # LATE — final-hour tight condors: tests the "last hours are the most
     # profitable" finding. Same mechanics as MEIC, narrower and later.
     "late": {
-        "enabled": True, "slots": ["15:00", "15:30"],
+        # retired 2026-09-29: 16 condors, PF 0.41, 87% probability of a
+        # real negative edge — same whipsaw disease as BAND
+        "enabled": False, "slots": ["15:00", "15:30"],
         "side_credit": 0.80, "min_side_credit": 0.60, "wing_width": 15,
         "take_profit_short": 0.05, "contracts": 1,
     },
@@ -460,6 +486,43 @@ def pending_meic_slots(cfg: dict, d: str) -> list:
 
 def fly_pending(d: str) -> bool:
     return not st.signals_for(d, "FLY")
+
+
+def pbw_pending(d: str) -> bool:
+    return not st.signals_for(d, "PBW")
+
+
+def mng_day_ok(gex_sign: str) -> bool:
+    """MNG trades ONLY when the morning GEX tag is negative — unknown is a
+    no-trade day (a clean test needs a clean gate)."""
+    return (gex_sign or "").strip() == "negative"
+
+
+def pbw_strikes(cmap: dict, spot: float, short_delta: float,
+                width_up: float, width_down: float):
+    """Put broken-wing butterfly strikes: shorts at the OTM put whose |delta|
+    is nearest short_delta (leg_ok only), upper long width_up above, lower
+    long width_down below — all three strikes must exist and pass leg_ok.
+    Walks the short down a strike (up to 3 times) when a wing is missing.
+    Returns {'m','u','l','credit','m_delta'} or None."""
+    cands = []
+    for k, c in cmap.items():
+        d_ = c.get("delta")
+        if d_ is None or k >= spot or not leg_ok(c):
+            continue
+        cands.append((abs(abs(float(d_)) - short_delta), k))
+    for _, m_k in sorted(cands)[:4]:
+        u_k, l_k = m_k + width_up, m_k - width_down
+        cu, cl_ = cmap.get(u_k), cmap.get(l_k)
+        cm = cmap[m_k]
+        if not cu or not cl_ or not leg_ok(cu) or not leg_ok(cl_):
+            continue
+        if mid(cm) is None or mid(cu) is None or mid(cl_) is None:
+            continue
+        credit = 2 * mid(cm) - mid(cu) - mid(cl_)
+        return {"m": m_k, "u": u_k, "l": l_k, "credit": credit,
+                "m_delta": cm.get("delta")}
+    return None
 
 
 def flyr_due(cfg: dict, d: str) -> bool:
@@ -922,11 +985,73 @@ def _close_position(cfg: dict, p: dict, exit_value: float, reason: str):
     print(f"  {p['position_id']} {reason} @ {exit_value:.2f} pnl {pnl:+.0f}", flush=True)
 
 
+def do_pbw_entry(cfg: dict, day_row: dict, chain: dict, expiry: str):
+    """PBW: put broken-wing butterfly held to settlement. Journaled as two
+    PUT verticals sharing a signal_ts: shorts/lower-long (credit, the wide
+    side) and shorts/upper-long (debit convention). No stops, no TP — the
+    debit row's stop is unreachable and the credit row's stop_level encodes
+    the STRUCTURE's true max loss so the risk budget stays honest; tracking
+    skips PBW rows entirely."""
+    w = cfg["pbw"]
+    d = day_row["date"]
+    slot = w["entry_time"]
+    spot = spot_of(chain)
+    base = dict(slot=slot, strategy="PBW", structure="PUT_BWB",
+                spot=_fmt(spot), width=w["width_down"])
+    cmap = contract_map(chain, expiry, "put")
+    pick = pbw_strikes(cmap, spot, w["short_delta"], w["width_up"],
+                       w["width_down"])
+    if pick is None:
+        _skip_row(cfg, day_row, "PBW", slot, "DATA", "no viable BWB strikes")
+        return
+    if pick["credit"] < w["min_credit"]:
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="CREDIT", side="PUT",
+                                         **base))
+        print(f"[{slot}] PBW SKIP/CREDIT ({pick['credit']:.2f})", flush=True)
+        return
+    m_k, u_k, l_k = pick["m"], pick["u"], pick["l"]
+    cr_wide = mid(cmap[m_k]) - mid(cmap[l_k])      # short m / long l (credit)
+    cr_up = mid(cmap[m_k]) - mid(cmap[u_k])        # short m / long u (debit<0)
+    # structure max loss (below l): (width_down - width_up - credit) per unit
+    max_loss = max(0.05, w["width_down"] - w["width_up"] - pick["credit"])
+    new_risk = stop_risk(cr_wide, cr_wide + max_loss, w["contracts"])
+    budget = float(day_row.get("risk_budget") or 0)
+    if not risk_ok(open_stop_risk(), new_risk, budget):
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="RISK", side="PUT", **base))
+        print(f"[{slot}] PBW SKIP/RISK", flush=True)
+        return
+    ts = iso(now_et())
+    st.append("signals", _signal_row(
+        cfg, day_row, ts=ts, action="SELL_BWB", side="PUT",
+        short_strike=m_k, long_strike=l_k, short_strike_2=m_k,
+        long_strike_2=u_k, credit_theo=_fmt(pick["credit"]),
+        short_delta=_fmt(pick["m_delta"], 3), short_mid=_fmt(mid(cmap[m_k])),
+        long_mid=_fmt(mid(cmap[l_k])), stop_level="", **base))
+    for suffix, lk, cr, stop in (("WIDE", l_k, cr_wide, cr_wide + max_loss),
+                                 ("UP", u_k, cr_up, -999.0)):
+        pid = f"{d}-PBW-{suffix}"
+        st.append("positions", {
+            "position_id": pid, "signal_ts": ts, "strategy": "PBW",
+            "side": "PUT", "contracts": w["contracts"],
+            "short_strike": m_k, "long_strike": lk,
+            "credit_theo": _fmt(cr), "stop_level": _fmt(stop)})
+        e = sim_cfg(cfg)
+        if e:
+            st.update_position(pid, {
+                "credit_actual": _fmt(sim_entry_credit(cr, e["entry_slippage"])),
+                "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
+    print(f"[{slot}] PBW BWB {l_k:.0f}/{m_k:.0f}x2/{u_k:.0f} "
+          f"credit {pick['credit']:.2f} maxloss {max_loss:.2f}", flush=True)
+
+
 def do_tracking(cfg: dict, chain: dict, expiry: str):
     """§6.4 — reprice each open side from chain mids; stop / TP.
     FLY is managed as a whole structure; everything else per side."""
     tps = {"BAND": cfg["band"]["take_profit_short"],
            "MEIC": cfg.get("meic", {}).get("take_profit_short", 0.05),
+           "MNG": cfg.get("mng", {}).get("take_profit_short", 0.05),
            "LATE": cfg.get("late", {}).get("take_profit_short", 0.05)}
     priced = []                              # (position, value, short_mid)
     for p in st.open_positions():
@@ -957,8 +1082,8 @@ def do_tracking(cfg: dict, chain: dict, expiry: str):
                 _close_position(cfg, p, v, act)
 
     for p, value, ms in priced:
-        if p["strategy"] in ("FLY", "FLYR"):
-            continue
+        if p["strategy"] in ("FLY", "FLYR", "PBW"):
+            continue          # flies are group-managed; PBW rides to settle
         if stop_triggered(value, float(p["stop_level"])):
             _close_position(cfg, p, value, "STOPPED")
         elif p["strategy"] in tps and ms <= tps[p["strategy"]]:
@@ -1077,6 +1202,41 @@ def cmd_run(cfg: dict):
                 except pd_.PaperDataError as e:
                     _skip_row(cfg, day_row, "ORB", slot, "DATA", str(e))
 
+        # ── MNG condors (MEIC mechanics, negative-GEX days only) ──
+        if cfg.get("mng", {}).get("enabled"):
+            for slot in pending_condor_slots(cfg, ds, "MNG"):
+                t = at(slot, d)
+                if now < t:
+                    continue
+                if not mng_day_ok(day_row.get("gex_sign")):
+                    _skip_row(cfg, day_row, "MNG", slot, "REGIME",
+                              f"gex={day_row.get('gex_sign') or 'unknown'}")
+                    continue
+                if now - t > grace:
+                    _skip_row(cfg, day_row, "MNG", slot, "DATA",
+                              "slot missed (engine offline)")
+                    continue
+                try:
+                    chain, expiry = get_chain()
+                    do_meic_slot(cfg, day_row, slot, chain, expiry, strat="MNG")
+                except pd_.PaperDataError as e:
+                    _skip_row(cfg, day_row, "MNG", slot, "DATA", str(e))
+
+        # ── PBW morning broken-wing butterfly ──
+        if cfg.get("pbw", {}).get("enabled") and pbw_pending(ds):
+            t = at(cfg["pbw"]["entry_time"], d)
+            if now >= t:
+                if now - t > grace:
+                    _skip_row(cfg, day_row, "PBW", cfg["pbw"]["entry_time"],
+                              "DATA", "entry missed (engine offline)")
+                else:
+                    try:
+                        chain, expiry = get_chain()
+                        do_pbw_entry(cfg, day_row, chain, expiry)
+                    except pd_.PaperDataError as e:
+                        _skip_row(cfg, day_row, "PBW", cfg["pbw"]["entry_time"],
+                                  "DATA", str(e))
+
         # ── LATE final-hour condors ──
         if cfg.get("late", {}).get("enabled"):
             for slot in pending_condor_slots(cfg, ds, "LATE"):
@@ -1128,7 +1288,8 @@ def cmd_run(cfg: dict):
                     do_band_snapshot(cfg, ds, chain, expiry)
                 except pd_.PaperDataError as e:
                     print(f"band snapshot failed: {e}", flush=True)
-            if band_signal_pending(cfg, ds) and now >= et_:
+            if (cfg["band"].get("trade_enabled", True)
+                    and band_signal_pending(cfg, ds) and now >= et_):
                 brow = band_row_for(ds)
                 if brow is None and now - et_ > grace:
                     _skip_row(cfg, day_row, "BAND", cfg["band"]["entry_time"],
@@ -1181,6 +1342,10 @@ def cmd_run(cfg: dict):
             pending += [at(s, d) for s in pending_orb_slots(cfg, ds)]
         if cfg.get("late", {}).get("enabled"):
             pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "LATE")]
+        if cfg.get("mng", {}).get("enabled"):
+            pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "MNG")]
+        if cfg.get("pbw", {}).get("enabled") and pbw_pending(ds):
+            pending.append(at(cfg["pbw"]["entry_time"], d))
         if cfg.get("fly", {}).get("enabled") and fly_pending(ds):
             pending.append(at(cfg["fly"]["entry_time"], d))
         if flyr_due(cfg, ds):   # reload waiting on data — retry soon
@@ -1188,7 +1353,7 @@ def cmd_run(cfg: dict):
         if cfg["band"]["enabled"]:
             if band_row_for(ds) is None:
                 pending.append(at(cfg["band"]["band_time"], d))
-            if band_signal_pending(cfg, ds):
+            if cfg["band"].get("trade_enabled", True) and band_signal_pending(cfg, ds):
                 pending.append(at(cfg["band"]["entry_time"], d))
         if st.open_positions():
             pending.append(settle_t if now >= settle_t - timedelta(minutes=1)

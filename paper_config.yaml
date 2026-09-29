@@ -21,7 +21,8 @@ metf:
   hold_to_expiry: true
   contracts: 1
 
-band:
+band:                             # trading retired 2026-09-29 — snapshot &
+  trade_enabled: false            # containment measurement stay on
   enabled: true
   band_time: "10:30"
   entry_time: "10:35"
@@ -77,11 +78,29 @@ flyr:                             # reload fly — FLY derivative: after the fly
   max_reloads: 2                  # at most this many reloads per day
   reload_until: "14:45"           # no new reload after this ET time
 
-late:                             # final-hour tight condors (last-hour theta)
-  enabled: true
+late:                             # retired 2026-09-29 (PF 0.41)
+  enabled: false
   slots: ["15:00", "15:30"]
   side_credit: 0.80
   min_side_credit: 0.60
   wing_width: 15
   take_profit_short: 0.05
+  contracts: 1
+
+mng:                              # MEIC mechanics, NEGATIVE-GEX days only —
+  enabled: true                   # controlled test of the regime split
+  slots: ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"]
+  side_credit: 1.50
+  min_side_credit: 1.25
+  wing_width: 30
+  take_profit_short: 0.05
+  contracts: 1
+
+pbw:                              # put broken-wing butterfly, 10:15, held to
+  enabled: true                   # settlement; zero upside risk, small left tail
+  entry_time: "10:15"
+  short_delta: 0.20
+  width_up: 25
+  width_down: 30
+  min_credit: 0.30
   contracts: 1

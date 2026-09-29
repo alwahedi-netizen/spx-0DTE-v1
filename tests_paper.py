@@ -406,6 +406,50 @@ def test_live_meic():
     ok("audit: match / missing / other-expiry positions untouched")
 
 
+# ── MNG + PBW (2026-09-29 additions) ─────────────────────────────────────────
+def test_mng_pbw():
+    print("MNG / PBW")
+    cfg = pe.load_config(path="/nonexistent")
+    assert cfg["mng"]["enabled"] and cfg["pbw"]["enabled"]
+    assert cfg["late"]["enabled"] is False
+    assert cfg["band"]["enabled"] and cfg["band"]["trade_enabled"] is False
+    ok("BAND/LATE retired (band measurement stays); MNG/PBW enabled")
+
+    assert pe.mng_day_ok("negative") is True
+    assert pe.mng_day_ok("positive") is False
+    assert pe.mng_day_ok("unknown") is False and pe.mng_day_ok("") is False
+    ok("MNG trades only on a clean negative-GEX tag")
+
+    def c_(m, delta):
+        return {"bid": round(m - 0.05, 2), "ask": round(m + 0.05, 2),
+                "delta": delta}
+    cmap = {}
+    for k in range(7600, 7705, 5):
+        otm = 7700 - k
+        m = max(0.10, 8.0 - otm * 0.07)
+        cmap[float(k)] = c_(m, -max(0.02, 0.50 - otm * 0.01))
+    pick = pe.pbw_strikes(cmap, 7700.0, 0.20, 25, 30)
+    assert pick is not None
+    assert pick["u"] - pick["m"] == 25 and pick["m"] - pick["l"] == 30
+    assert abs(abs(cmap[pick["m"]]["delta"]) - 0.20) <= 0.03
+    exp = 2 * (cmap[pick["m"]]["bid"] + cmap[pick["m"]]["ask"]) / 2 \
+        - (cmap[pick["u"]]["bid"] + cmap[pick["u"]]["ask"]) / 2 \
+        - (cmap[pick["l"]]["bid"] + cmap[pick["l"]]["ask"]) / 2
+    assert abs(pick["credit"] - exp) < 1e-9
+    ok("PBW picks ~20-delta shorts with both wings present, prices the credit")
+
+    assert pe.pbw_strikes({}, 7700.0, 0.20, 25, 30) is None
+    ok("PBW returns None when no viable strikes (-> SKIP/DATA row)")
+
+    # risk accounting: the credit row carries the STRUCTURE max loss
+    credit = 0.55
+    max_loss = 30 - 25 - credit          # width_down - width_up - credit
+    r = pe.stop_risk(4.20, 4.20 + max_loss, 1)
+    assert abs(r - max_loss * 100) < 1e-6
+    assert pe.stop_risk(-3.0, -999.0, 1) == 0.0     # debit row: no stop risk
+    ok("PBW risk budget = bounded structure loss; unreachable stops cost 0")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -528,7 +572,7 @@ def test_store():
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
-              test_flyr, test_live_meic, test_env_fallback, test_store):
+              test_flyr, test_live_meic, test_mng_pbw, test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)
