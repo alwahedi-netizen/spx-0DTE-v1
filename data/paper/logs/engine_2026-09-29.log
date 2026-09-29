@@ -10,3 +10,43 @@ paper run 2026-09-29 | budget $5000 | gex negative
 [12:00] MEIC IRON_CONDOR credit 3.40 stop/side 3.40
 [12:30] METF SELL CALL 7690.0/7720.0 credit 1.70 stop 3.40
 [12:30] MEIC IRON_CONDOR credit 3.45 stop/side 3.45
+[13:00] MEIC IRON_CONDOR credit 3.67 stop/side 3.67
+[13:00] FLY IRON_FLY @ 7660 credit 16.77 TP 12.58 SL 20.97
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+[13:30] METF SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+[13:30] MEIC SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+[14:00] MEIC SKIP/DATA Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
