@@ -154,8 +154,25 @@ async function refresh(){
     ?`<span class="badge b-bad" title="ledger vs Schwab mismatch on …${desync.join(', …')} — entries held">DESYNC …${desync.join(', …')}</span>`
     :(has?'<span class="badge b-done">schwab ✓</span>':'');
   const strategies=LIVE.strategies||{};
-  document.getElementById('sgrid').innerHTML=
-    LIVE_STRATS.map(n=>panel(n,strategies[n]||{armed:false,realized:0})).join('');
+  const grid=document.getElementById('sgrid');
+  const typing=grid.contains(document.activeElement)&&document.activeElement.tagName==='INPUT';
+  if(!typing){
+    // preserve half-filled arm inputs across the 15 s auto-refresh
+    const saved={};
+    LIVE_STRATS.forEach(n=>{
+      const t=document.getElementById('tail_'+n),c=document.getElementById('conf_'+n),
+            y=document.getElementById('dry_'+n);
+      saved[n]={t:t?t.value:'',c:c?c.value:'',y:!!(y&&y.checked)};
+    });
+    grid.innerHTML=LIVE_STRATS.map(n=>panel(n,strategies[n]||{armed:false,realized:0})).join('');
+    LIVE_STRATS.forEach(n=>{
+      const t=document.getElementById('tail_'+n),c=document.getElementById('conf_'+n),
+            y=document.getElementById('dry_'+n);
+      if(t&&saved[n].t)t.value=saved[n].t;
+      if(c&&saved[n].c)c.value=saved[n].c;
+      if(y&&saved[n].y)y.checked=true;
+    });
+  }
 
   const tb=document.getElementById('tb');
   if(!(d.rows||[]).length){tb.innerHTML='<tr><td colspan="9" class="mut">no suggested trades yet today</td></tr>';return;}
