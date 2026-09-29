@@ -52,7 +52,7 @@ def _live_loop():
         try:
             now = pe.now_et()
             in_win = (now.weekday() < 5
-                      and "11:50" <= now.strftime("%H:%M") <= "16:20")
+                      and "09:55" <= now.strftime("%H:%M") <= "16:20")
             if in_win or time.time() - last_idle > 600:
                 live_meic.sync_once()
                 if not in_win:
@@ -232,7 +232,8 @@ def api_live_report():
 def api_live_arm():
     j = request.get_json(force=True, silent=True) or {}
     try:
-        return jsonify(live_meic.arm(j.get("account_tail", ""),
+        return jsonify(live_meic.arm(j.get("strategy", "MEIC"),
+                                     j.get("account_tail", ""),
                                      j.get("confirm", ""),
                                      bool(j.get("dry_run"))))
     except Exception as e:
@@ -241,13 +242,15 @@ def api_live_arm():
 
 @app.post("/api/live/disarm")
 def api_live_disarm():
-    return jsonify(live_meic.disarm())
+    j = request.get_json(force=True, silent=True) or {}
+    return jsonify(live_meic.disarm(j.get("strategy")))
 
 
 @app.post("/api/live/pause")
 def api_live_pause():
     j = request.get_json(force=True, silent=True) or {}
-    return jsonify(live_meic.set_paused(bool(j.get("on"))))
+    return jsonify(live_meic.set_paused(j.get("strategy", "MEIC"),
+                                        bool(j.get("on"))))
 
 
 @app.post("/api/live/close")

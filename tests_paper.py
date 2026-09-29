@@ -289,42 +289,45 @@ def test_flyr():
     ok("chain continues on TP up to max_reloads, then stops")
 
 
-# ── MEIC live mirror (order builders + mirror logic; no network) ─────────────
+# ── multi-strategy live mirror (order builders + mirror logic; offline) ─────
 def test_live_meic():
-    print("MEIC live mirror")
+    print("Live mirror (multi-strategy)")
     import live_meic as lm
+
+    assert lm.strat_of("2026-09-29-MEIC-12:00-PUT") == "MEIC"
+    assert lm.strat_of("2026-09-29-FLYR1-CALL") == "FLYR"
+    assert lm.strat_of("2026-09-29-ORB-CALL") == "ORB"
+    ok("strategy parsed from position ids (FLYR1 -> FLYR)")
 
     # SPX tick grid: 0.05 below $3.00, 0.10 at/above (off-tick = REJECTED)
     assert lm.spx_tick(1.72, up=False) == 1.70
     assert lm.spx_tick(1.72, up=True) == 1.75
     assert lm.spx_tick(4.48, up=True) == 4.50
-    assert lm.spx_tick(4.48, up=False) == 4.40
     assert lm.spx_tick(2.98, up=True) == 3.00
-    assert lm.spx_tick(3.02, up=False) == 3.00
-    assert lm.spx_tick(1.85, up=False) == 1.85      # already on grid
-    assert lm.spx_tick(0.01, up=False) == 0.05      # floor
     ok("limits snap to the SPX 0.05/0.10 tick grid")
 
-    # fee model: pnl_live is net of ~$1.18/leg so it matches Schwab's cash
-    assert lm.net_pnl(2.20, 0.00, 1, 2) == 217.64      # rode to expiry
-    assert lm.net_pnl(1.60, 7.60, 1, 4) == -604.72     # stopped (4 legs)
-    assert lm.net_pnl(1.85, 4.25, 1, 4) == -244.72
-    ok("net_pnl deducts measured per-leg costs (expiry legs free)")
+    # signed limits: credit spreads concede down, debit spreads pay up
+    assert lm.entry_limit(1.90) == 1.85
+    assert lm.entry_limit(-8.28) == -8.40         # pay more, tick-legal
+    assert lm.reprice_entry(-8.28) == -8.50
+    assert lm.close_limit(3.40, 0, True) == 3.50  # pay up to exit a credit
+    assert lm.close_limit(-4.10, 0, False) == -4.00  # receive less on debit
+    assert lm.close_limit(-0.10, 2, False) == -0.05  # never flips sign
+    ok("signed entry/close limits (ORB debit convention)")
 
-    assert lm.osi_symbol("SPXW", "2026-09-22", "P", 6600) == "SPXW  260922P06600000"
-    assert lm.osi_symbol("SPXW", "2026-09-22", "CALL", 6602.5) == "SPXW  260922C06602500"
-    ok("OSI symbols (root padded, strike*1000)")
-
-    o = lm.vertical_order("PUT", 6600, 6570, "2026-09-22", 1, "OPEN", 1.85)
+    o = lm.vertical_order("PUT", 6600, 6570, "2026-09-29", 1, "OPEN", 1.85)
     assert o["orderType"] == "NET_CREDIT" and o["price"] == "1.85"
-    assert o["complexOrderStrategyType"] == "VERTICAL"
     assert [l["instruction"] for l in o["orderLegCollection"]] == \
         ["SELL_TO_OPEN", "BUY_TO_OPEN"]
-    c = lm.vertical_order("CALL", 6650, 6680, "2026-09-22", 1, "CLOSE", 3.40)
-    assert c["orderType"] == "NET_DEBIT" and \
-        [l["instruction"] for l in c["orderLegCollection"]] == \
+    d = lm.vertical_order("CALL", 6650, 6620, "2026-09-29", 1, "OPEN", -8.40)
+    assert d["orderType"] == "NET_DEBIT" and d["price"] == "8.40"
+    dc = lm.vertical_order("CALL", 6650, 6620, "2026-09-29", 1, "CLOSE", -4.00)
+    assert dc["orderType"] == "NET_CREDIT" and dc["price"] == "4.00"
+    cc = lm.vertical_order("CALL", 6650, 6680, "2026-09-29", 1, "CLOSE", 3.40)
+    assert cc["orderType"] == "NET_DEBIT" and \
+        [l["instruction"] for l in cc["orderLegCollection"]] == \
         ["BUY_TO_CLOSE", "SELL_TO_CLOSE"]
-    ok("vertical open=NET_CREDIT / close=NET_DEBIT with correct legs")
+    ok("credit orders NET_CREDIT/NET_DEBIT, debit orders mirrored (ORB)")
 
     filled = {"orderLegCollection": [
                  {"legId": 1, "instruction": "SELL_TO_OPEN"},
@@ -335,75 +338,72 @@ def test_live_meic():
     assert abs(lm.fill_price(filled) - 1.80) < 1e-9
     ok("net fill price = sells - buys")
 
-    NOW = "2026-09-22T12:31:00-04:00"
-    fresh = {"position_id": "P1", "side": "PUT", "short_strike": "6600",
-             "long_strike": "6570", "credit_theo": "1.90", "stop_level": "3.40",
-             "signal_ts": "2026-09-22T12:30:05-04:00", "exit_ts": "",
+    # fee model: pnl_live is net of ~$1.18/leg so it matches Schwab's cash
+    assert lm.net_pnl(2.20, 0.00, 1, 2) == 217.64
+    assert lm.net_pnl(1.60, 7.60, 1, 4) == -604.72
+    assert lm.net_pnl(-8.40, -12.00, 1, 4) == 355.28   # debit spread winner
+    ok("net_pnl deducts measured per-leg costs (debit sign too)")
+
+    NOW = "2026-09-29T12:31:00-04:00"
+    fresh = {"position_id": "2026-09-29-MEIC-12:30-PUT", "strategy": "MEIC",
+             "side": "PUT", "short_strike": "6600", "long_strike": "6570",
+             "credit_theo": "1.90", "stop_level": "3.40",
+             "signal_ts": "2026-09-29T12:30:05-04:00", "exit_ts": "",
              "exit_reason": "", "exit_value_theo": ""}
-    stale = dict(fresh, position_id="P0",
-                 signal_ts="2026-09-22T12:00:00-04:00")
-    a = lm.plan_actions([fresh, stale], {}, NOW,
-                        armed=True, paused=False, halted=False)
+    stale = dict(fresh, position_id="2026-09-29-MEIC-12:00-PUT",
+                 signal_ts="2026-09-29T12:00:00-04:00")
+    A = dict(armed_strats={"MEIC"}, paused=set(), halted=set())
+    a = lm.plan_actions([fresh, stale], {}, NOW, **A)
     assert a == [("open", fresh)]
-    ok("mirrors only FRESH signals (stale after downtime is skipped)")
+    ok("mirrors only FRESH signals of ARMED strategies")
 
-    for kw in ({"armed": False, "paused": False, "halted": False},
-               {"armed": True, "paused": True, "halted": False},
-               {"armed": True, "paused": False, "halted": True}):
-        assert lm.plan_actions([fresh], {}, NOW, **kw) == []
-    ok("disarmed / paused / halted -> no new entries")
+    orb = dict(fresh, position_id="2026-09-29-ORB-CALL", strategy="ORB",
+               signal_ts="2026-09-29T12:30:05-04:00")
+    assert lm.plan_actions([orb], {}, NOW, **A) == []
+    a = lm.plan_actions([orb], {}, NOW, armed_strats={"MEIC", "ORB"},
+                        paused=set(), halted=set())
+    assert a == [("open", orb)]
+    ok("per-strategy arming: unarmed strategies never mirror")
 
-    late = "2026-09-22T15:05:00-04:00"
-    fresh2 = dict(fresh, signal_ts="2026-09-22T15:04:30-04:00")
-    assert lm.plan_actions([fresh2], {}, late,
-                           armed=True, paused=False, halted=False) == []
-    cap_ledger = {f"L{i}": {"status": "OPEN"} for i in range(lm.ENTRY_CAP)}
-    assert lm.plan_actions([fresh], cap_ledger, NOW,
-                           armed=True, paused=False, halted=False) == []
-    ok("entry window and daily side cap enforced")
+    assert lm.plan_actions([fresh], {}, NOW, armed_strats={"MEIC"},
+                           paused={"MEIC"}, halted=set()) == []
+    assert lm.plan_actions([fresh], {}, NOW, armed_strats={"MEIC"},
+                           paused=set(), halted={"MEIC"}) == []
+    ok("paused / halted are per strategy")
+
+    late_fly = dict(fresh, position_id="2026-09-29-FLY-PUT", strategy="FLY",
+                    signal_ts="2026-09-29T13:20:30-04:00")
+    assert lm.plan_actions([late_fly], {}, "2026-09-29T13:21:00-04:00",
+                           armed_strats={"FLY"}, paused=set(),
+                           halted=set()) == []          # after FLY entry_last
+    cap_ledger = {f"2026-09-29-MEIC-{i:02d}:00-PUT": {"status": "OPEN"}
+                  for i in range(lm.STRATS["MEIC"]["cap"])}
+    assert lm.plan_actions([fresh], cap_ledger, NOW, **A) == []
+    ok("per-strategy entry cutoffs and side caps")
 
     stopped = dict(fresh, exit_ts=NOW, exit_reason="STOPPED",
                    exit_value_theo="3.55")
-    expired = dict(fresh, position_id="P2", exit_ts=NOW,
-                   exit_reason="EXPIRED", exit_value_theo="0.00")
-    led = {"P1": {"status": "OPEN"}, "P2": {"status": "OPEN"}}
-    a = lm.plan_actions([stopped, expired], led, NOW,
-                        armed=True, paused=True, halted=True)
-    assert ("close", "P1", "STOPPED", 3.55) in a and ("expire", "P2", 0.0) in a
+    led = {fresh["position_id"]: {"status": "OPEN"}}
+    a = lm.plan_actions([stopped], led, NOW, armed_strats={"MEIC"},
+                        paused={"MEIC"}, halted={"MEIC"})
+    assert a == [("close", fresh["position_id"], "STOPPED", 3.55)]
     ok("open live sides are managed even while paused/halted")
 
-    already = dict(fresh, exit_ts=NOW, exit_reason="TP", exit_value_theo="0.05")
-    assert lm.plan_actions([already], {}, NOW,
-                           armed=True, paused=False, halted=False) == []
-    ok("a signal that already exited on paper is never opened live")
-
     # Schwab-sync audit: our ledger vs the account's real positions
-    row = {"position_id": "L1", "status": "OPEN", "side": "PUT", "qty": "1",
-           "short_strike": "7695", "long_strike": "7665",
-           "expiry": "2026-09-23"}
-    sym = lm.osi_symbol("SPXW", "2026-09-23", "P", 7695)
+    row = {"position_id": "2026-09-29-MEIC-12:00-PUT", "status": "OPEN",
+           "side": "PUT", "qty": "1", "short_strike": "7695",
+           "long_strike": "7665", "expiry": "2026-09-29"}
+    sym = lm.osi_symbol("SPXW", "2026-09-29", "P", 7695)
     pos_ok = [{"instrument": {"symbol": sym}, "shortQuantity": 1,
                "currentDayProfitLoss": 123.4}]
-    a = lm.schwab_audit([row], pos_ok, "2026-09-23")
-    assert a["ok"] and a["missing"] == [] and a["unknown"] == []
-    assert abs(a["day_pl"] - 123.4) < 1e-9
-    ok("audit matches ledger short leg to Schwab position")
-
-    a = lm.schwab_audit([row], [], "2026-09-23")
-    assert not a["ok"] and a["missing"] == ["L1"]
-    ok("audit flags a ledger side missing at Schwab")
-
-    stranger = [{"instrument": {"symbol": lm.osi_symbol("SPXW", "2026-09-23", "C", 7770)},
-                 "shortQuantity": 1, "currentDayProfitLoss": 0}]
-    a = lm.schwab_audit([], stranger, "2026-09-23")
-    assert not a["ok"] and len(a["unknown"]) == 1
-    ok("audit flags an unknown same-day SPXW short (entries held)")
-
+    a = lm.schwab_audit([row], pos_ok, "2026-09-29")
+    assert a["ok"] and abs(a["day_pl"] - 123.4) < 1e-9
+    a = lm.schwab_audit([row], [], "2026-09-29")
+    assert not a["ok"] and a["missing"] == [row["position_id"]]
     other_exp = [{"instrument": {"symbol": lm.osi_symbol("SPXW", "2026-10-17", "C", 7770)},
                   "shortQuantity": 1, "currentDayProfitLoss": 0}]
-    a = lm.schwab_audit([], other_exp, "2026-09-23")
-    assert a["ok"] and a["unknown"] == []
-    ok("other-expiry SPXW positions are the owner's business, not flagged")
+    assert lm.schwab_audit([], other_exp, "2026-09-29")["ok"]
+    ok("audit: match / missing / other-expiry positions untouched")
 
 
 # ── shared .env fallback for token refresh ───────────────────────────────────

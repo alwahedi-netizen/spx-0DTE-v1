@@ -48,12 +48,16 @@ button:hover{border-color:var(--accent)}
 button.danger{color:var(--red);border-color:var(--red)}
 button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 input{font:13px monospace;padding:6px 8px;border:1px solid var(--line);
-  border-radius:6px;background:var(--bg);color:var(--ink);width:110px}
+  border-radius:6px;background:var(--bg);color:var(--ink);width:100px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .stat{font-family:monospace;font-size:12px;color:var(--ink-mut)}
 .stat b{color:var(--ink);font-size:14px}
-#armState{font-family:monospace;font-size:12px}
 .note{font-size:12px;color:var(--ink-mut);margin-top:8px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:10px}
+.spanel{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.spanel h3{margin:0 0 6px;font-family:Cinzel,Georgia,serif;font-size:13px;
+  letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center}
+.spanel .row{margin-top:6px}
 @media (max-width:700px){ td:nth-child(6),th:nth-child(6){display:none} }
 </style>
 </head>
@@ -62,25 +66,18 @@ input{font:13px monospace;padding:6px 8px;border:1px solid var(--line);
 <div class="sub" id="hdr">loading…</div>
 
 <div class="card">
-  <div class="row" id="liveBar">
-    <span id="armState">…</span>
-    <span class="stat">live P&amp;L today <b id="livePnl">—</b></span>
-    <span class="stat" title="Schwab's own currentDayProfitLoss over SPXW positions — ground truth">Schwab P&amp;L <b id="schwabPnl">—</b></span>
+  <div class="row">
+    <span class="stat">live P&amp;L today (all models) <b id="livePnl">—</b></span>
+    <span class="stat" title="Schwab's own currentDayProfitLoss per account — ground truth">Schwab P&amp;L <b id="schwabPnl">—</b></span>
     <span class="stat">sides <b id="liveSides">—</b></span>
-    <span style="flex:1"></span>
-    <button id="pauseBtn" onclick="togglePause()" style="display:none">Pause</button>
-    <button class="danger" id="disarmBtn" onclick="disarm()" style="display:none">DISARM</button>
+    <span class="stat">global stop <b id="gStop">—</b></span>
+    <span id="desyncBadge"></span>
   </div>
-  <div class="row" id="armForm" style="margin-top:10px">
-    <input id="tail" placeholder="account tail e.g. 719">
-    <input id="confirm" placeholder='type: ARM LIVE' style="width:150px">
-    <label class="stat"><input type="checkbox" id="dry" style="width:auto"> dry-run</label>
-    <button class="primary" onclick="arm()">ARM MEIC BOT</button>
-  </div>
-  <div class="note">The bot mirrors the paper engine's MEIC signals only: 1 contract per side,
-  entries 12:00–14:30 ET, per-side stop &amp; 0.05 take-profit managed automatically,
-  hard daily stop −$1,000 (halts and flattens), no entries after 15:00, kill switch above.
-  All other strategies below are paper suggestions — read-only.</div>
+  <div class="sgrid" id="sgrid"></div>
+  <div class="note">Each model arms independently to its own account: enter the account's
+  last digits, type <b>ARM LIVE</b>, optionally tick dry-run, and arm. 1 contract per side,
+  tick-legal limits, fresh-signal guard, per-model daily stop (halts &amp; flattens) plus a
+  global −$2,000 stop, Schwab position audit every cycle. Models not armed are paper-only.</div>
   <div class="note" id="msg"></div>
 </div>
 
@@ -112,34 +109,53 @@ input{font:13px monospace;padding:6px 8px;border:1px solid var(--line);
 
 <script>
 let LIVE=null;
+const LIVE_STRATS=["MEIC","FLY","FLYR","ORB"];
 function esc(s){return String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 function fmt(v){const n=parseFloat(v);return isNaN(n)?'—':(n>0?'+':'')+n.toFixed(0)}
+function panel(name,s){
+  const badges = s.armed
+    ? `<span class="badge b-open">ARMED …${esc(s.account_tail)}${s.dry_run?' · DRY':''}</span>`
+      +(s.halted?' <span class="badge b-bad">HALTED</span>':'')
+      +(s.paused?' <span class="badge b-work">PAUSED</span>':'')
+    : '<span class="badge b-done">OFF</span>';
+  const pnlCls=(s.realized||0)>=0?'pos':'neg';
+  const body = s.armed
+    ? `<div class="row">
+         <span class="stat">today <b class="${pnlCls}">${fmt(s.realized)}</b> · stop ${s.daily_stop}</span>
+         <span style="flex:1"></span>
+         <button onclick="pauseS('${name}',${s.paused?'false':'true'})">${s.paused?'Resume':'Pause'}</button>
+         <button class="danger" onclick="disarmS('${name}')">DISARM</button>
+       </div>`
+    : `<div class="row">
+         <input id="tail_${name}" placeholder="acct tail">
+         <input id="conf_${name}" placeholder="ARM LIVE" style="width:110px">
+         <label class="stat"><input type="checkbox" id="dry_${name}" style="width:auto"> dry</label>
+         <button class="primary" onclick="armS('${name}')">ARM</button>
+       </div>`;
+  return `<div class="spanel"><h3><span>${name}</span>${badges}</h3>${body}</div>`;
+}
 async function refresh(){
   let d;
   try{ d=await (await fetch('api/suggested')).json(); }
   catch(e){ document.getElementById('hdr').textContent='cannot reach dashboard'; return; }
   LIVE=d.live||{};
   document.getElementById('hdr').textContent=d.date+' · auto-refreshes every 15 s';
-  const st=document.getElementById('armState');
-  if(LIVE.armed){
-    const sc=LIVE.schwab;
-    st.innerHTML=`<span class="badge b-open">ARMED …${esc(LIVE.account_tail)}${LIVE.dry_run?' · DRY-RUN':''}</span>`
-      +(LIVE.halted?' <span class="badge b-bad">HALTED (daily stop)</span>':'')
-      +(LIVE.paused?' <span class="badge b-work">PAUSED</span>':'')
-      +((sc&&((sc.missing||[]).length||(sc.unknown||[]).length))
-        ?` <span class="badge b-bad" title="ledger vs Schwab positions mismatch — new entries held. missing: ${esc((sc.missing||[]).join(','))} unknown: ${esc((sc.unknown||[]).join(','))}">DESYNC — entries held</span>`
-        :(sc?' <span class="badge b-done" title="ledger matches Schwab positions">schwab ✓</span>':''));
-  } else st.innerHTML='<span class="badge b-done">DISARMED — bot will not trade</span>';
-  const sp=document.getElementById('schwabPnl');
-  if(LIVE.schwab&&LIVE.schwab.day_pl!=null){sp.textContent=fmt(LIVE.schwab.day_pl);sp.className=LIVE.schwab.day_pl>=0?'pos':'neg';}
-  else sp.textContent='—';
-  document.getElementById('armForm').style.display=LIVE.armed?'none':'flex';
-  document.getElementById('disarmBtn').style.display=LIVE.armed?'':'none';
-  const pb=document.getElementById('pauseBtn');
-  pb.style.display=LIVE.armed?'':'none'; pb.textContent=LIVE.paused?'Resume':'Pause';
   const pnl=document.getElementById('livePnl');
   pnl.textContent=fmt(LIVE.realized); pnl.className=(LIVE.realized||0)>=0?'pos':'neg';
   document.getElementById('liveSides').textContent=LIVE.sides??'—';
+  document.getElementById('gStop').textContent=LIVE.global_stop??'—';
+  const sc=LIVE.schwab||{};
+  let spl=0, has=false, desync=[];
+  for(const tail in sc){ has=true; spl+=sc[tail].day_pl||0;
+    if((sc[tail].missing||[]).length||(sc[tail].unknown||[]).length) desync.push(tail); }
+  const sp=document.getElementById('schwabPnl');
+  sp.textContent=has?fmt(spl):'—'; sp.className=spl>=0?'pos':'neg';
+  document.getElementById('desyncBadge').innerHTML=desync.length
+    ?`<span class="badge b-bad" title="ledger vs Schwab mismatch on …${desync.join(', …')} — entries held">DESYNC …${desync.join(', …')}</span>`
+    :(has?'<span class="badge b-done">schwab ✓</span>':'');
+  const strategies=LIVE.strategies||{};
+  document.getElementById('sgrid').innerHTML=
+    LIVE_STRATS.map(n=>panel(n,strategies[n]||{armed:false,realized:0})).join('');
 
   const tb=document.getElementById('tb');
   if(!(d.rows||[]).length){tb.innerHTML='<tr><td colspan="9" class="mut">no suggested trades yet today</td></tr>';return;}
@@ -149,7 +165,8 @@ async function refresh(){
       ? `<span class="${isNaN(pnlc)?'mut':(pnlc>=0?'pos':'neg')}">${esc(r.exit_reason)} ${fmt(r.pnl_theo)}</span>`
       : (r.position_id?'<span class="badge b-open">OPEN</span>':'<span class="mut">—</span>');
     let live='<span class="mut">—</span>', act='';
-    if(r.strategy==='MEIC'){
+    const sArm=(strategies[r.strategy]||{}).armed;
+    if(LIVE_STRATS.includes(r.strategy)){
       const L=r.live;
       if(L){
         const cls=L.status==='OPEN'?'b-open':(L.status==='OPENING'||L.status==='CLOSING')?'b-work'
@@ -159,9 +176,7 @@ async function refresh(){
           +(L.pnl_live?` <span class="${parseFloat(L.pnl_live)>=0?'pos':'neg'}">${fmt(L.pnl_live)}</span>`:'');
         if(L.status==='OPEN'||L.status==='OPENING')
           act=`<button class="danger" onclick="closeNow('${esc(r.position_id)}')">SELL / CLOSE</button>`;
-      } else if(LIVE.armed && !r.exit_reason){
-        live='<span class="mut">not mirrored</span>';
-      } else live='<span class="mut">bot disarmed</span>';
+      } else live=`<span class="mut">${sArm?'not mirrored':'off'}</span>`;
     }
     return `<tr><td>${esc(r.time)}</td><td><span class="strat">${esc(r.strategy)}</span></td>
       <td>${esc(r.structure)} ${esc(r.side||'')}</td>
@@ -177,15 +192,15 @@ async function post(url,body){
   document.getElementById('msg').textContent=j.error?('⚠ '+j.error):'';
   return j;
 }
-async function arm(){
-  const tail=document.getElementById('tail').value.trim();
-  const conf=document.getElementById('confirm').value.trim();
-  const dry=document.getElementById('dry').checked;
-  if(!tail||conf!=='ARM LIVE'){document.getElementById('msg').textContent='⚠ enter the account tail and type ARM LIVE exactly';return;}
-  await post('api/live/arm',{account_tail:tail,confirm:conf,dry_run:dry}); refresh();
+async function armS(name){
+  const tail=(document.getElementById('tail_'+name).value||'').trim();
+  const conf=(document.getElementById('conf_'+name).value||'').trim();
+  const dry=document.getElementById('dry_'+name).checked;
+  if(!tail||conf!=='ARM LIVE'){document.getElementById('msg').textContent='⚠ '+name+': enter the account tail and type ARM LIVE exactly';return;}
+  await post('api/live/arm',{strategy:name,account_tail:tail,confirm:conf,dry_run:dry}); refresh();
 }
-async function disarm(){ if(confirm('Disarm the MEIC bot? Open live positions stay open — close them first if needed.')) {await post('api/live/disarm'); refresh();} }
-async function togglePause(){ await post('api/live/pause',{on:!LIVE.paused}); refresh(); }
+async function disarmS(name){ if(confirm('Disarm '+name+'? Open live positions stay open — close them first if needed.')){await post('api/live/disarm',{strategy:name}); refresh();} }
+async function pauseS(name,on){ await post('api/live/pause',{strategy:name,on:on==='true'||on===true}); refresh(); }
 async function closeNow(pid){ if(confirm('Close '+pid+' at market now?')){ await post('api/live/close',{position_id:pid}); refresh(); } }
 async function refreshReport(){
   let d;
