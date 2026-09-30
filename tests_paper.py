@@ -230,8 +230,8 @@ def test_meic_orb():
 def test_fly_late():
     print("FLY / LATE")
     cfg = pe.load_config(path="/nonexistent")
-    assert cfg["fly"]["enabled"] and cfg["late"]["enabled"]
-    ok("both enabled in defaults")
+    assert cfg["fly"]["enabled"] and not cfg["late"]["enabled"]
+    ok("FLY enabled in defaults; LATE retired (RETIRED.md, 2026-09-29)")
 
     assert pe.fly_group_action(36.0, 36.0, 0.25, 0.25) is None
     assert pe.fly_group_action(26.9, 36.0, 0.25, 0.25) == "TP"      # <= 27.0
