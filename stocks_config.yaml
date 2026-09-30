@@ -204,6 +204,52 @@ ibs:                             # internal bar strength < 0.2 in an uptrend
 stack:
   components: [TOM, SECROT, RSI2, IBS]
 
+# ── round 6 (owner chose "keep searching", 2026-09-30): lanes built to
+# raise Sharpe, not just cut losses. Weighted, monthly: sold at the month's
+# last close, re-bought at the next open. Fixed before their first run.
+vtspy:                           # volatility-managed SPY (Moreira & Muir 2017)
+  enabled: true
+  stage: backtest
+  symbols: [SPY]
+  weighting: vol_target
+  target_vol: 15.0               # weight = min(1, 15% / realized 21-day vol)
+  entry_sessions: 1
+  stop_pct: 30.0
+  max_new_per_day: 1
+  max_open: 1
+
+vt4:                             # the same across the four index ETFs
+  enabled: true
+  stage: backtest
+  symbols: [SPY, QQQ, IWM, DIA]
+  weighting: vol_target
+  target_vol: 15.0
+  entry_sessions: 1
+  stop_pct: 30.0
+  max_new_per_day: 4
+  max_open: 4
+
+rpar:                            # risk parity: stocks / bonds / gold, inverse 63d vol
+  enabled: true
+  stage: backtest
+  symbols: [SPY, TLT, GLD]
+  weighting: inverse_vol
+  entry_sessions: 1
+  stop_pct: 30.0
+  max_new_per_day: 3
+  max_open: 3
+
+rptrend:                         # risk parity on 5 assets, only those > SMA200
+  enabled: true
+  stage: backtest
+  symbols: [SPY, EFA, EEM, TLT, GLD]
+  weighting: inverse_vol
+  trend_filter: true             # a filtered asset's weight sits in T-bills
+  entry_sessions: 1
+  stop_pct: 30.0
+  max_new_per_day: 5
+  max_open: 5
+
 # Backtest -> paper promotion bar (fixed BEFORE the first backtest ran)
 backtest_gate:
   min_trades: 50
@@ -230,3 +276,7 @@ gates:
   ETFTREND: {trades: 30, weeks: 26, tripwire: -5000}
   TOM:  {trades: 60,  weeks: 26, tripwire: -2500}
   IBS:  {trades: 100, weeks: 16, tripwire: -2500}
+  VTSPY: {trades: 24, weeks: 26, tripwire: -5000}
+  VT4:  {trades: 24,  weeks: 26, tripwire: -5000}
+  RPAR: {trades: 24,  weeks: 26, tripwire: -5000}
+  RPTREND: {trades: 24, weeks: 26, tripwire: -5000}

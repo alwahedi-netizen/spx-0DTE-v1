@@ -334,3 +334,26 @@ and the timing lanes (mostly in T-bills) lost most of their excess return
 too. STACK is the best risk profile found (crash losses of 2–5% vs 15–31%
 for holding, 2,247 trades, 100% confidence), but it does not beat the
 index per unit of risk. No lane is promoted.
+
+
+## 15. Round 6 (owner: keep searching): Sharpe-raising lanes
+
+Weighted monthly lanes (`WEIGHTED`, `lane_weights`): sold at the month's
+last close, re-bought at the next open. Judged with dividends + T-bill cash.
+
+| lane | idea | CAGR | maxDD | excess Sharpe vs hold | verdict |
+|---|---|---|---|---|---|
+| VTSPY | vol-managed SPY, 15% target, ≤100% | 8.6% | −22.0% | 0.58 vs 0.69 | FAIL |
+| VT4 | same on SPY/QQQ/IWM/DIA | 7.5% | −22.4% | 0.48 vs 0.65 | FAIL |
+| RPAR | risk parity SPY/TLT/GLD | 6.3% | −18.4% | 0.52 vs 0.72 | FAIL |
+| RPTREND | 5-asset risk parity, > SMA200 only | 5.2% | −8.0% | 0.42 vs 0.57 | FAIL (Sharpe only) |
+
+Monthly vol targeting could not react inside fast crashes (2020 lasted a
+month) and missed the rebounds. Risk parity was hurt by 2022, when stocks
+and bonds fell together. This matches the out-of-sample literature
+(e.g. Cederburg et al. 2020 on vol-managed portfolios).
+
+**Tally: 25 lanes tested, 0 pass.** The multiple-testing risk now
+dominates: at this count a lucky pass is likely, so any future pass needs
+its held-out window and paper record weighed more heavily than the
+full-window numbers.

@@ -188,7 +188,8 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
     idx = {s: {b["date"]: i for i, b in enumerate(v)} for s, v in bars.items()}
     last_day = {s: v[-1]["date"] for s, v in bars.items() if v}
     cand_fn = se.CANDIDATES[strategy]
-    need_ctx = strategy in ("MOMR", "SECROT", "TOM") or strategy in se.ROTATION
+    need_ctx = (strategy in ("MOMR", "SECROT", "TOM") or strategy in se.ROTATION
+                or strategy in se.WEIGHTED)
     eq0 = float(cfg["account_equity"])
     opens, trades, curve = [], [], []
     realized = 0.0
@@ -260,7 +261,9 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
             stop = se.initial_stop(strategy, last, f, cfg)
             tgt = se.initial_target(strategy, last, f)
             heat, notional = book(last_close)
-            qty, risk, why = se.size_for(strategy, last, stop, cfg, heat, new_risk, notional)
+            w_ = se.lane_weights(strategy, fe, c).get(sym) if strategy in se.WEIGHTED else None
+            qty, risk, why = se.size_for(strategy, last, stop, cfg, heat, new_risk, notional,
+                                         weight=w_)
             if why:
                 continue
             tier = se.tier_of(sym, cfg)

@@ -44,8 +44,13 @@ MARK_TIME = "16:10"
 TRACK_INTERVAL_S = 120
 STALE_MARKS_DELIST = 5        # consecutive quote-less marks -> DELISTED
 STRATEGIES = ("MOM", "PB90", "RSI2", "MOMR", "BRK55", "HI52", "QBO", "SECROT",
-              "LOWVOL", "MOM12", "LVMOM", "RSI2S", "ETFTREND", "TOM", "IBS")
-ETF_STRATEGIES = {"RSI2", "SECROT", "ETFTREND", "TOM", "IBS"}
+              "LOWVOL", "MOM12", "LVMOM", "RSI2S", "ETFTREND", "TOM", "IBS",
+              "VTSPY", "VT4", "RPAR", "RPTREND")
+ETF_STRATEGIES = {"RSI2", "SECROT", "ETFTREND", "TOM", "IBS",
+                  "VTSPY", "VT4", "RPAR", "RPTREND"}
+# Weighted lanes: every eligible symbol held at a computed weight, sold at
+# the close of the month's last session and re-bought at the next open.
+WEIGHTED = {"VTSPY", "VT4", "RPAR", "RPTREND"}
 FAMILY = {"MOMR": "MOM", "RSI2S": "RSI2"}   # same mechanics, different filter/universe
 # Rotation lanes: hold the top-N by a score, equal-weight, rebalanced monthly.
 ROTATION = {"LOWVOL", "MOM12", "LVMOM", "ETFTREND"}
@@ -112,6 +117,19 @@ DEFAULTS = {
             "ibs_max": 0.2, "atr_stop": 3.0, "time_stop_sessions": 5,
             "max_new_per_day": 4, "max_open": 4},
     "stack": {"components": ["TOM", "SECROT", "RSI2", "IBS"]},
+    "vtspy": {"enabled": True, "stage": "backtest", "symbols": ["SPY"], "weighting": "vol_target",
+              "target_vol": 15.0, "entry_sessions": 1, "stop_pct": 30.0,
+              "max_new_per_day": 1, "max_open": 1},
+    "vt4": {"enabled": True, "stage": "backtest", "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "weighting": "vol_target", "target_vol": 15.0, "entry_sessions": 1,
+            "stop_pct": 30.0, "max_new_per_day": 4, "max_open": 4},
+    "rpar": {"enabled": True, "stage": "backtest", "symbols": ["SPY", "TLT", "GLD"],
+             "weighting": "inverse_vol", "entry_sessions": 1, "stop_pct": 30.0,
+             "max_new_per_day": 3, "max_open": 3},
+    "rptrend": {"enabled": True, "stage": "backtest",
+                "symbols": ["SPY", "EFA", "EEM", "TLT", "GLD"], "weighting": "inverse_vol",
+                "trend_filter": True, "entry_sessions": 1, "stop_pct": 30.0,
+                "max_new_per_day": 5, "max_open": 5},
     "gates": {"MOM": {"trades": 60, "weeks": 16, "tripwire": -3000},
               "PB90": {"trades": 100, "weeks": 12, "tripwire": -3000},
               "RSI2": {"trades": 100, "weeks": 10, "tripwire": -2500},
@@ -126,7 +144,9 @@ DEFAULTS = {
               "RSI2S": {"trades": 100, "weeks": 10, "tripwire": -2500},
               "ETFTREND": {"trades": 30, "weeks": 26, "tripwire": -5000},
               "TOM": {"trades": 60, "weeks": 26, "tripwire": -2500},
-              "IBS": {"trades": 100, "weeks": 16, "tripwire": -2500}},
+              "IBS": {"trades": 100, "weeks": 16, "tripwire": -2500},
+              **{k: {"trades": 24, "weeks": 26, "tripwire": -5000}
+                 for k in ("VTSPY", "VT4", "RPAR", "RPTREND")}},
 }
 
 
@@ -254,6 +274,7 @@ def features(bars) -> dict:
         "box_rng": ((max(closes[-11:-1]) / min(closes[-11:-1]) - 1) * 100
                     if len(closes) >= 11 else None),
         "vol252": _vol(closes, 252),
+        "vol21": _vol(closes, 21), "vol63": _vol(closes, 63),
         "hi1": bars[-1]["high"],
         "ibs": ((bars[-1]["close"] - bars[-1]["low"]) / (bars[-1]["high"] - bars[-1]["low"])
                 if bars[-1]["high"] > bars[-1]["low"] else None),
@@ -473,11 +494,40 @@ def ibs_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
     return [s for s, _ in sorted(out, key=_by("ibs", reverse=False))]
 
 
+def lane_weights(strategy: str, feats: dict, c: dict) -> dict:
+    """{sym: fraction of equity} for a weighted lane (sums to <= 1)."""
+    syms = [s for s in c["symbols"] if s in feats]
+    if c["weighting"] == "vol_target":
+        # each of n slots: min(1, target / realized 21d vol) of its 1/n share
+        n = len(c["symbols"])
+        return {s: min(1.0, c["target_vol"] / feats[s]["vol21"]) / n
+                for s in syms if feats[s].get("vol21")}
+    if c["weighting"] == "inverse_vol":
+        inv = {s: 1.0 / feats[s]["vol63"] for s in syms if feats[s].get("vol63")}
+        tot = sum(inv.values())
+        keep = inv
+        if c.get("trend_filter"):
+            keep = {s: v for s, v in inv.items()
+                    if feats[s].get("sma200") and feats[s]["close"] > feats[s]["sma200"]}
+        return {s: v / tot for s, v in keep.items()} if tot else {}
+    return {}
+
+
+def weighted_candidates_for(strategy: str):
+    def cands(feats: dict, c: dict, ctx: dict = None) -> list:
+        if (ctx or {}).get("som", 99) > c["entry_sessions"]:
+            return []
+        w = lane_weights(strategy, feats, c)
+        return [s for s in sorted(w) if w[s] > 0.005]
+    return cands
+
+
 CANDIDATES = {"MOM": mom_candidates, "PB90": pb90_candidates, "RSI2": rsi2_candidates,
               "MOMR": momr_candidates, "BRK55": brk55_candidates,
               "HI52": hi52_candidates, "QBO": qbo_candidates,
               "SECROT": secrot_candidates, "RSI2S": rsi2_candidates,
               "TOM": tom_candidates, "IBS": ibs_candidates,
+              **{k: weighted_candidates_for(k) for k in ("VTSPY", "VT4", "RPAR", "RPTREND")},
               **{k: rotation_candidates_for(k) for k in ("LOWVOL", "MOM12", "LVMOM", "ETFTREND")}}
 
 
@@ -519,14 +569,15 @@ def mom_add_ok(p: dict, f: dict, last: float, c: dict) -> bool:
 # ── sizing / fills / fees (pure) ─────────────────────────────────────────────
 
 def size_for(strategy: str, entry: float, stop: float, cfg: dict, heat_used: float,
-             budget_used: float, notional_used: float):
+             budget_used: float, notional_used: float, weight: float = None):
     """Rotation lanes are equal-weight portfolios (a slot = 1/top_n of equity,
     cash-limited only); every other lane uses the risk-unit sizing."""
     c = cfg.get(strategy.lower()) or {}
-    if strategy not in ROTATION:
+    if strategy not in ROTATION and strategy not in WEIGHTED:
         return size_position(entry, stop, cfg, heat_used, budget_used, notional_used)
     eq = float(cfg["account_equity"])
-    qty = int(eq * c.get("invested", 0.98) / c["top_n"] // entry)
+    share = weight if strategy in WEIGHTED else 1.0 / c["top_n"]
+    qty = int(eq * c.get("invested", 0.98) * (share or 0) // entry)
     if qty < 1:
         return 0, 0.0, "QTY"
     risk = round(qty * max(0.0, entry - (stop or 0)), 2)
@@ -660,6 +711,8 @@ def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = 
     entry_day = (p.get("entry_ts") or "")[:10]
     if held is None:
         held = sessions_between(entry_day, today)
+    if strat in WEIGHTED:
+        return "REBAL" if (ctx or {}).get("eom") else None
     if strat in ROTATION:
         c = cfg[strat.lower()]
         ctx = ctx or {}
@@ -1018,8 +1071,9 @@ def do_entries(cfg, ds: str, day_row: dict, fe: dict, data, clock, strategy: str
         stop = initial_stop(strategy, last, f, cfg)
         tgt = initial_target(strategy, last, f)
         b = book_state(ds, quotes)
+        w_ = lane_weights(strategy, feats, c).get(sym) if strategy in WEIGHTED else None
         qty, risk, reason = size_for(strategy, last, stop, cfg, b["heat"], b["budget"],
-                                     b["notional"])
+                                     b["notional"], weight=w_)
         if reason:
             _sig(ds, ts, strategy, "SKIP", skip_reason=reason, last=_f2(last),
                  stop_px=_f2(stop), risk_usd=_f2(risk), **base)

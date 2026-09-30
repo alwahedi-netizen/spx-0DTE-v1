@@ -282,6 +282,34 @@ def test_market_effect_lanes():
     ok("IBS feature = (close − low) / (high − low) of the last bar")
 
 
+def test_weighted_lanes():
+    print("Weighted lanes (vol target / risk parity)")
+    cfg = base_cfg()
+    F = lambda **k: dict({"close": 100.0, "sma200": 90.0, "vol21": 15.0, "vol63": 20.0}, **k)
+    w = se.lane_weights("VTSPY", {"SPY": F(vol21=30.0)}, cfg["vtspy"])
+    assert approx(w["SPY"], 0.5)
+    assert approx(se.lane_weights("VTSPY", {"SPY": F(vol21=10.0)}, cfg["vtspy"])["SPY"], 1.0)
+    ok("vol target: 30% realized vol → half size; calm markets capped at 100% (no leverage)")
+    w4 = se.lane_weights("VT4", {s_: F(vol21=15.0) for s_ in ("SPY", "QQQ", "IWM", "DIA")}, cfg["vt4"])
+    assert all(approx(v, 0.25) for v in w4.values())
+    ok("VT4: four quarter-slots, each vol-targeted")
+    rp = se.lane_weights("RPAR", {"SPY": F(vol63=20.0), "TLT": F(vol63=10.0), "GLD": F(vol63=20.0)},
+                         cfg["rpar"])
+    assert approx(rp["TLT"], 0.5) and approx(rp["SPY"], 0.25) and approx(sum(rp.values()), 1.0)
+    ok("risk parity: weight ∝ 1/vol, fully invested")
+    f5 = {s_: F(vol63=20.0) for s_ in ("SPY", "EFA", "EEM", "TLT", "GLD")}
+    f5["EEM"] = F(vol63=20.0, close=80.0)                       # below SMA200
+    rt = se.lane_weights("RPTREND", f5, cfg["rptrend"])
+    assert "EEM" not in rt and approx(sum(rt.values()), 0.8)
+    ok("trend filter: an asset below SMA200 drops out and its share stays in cash")
+    q, _, why = se.size_for("RPAR", 50.0, 35.0, cfg, 0, 0, 0, weight=0.5)
+    assert why == "" and q == int(100000 * 0.98 * 0.5 // 50.0)
+    P = pos(strategy="RPAR", symbol="TLT")
+    assert se.rule_exit(P, {}, 100, "2026-09-30", cfg, held=20, ctx={"eom": True}) == "REBAL"
+    assert se.rule_exit(P, {}, 100, "2026-09-29", cfg, held=20, ctx={"eom": False}) is None
+    ok("sized by weight; sold at the month's last close, re-bought next open")
+
+
 def test_sizing_fills_fees():
     print("Sizing / ticks / fills / fees")
     cfg = base_cfg()
@@ -800,7 +828,7 @@ def test_real_config():
 
 if __name__ == "__main__":
     for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates, test_rotation_lanes,
-              test_market_effect_lanes,
+              test_market_effect_lanes, test_weighted_lanes,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
               test_session_with_crash, test_missed_and_holiday, test_backtest, test_cash_yield_and_stack, test_pit_universe,
               test_real_config):
