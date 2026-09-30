@@ -390,13 +390,17 @@ async function loadBacktests(){
     return `<div class="bt">
       <div class="hd"><b>${esc(k)}</b><span>${stageB}
         <span class="badge ${v.pass ? "ok" : "bad"}">${v.pass ? "PASS" : "FAIL"}</span></span></div>
+      <div style="font-size:11.5px;margin:-2px 0 3px">${r.universe_mode === "pit_sp500"
+        ? `<span class="pill">deep test · point-in-time S&amp;P 500 · price coverage ${pct(r.pit_coverage)}</span>` +
+          (r.fixed_universe ? ` <span class="mut">today's-100 test: ${r.fixed_universe.pass ? "pass" : "fail"}</span>` : "")
+        : `<span class="pill">today's 100 symbols</span>`}</div>
       <div class="mut" style="font-size:11px">${esc(r.start)} → ${esc(r.end)} · ${r.universe_size} symbols ·
         params ${esc(r.params_hash)} · ${j.variants[k] || 1} variant(s) tried · ran ${esc((r.ran_at || "").replace("T"," ").slice(0,16))}</div>
       ${curveSvg(r)}
       <div class="kv"><span>Trades · win · avg hold</span><b>${s.n} · ${pct(s.win_rate)} · ${r.avg_hold ?? "–"}d</b></div>
       <div class="kv"><span>Expectancy · conf · PF</span><b>${money(s.expectancy)} · ${pct(s.confidence)} · ${f2(s.pf)}</b></div>
       <div class="kv"><span>CAGR · max DD · Sharpe</span><b>${pct(m.cagr)} · ${pct(m.max_dd_pct)} · ${f2(m.sharpe)}</b></div>
-      <div class="kv"><span>Universe hold (CAGR · DD · Sharpe)</span><b class="mut">${pct(u.cagr)} · ${pct(u.max_dd_pct)} · ${f2(u.sharpe)}</b></div>
+      <div class="kv"><span>${r.universe_mode === "pit_sp500" ? "S&amp;P 500 equal-weight" : "Universe hold"} (CAGR · DD · Sharpe)</span><b class="mut">${pct(u.cagr)} · ${pct(u.max_dd_pct)} · ${f2(u.sharpe)}</b></div>
       <div class="kv"><span>SPY hold</span><b class="mut">${pct(sp.cagr)} · ${pct(sp.max_dd_pct)} · ${f2(sp.sharpe)}</b></div>
       <div class="kv"><span>Avg exposure</span><b>${pct(m.avg_exposure)}</b></div>
       <div style="font-size:11.5px;margin-top:4px">${years}</div>

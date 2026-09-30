@@ -94,16 +94,55 @@ def _pos(pid, strat, sym, tier, d, qty, entry, stop, tgt, risk, fill):
             "entry_px_actual": fill, "entry_i": None}
 
 
-def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
-    """Replay one strategy in isolation over [start, end]. Pure: no I/O."""
+# ── point-in-time S&P 500 membership (survivorship control) ────────────────
+# reference/sp500_pit.csv: the full member list on its first date, then one
+# row per change (added / removed tickers). Source: fja05680/sp500 (Andreas
+# Clenow's list from 'Trading Evolved', maintained from Wikipedia changes).
+PIT_FILE = Path(__file__).resolve().parent / "reference" / "sp500_pit.csv"
+
+
+def load_pit(path=None):
+    """[(date, frozenset(members))] in date order."""
+    snaps, cur = [], set()
+    with open(path or PIT_FILE, newline="") as f:
+        for r in csv.DictReader(f):
+            cur = (cur | set(r["added"].split())) - set(r["removed"].split())
+            snaps.append((r["date"], frozenset(cur)))
+    return snaps
+
+
+def members_fn(snaps):
+    """d -> the index members on d (the latest snapshot dated <= d)."""
+    import bisect
+    dates = [d for d, _ in snaps]
+
+    def members(d):
+        i = bisect.bisect_right(dates, d) - 1
+        return snaps[i][1] if i >= 0 else frozenset()
+    return members
+
+
+def pit_tickers(snaps, start: str) -> set:
+    out = set()
+    for d, m in snaps:
+        out |= m
+    return out
+
+
+def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
+             members=None) -> dict:
+    """Replay one strategy in isolation over [start, end]. Pure: no I/O.
+    members: optional d -> set of tickers — the point-in-time stock universe
+    (stock lanes only); names that later left the index are included."""
     key = strategy.lower()
     c = cfg[key]
+    pit = members is not None and strategy not in se.ETF_STRATEGIES
     group = [s for s in se.group_of(strategy, cfg) if s in bars]
     stocks = [s for s in cfg["universe"]["stocks"] if s in bars]
     etfs = [s for s in cfg["universe"]["etfs"] if s in bars]
-    ctx_syms = sorted(set(group) | set(stocks) | set(etfs))
     cal = [b["date"] for b in bars["SPY"] if start <= b["date"] <= end]
-    idx = {s: {b["date"]: i for i, b in enumerate(bars[s])} for s in ctx_syms}
+    idx = {s: {b["date"]: i for i, b in enumerate(v)} for s, v in bars.items()}
+    last_day = {s: v[-1]["date"] for s, v in bars.items() if v}
     cand_fn = se.CANDIDATES[strategy]
     need_ctx = strategy in ("MOMR", "SECROT")
     eq0 = float(cfg["account_equity"])
@@ -127,6 +166,8 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict
                     continue
                 fi[s] = bars[s][max(0, i - WINDOW):i]
             return se.universe_features(fi, list(fi))
+        if pit:
+            group = [s for s in members(d) if s in bars]
         # features from bars strictly before d (what the premarket step sees)
         fe = feats_for(group)
         ctx = None
@@ -190,6 +231,15 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict
         for p in opens:
             b = today_bar(p["symbol"], d)
             if not b:
+                if last_day.get(p["symbol"], d) < d:    # delisted / acquired
+                    px = last_close.get(p["symbol"], se.avg_cost(p))
+                    pnl = se.campaign_pnl(p, px, cfg, actual=True)
+                    realized += pnl
+                    trades.append({"symbol": p["symbol"], "entry": p["entry_ts"], "exit": d,
+                                   "reason": "DELISTED", "held": di - p["entry_i"],
+                                   "qty": se.eff_qty(p), "avg_cost": round(se.avg_cost(p, True), 4),
+                                   "exit_px": px, "pnl": pnl, "added": bool(p.get("add_ts"))})
+                    continue
                 still.append(p)
                 continue
             stop, tgt = p["stop_px"], p.get("target_px")
@@ -287,6 +337,30 @@ def benchmark_curve(bars: dict, symbols: list, cal: list, eq0: float) -> list:
     return out
 
 
+def pit_index_curve(bars: dict, members, cal: list, eq0: float) -> tuple:
+    """Equal-weight, daily-rebalanced index of the point-in-time members that
+    have prices ([equity...], coverage = share of member-days with data)."""
+    px = {s: {b["date"]: b["close"] for b in v} for s, v in bars.items()}
+    eq, out, have, total = eq0, [], 0, 0
+    for i, d in enumerate(cal):
+        if i == 0:
+            out.append(eq)
+            continue
+        prev = cal[i - 1]
+        rets = []
+        m = members(d)
+        total += len(m)
+        for s in m:
+            a, b = px.get(s, {}).get(prev), px.get(s, {}).get(d)
+            if a and b:
+                rets.append(b / a - 1)
+        have += len(rets)
+        if rets:
+            eq *= 1 + sum(rets) / len(rets)
+        out.append(eq)
+    return out, (have / total if total else None)
+
+
 def benchmark(bars: dict, symbols: list, cal: list, eq0: float) -> dict:
     """Equal-weight buy-and-hold of `symbols` from the first to last day."""
     per = [s for s in symbols if s in bars]
@@ -378,9 +452,10 @@ def verdict(res: dict, gate: dict, eq0: float) -> dict:
             "label": "PASS — eligible for paper" if passed else "FAIL — stays out of paper"}
 
 
-def run(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
+def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None) -> dict:
     eq0 = float(cfg["account_equity"])
-    sim = simulate(cfg, bars, strategy, start, end)
+    pit = members is not None and strategy not in se.ETF_STRATEGIES
+    sim = simulate(cfg, bars, strategy, start, end, members=members if pit else None)
     cal = [c["date"] for c in sim["curve"]]
     trades = sim["trades"]
     split = cal[int(len(cal) * IS_FRACTION)] if cal else end
@@ -396,6 +471,7 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
         "metrics": _octane(curve_metrics(sim["curve"], eq0)),
         "benchmark_spy": benchmark(bars, ["SPY"], cal, eq0),
         "benchmark_universe": benchmark(bars, group, cal, eq0),
+        "universe_mode": "pit_sp500" if pit else "fixed_today",
         "by_year": by_year(trades),
         "stress": stress(sim["curve"], bars, group, eq0),
         "exit_reasons": {r: sum(1 for t in trades if t["reason"] == r)
@@ -406,6 +482,17 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
         "trades_tail": trades[-40:],
         "universe_size": len([s for s in group if s in bars]),
     }
+    if pit:
+        ic, cov = pit_index_curve(bars, members, cal, eq0)
+        res["benchmark_universe"] = curve_metrics(
+            [{"date": d, "equity": e} for d, e in zip(cal, ic)], eq0)
+        res["pit_coverage"] = round(cov, 4) if cov is not None else None
+        res["universe_size"] = len({s for d in cal[::21] for s in members(d)})
+        res["stress"] = stress(sim["curve"], bars, [], eq0)
+        for k, (a, b) in STRESS.items():
+            w = [e for d, e in zip(cal, ic) if a <= d <= b]
+            if k in res["stress"] and len(w) > 1:
+                res["stress"][k]["hold_pct"] = round(w[-1] / w[0] - 1, 4)
     gate = dict(GATE_DEFAULTS, **(cfg.get("backtest_gate") or {}))
     res["gate"] = gate
     res["verdict"] = verdict(res, gate, eq0)
@@ -415,9 +502,10 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
 def save(res: dict):
     d = bt_dir()
     os.makedirs(d, exist_ok=True)
-    (d / f"latest_{res['strategy']}.json").write_text(json.dumps(res))
+    tag = "_pit" if res.get("universe_mode") == "pit_sp500" else ""
+    (d / f"latest_{res['strategy']}{tag}.json").write_text(json.dumps(res))
     path = d / "runs.csv"
-    cols = ["ran_at", "strategy", "params_hash", "start", "end", "trades", "expectancy",
+    cols = ["ran_at", "strategy", "universe_mode", "params_hash", "start", "end", "trades", "expectancy",
             "pf", "confidence", "max_dd_pct", "sharpe", "bench_sharpe", "verdict"]
     new = not path.exists()
     with open(path, "a", newline="") as f:
@@ -426,6 +514,7 @@ def save(res: dict):
             w.writeheader()
         s = res["stats"]
         w.writerow({"ran_at": res["ran_at"], "strategy": res["strategy"],
+                    "universe_mode": res.get("universe_mode", "fixed_today"),
                     "params_hash": res["params_hash"], "start": res["start"], "end": res["end"],
                     "trades": s["n"], "expectancy": s.get("expectancy"), "pf": s.get("pf"),
                     "confidence": s.get("confidence"), "max_dd_pct": res["metrics"].get("max_dd_pct"),
@@ -434,10 +523,19 @@ def save(res: dict):
                     "verdict": "PASS" if res["verdict"]["pass"] else "FAIL"})
 
 
-def load_latest() -> dict:
+SHIPPED_DIR = Path(__file__).resolve().parent / "reference" / "backtests"
+
+
+def load_latest(pit: bool = False) -> dict:
+    """Latest result per strategy. Point-in-time runs are heavy (~750 symbols),
+    so they are run offline and SHIPPED with the code in reference/backtests/
+    (the hub's deploy never copies data/); a local run in data/ wins."""
     out = {}
     for strat in se.STRATEGIES:
-        f = bt_dir() / f"latest_{strat}.json"
+        name = f"latest_{strat}{'_pit' if pit else ''}.json"
+        f = bt_dir() / name
+        if not f.exists() and pit:
+            f = SHIPPED_DIR / name
         if f.exists():
             try:
                 out[strat] = json.loads(f.read_text())
@@ -460,7 +558,9 @@ def variants_tried() -> dict:
 def summary_text(res: dict) -> str:
     s, m, b, u = res["stats"], res["metrics"], res["benchmark_spy"], res["benchmark_universe"]
     pct = lambda x: "n/a" if x is None else f"{100 * x:.1f}%"
-    L = [f"{res['strategy']}  {res['start']} → {res['end']}  ({res['sessions']} sessions, "
+    L = [f"{res['strategy']}  [{res.get('universe_mode', 'fixed_today')}"
+         f"{', data coverage ' + pct(res.get('pit_coverage')) if res.get('pit_coverage') else ''}]"
+         f"  {res['start']} → {res['end']}  ({res['sessions']} sessions, "
          f"{res['universe_size']} symbols, params {res['params_hash']})",
          f"  trades {s['n']} | win {pct(s.get('win_rate'))} | expectancy ${s.get('expectancy')} "
          f"± {s.get('se')} | conf {pct(s.get('confidence'))} | PF {s.get('pf')} | "
@@ -488,9 +588,18 @@ def main(argv=None):
     ap.add_argument("--years", type=int, default=10)
     ap.add_argument("--start")
     ap.add_argument("--end", default=date.today().isoformat())
+    ap.add_argument("--pit", action="store_true",
+                    help="point-in-time S&P 500 universe (survivorship control; ~750 "
+                         "symbols to download, several minutes per stock strategy)")
     a = ap.parse_args(argv)
     cfg = se.load_config()
-    bars = load_history(se.universe(cfg), years=a.years)
+    members = None
+    syms = se.universe(cfg)
+    if a.pit:
+        snaps = load_pit()
+        members = members_fn(snaps)
+        syms = sorted(set(syms) | pit_tickers(snaps, ""))
+    bars = load_history(syms, years=a.years)
     if "SPY" not in bars:
         print("no SPY history — cannot build the calendar", flush=True)
         return 1
@@ -498,7 +607,9 @@ def main(argv=None):
     start = a.start or bars["SPY"][min(WINDOW, len(bars["SPY"]) - 1)]["date"]
     for strat in ([a.strategy] if a.strategy else se.STRATEGIES):
         t0 = time.time()
-        res = run(cfg, bars, strat, start, a.end)
+        if a.pit and strat in se.ETF_STRATEGIES:
+            continue                       # ETF lanes have no stock-survivorship issue
+        res = run(cfg, bars, strat, start, a.end, members=members)
         save(res)
         print(summary_text(res), flush=True)
         print(f"  ({time.time() - t0:.0f}s)\n", flush=True)

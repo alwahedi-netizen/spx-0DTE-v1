@@ -21,6 +21,7 @@ CLI:
 """
 
 import argparse
+import bisect
 import math
 import sys
 import time
@@ -235,13 +236,11 @@ def universe_features(bars_by_sym: dict, symbols: list) -> dict:
         f = features(bars_by_sym.get(s) or [])
         if f:
             feats[s] = f
-    expl = [f["expl_raw"] for f in feats.values()]
-    r1y = [f["r252"] for f in feats.values()]
-    r3m = [f["r63"] for f in feats.values()]
-    for f in feats.values():
-        f["expl_rank"] = pct_rank(expl, f["expl_raw"])
-        f["r1y_rank"] = pct_rank(r1y, f["r252"])
-        f["r63_rank"] = pct_rank(r3m, f["r63"])
+    for raw, rank in (("expl_raw", "expl_rank"), ("r252", "r1y_rank"), ("r63", "r63_rank")):
+        vals = sorted(f[raw] for f in feats.values() if f[raw] is not None)
+        for f in feats.values():                      # == pct_rank, O(n log n)
+            f[rank] = (round(100.0 * bisect.bisect_right(vals, f[raw]) / len(vals), 1)
+                       if vals and f[raw] is not None else None)
     return feats
 
 

@@ -638,6 +638,48 @@ def test_backtest():
     ok("paper engine only enters strategies promoted to stage: paper (default: backtest)")
 
 
+def test_pit_universe():
+    print("Point-in-time universe (survivorship control)")
+    snaps = bt.load_pit()
+    m = bt.members_fn(snaps)
+    assert 480 <= len(m("2020-06-01")) <= 520 and 480 <= len(m("2026-08-31")) <= 520
+    assert "CELG" in m("2018-01-02") and "CELG" not in m("2026-08-31")   # acquired 2019
+    assert "TSLA" not in m("2020-06-01") and "TSLA" in m("2021-01-04")   # added Dec 2020
+    ok("S&P 500 membership replays: CELG out after its buyout, TSLA in from Dec 2020")
+
+    cfg = base_cfg()
+    bars = rw_universe()
+    cal = [b["date"] for b in bars["SPY"]]
+    join = cal[400]
+    # AAA is the strongest name but only joins the index at `join`
+    bars["AAA"] = mk_bars([30 * 1.006 ** k for k in range(520)], date(2026, 9, 29))
+    others = set(cfg["universe"]["stocks"]) - {"AAA"}
+    mem = lambda d: frozenset(others | ({"AAA"} if d >= join else set()))
+    r = bt.simulate(cfg, bars, "MOM", cal[bt.WINDOW], cal[-1], members=mem)
+    a = [t for t in r["trades"] if t["symbol"] == "AAA"]
+    first = min((t["entry"] for t in a), default=None)
+    assert first is None or first >= join, first
+    ok("a stock is never bought before it joined the index")
+
+    # a held name whose prices stop (buyout) is closed at its last close
+    b2 = dict(bars)
+    b2["AAA"] = bars["AAA"][:470]
+    r = bt.simulate(cfg, b2, "MOM", cal[bt.WINDOW], cal[-1],
+                    members=lambda d: frozenset(cfg["universe"]["stocks"]))
+    dl = [t for t in r["trades"] if t["reason"] == "DELISTED"]
+    assert len(dl) == 1 and dl[0]["symbol"] == "AAA", dl
+    assert approx(dl[0]["exit_px"], b2["AAA"][-1]["close"], 1e-9)
+    assert dl[0]["exit"] > b2["AAA"][-1]["date"]
+    ok("delisted holdings close at their last price (no phantom positions)")
+
+    ic, cov = bt.pit_index_curve({"X": mk_bars([10, 11, 12.1], date(2026, 9, 29)),
+                                  "Y": mk_bars([10, 9, 8.1], date(2026, 9, 29))},
+                                 lambda d: frozenset({"X", "Y", "Z"}),
+                                 trading_days_back(date(2026, 9, 29), 3), 100.0)
+    assert approx(ic[-1], 100.0) and approx(cov, 2 / 3)
+    ok("equal-weight PIT index rebalances daily; coverage = member-days with prices")
+
+
 def test_real_config():
     print("Shipped config")
     cfg = se.load_config()
@@ -650,7 +692,8 @@ def test_real_config():
 if __name__ == "__main__":
     for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
-              test_session_with_crash, test_missed_and_holiday, test_backtest, test_real_config):
+              test_session_with_crash, test_missed_and_holiday, test_backtest, test_pit_universe,
+              test_real_config):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)

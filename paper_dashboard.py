@@ -487,6 +487,13 @@ def api_stocks_backtests():
     log = sbt.bt_dir() / "run.log"
     tail = log.read_text(encoding="utf-8", errors="replace").splitlines()[-40:] if log.exists() else []
     latest = sbt.load_latest()
+    # the deep (point-in-time S&P 500) verdict is primary where it exists
+    for k, r in sbt.load_latest(pit=True).items():
+        fixed = latest.get(k)
+        r["fixed_universe"] = ({"pass": fixed["verdict"]["pass"],
+                                "sharpe": fixed["metrics"].get("sharpe"),
+                                "pf": fixed["stats"].get("pf")} if fixed else None)
+        latest[k] = r
     for r in latest.values():
         r.pop("trades_tail", None)
     return jsonify({"latest": latest, "variants": sbt.variants_tried(),

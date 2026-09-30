@@ -224,3 +224,33 @@ today's winners. The bar is NOT moved after seeing results. The honest
 fix is a point-in-time universe (historical index membership), which
 removes the bias instead of benchmarking against it. That's the next
 backtester upgrade; these four get re-judged there.
+
+## 11. Deep test: point-in-time S&P 500 (2026-09-30)
+
+`python3 stocks_backtest.py --pit` replays each stock lane on the **actual**
+S&P 500 membership of every day since 2017 (`reference/sp500_pit.csv`, from
+fja05680/sp500 = Clenow's list maintained from Wikipedia changes). That
+includes 242 names that later left the index. A holding whose prices stop
+(buyout, bankruptcy) is closed at its last price. The benchmark is the
+equal-weight, daily-rebalanced S&P 500 of those same members (CAGR 9.8%,
+max DD −40%, Sharpe 0.58). Price coverage: 90.8% of member-days. The
+missing 9% are mostly acquired companies plus three collapses (SVB, First
+Republic, Bed Bath & Beyond), so the test is still slightly flattering.
+
+| lane | today's-100 test | deep test PF | deep maxDD | deep Sharpe vs S&P EW | verdict |
+|---|---|---|---|---|---|
+| MOM | PASS (PF 2.32) | 1.30 | −19.4% | 0.43 vs 0.58 | **FAIL** |
+| MOMR | fail | 1.30 | −21.3% | 0.37 vs 0.58 | FAIL |
+| BRK55 | fail | 1.56 | −18.5% | 0.56 vs 0.58 | FAIL (closest) |
+| HI52 | fail | 1.24 | −14.2% | 0.32 vs 0.58 | FAIL |
+| PB90 | fail | 1.08 | −16.2% | 0.32 vs 0.58 | FAIL |
+| QBO | fail | 1.03 | −21.9% | 0.13 vs 0.58 | FAIL |
+
+**Reading:** most of MOM's shallow-test edge was survivorship bias.
+Momentum on a list of known winners looks brilliant, and on the real
+index it is roughly break-even vs owning the index. Every lane is much
+better in the recent window (2024–26, held-out PF 1.3–2.8) than in
+2017–2023: a regime tailwind, not a proven edge. Every lane lost less than
+the index in all three crashes, but paid for that in the good years.
+The deep test is now the promotion test for stock lanes; ETF lanes
+(RSI2, SECROT) have no stock-survivorship issue and keep their verdicts.
