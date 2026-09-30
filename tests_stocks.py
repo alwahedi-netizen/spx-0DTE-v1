@@ -679,6 +679,20 @@ def test_pit_universe():
     assert approx(ic[-1], 100.0) and approx(cov, 2 / 3)
     ok("equal-weight PIT index rebalances daily; coverage = member-days with prices")
 
+    fresh_store()
+    d = bt.bt_dir()
+    d.mkdir(parents=True)
+    (d / "runs.csv").write_text("ran_at,strategy,params_hash,start,end,trades,expectancy,pf,"
+                                "confidence,max_dd_pct,sharpe,bench_sharpe,verdict\n"
+                                "2026-09-30T09:11:23,MOM,abc,2017,2026,539,190,2.2,1.0,-0.12,0.98,1.0,FAIL\n")
+    res = bt.run(cfg, rw_universe(), "RSI2", cal[bt.WINDOW], cal[-1])
+    bt.save(res)
+    import csv as _csv
+    rows = list(_csv.DictReader(open(d / "runs.csv")))
+    assert [r["universe_mode"] for r in rows] == ["fixed_today", "fixed_today"]
+    assert rows[0]["pf"] == "2.2" and bt.load_latest()["RSI2"]["strategy"] == "RSI2"
+    ok("run log upgrades an old-format runs.csv in place (hub compatibility)")
+
 
 def test_real_config():
     print("Shipped config")

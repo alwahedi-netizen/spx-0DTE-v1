@@ -507,6 +507,15 @@ def save(res: dict):
     path = d / "runs.csv"
     cols = ["ran_at", "strategy", "universe_mode", "params_hash", "start", "end", "trades", "expectancy",
             "pf", "confidence", "max_dd_pct", "sharpe", "bench_sharpe", "verdict"]
+    if path.exists():                     # upgrade a pre-universe_mode file in place
+        with open(path, newline="") as f:
+            old = list(csv.DictReader(f))
+        if old and "universe_mode" not in old[0]:
+            with open(path, "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=cols)
+                w.writeheader()
+                for r in old:
+                    w.writerow({**{c: r.get(c, "") for c in cols}, "universe_mode": "fixed_today"})
     new = not path.exists()
     with open(path, "a", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols)
