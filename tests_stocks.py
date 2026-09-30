@@ -157,6 +157,62 @@ def test_candidates():
     ok("stops: MOM −15%, PB90 2×ATR; PB90 target = 63d-high retest")
 
 
+def test_new_candidates():
+    print("Candidate lanes (MOMR / BRK55 / HI52 / QBO / SECROT)")
+    cfg = base_cfg()
+    F = lambda **k: dict({"close": 100.0, "sma50": 90.0, "sma200": 80.0, "r63": 20.0,
+                          "expl_rank": 95.0, "r63_rank": 95.0, "hi55": 100.0,
+                          "hi252": 101.0, "box_hi": 98.0, "box_rng": 6.0, "sma10": 97.0,
+                          "sma20": 95.0, "r3d": 1.0, "r126": 10.0}, **k)
+    on = {"spy": {"close": 500, "sma200": 450}, "breadth": 60}
+    assert se.regime_ok(on)
+    assert not se.regime_ok({**on, "breadth": 40})
+    assert not se.regime_ok({**on, "spy": {"close": 400, "sma200": 450}})
+    feats = {"A": F()}
+    assert se.momr_candidates(feats, cfg["momr"], on) == se.mom_candidates(feats, cfg["mom"]) == ["A"]
+    assert se.momr_candidates(feats, cfg["momr"], {**on, "breadth": 30}) == []
+    ok("MOMR = MOM entries only when SPY > SMA200 and breadth ≥ 50%")
+    assert se.brk55_candidates({"A": F(), "B": F(close=99.0), "C": F(sma200=120.0)},
+                               cfg["brk55"]) == ["A"]
+    ok("BRK55: close at the 55-day high and above SMA200")
+    assert se.hi52_candidates({"A": F(), "B": F(close=97.0), "C": F(expl_rank=70.0)},
+                              cfg["hi52"]) == ["A"]
+    ok("HI52: within 2% of the 52-week high, EXPL ≥ 80, stacked trend")
+    q = {"A": F(r63=40.0), "B": F(r63=40.0, box_rng=15.0), "C": F(r63=10.0),
+         "D": F(r63=40.0, close=97.5)}
+    assert se.qbo_candidates(q, cfg["qbo"]) == ["A"]
+    ok("QBO: +25% 3-month mover breaking out of a ≤10% box on rising short MAs")
+    etf = {"SPY": F(r63=5.0, r126=5.0), "QQQ": F(r63=9.0, r126=9.0), "XLE": F(r63=-3.0, r126=-3.0),
+           "GLD": F(r63=7.0, r126=7.0), "TLT": F(r63=8.0, r126=8.0, sma200=120.0)}
+    assert se.secrot_top(etf, cfg["secrot"]) == ["QQQ", "GLD", "SPY"]
+    assert se.secrot_candidates(etf, cfg["secrot"], {"som": 2}) == ["QQQ", "GLD", "SPY"]
+    assert se.secrot_candidates(etf, cfg["secrot"], {"som": 5}) == []
+    ok("SECROT: top 3 by 3m+6m momentum, positive and above SMA200; month-start only")
+    assert se.session_of_month("2026-10-01") == 1 and se.session_of_month("2026-09-08") == 5
+    assert se.session_of_month("2026-10-05") == 3
+    ok("session-of-month counts NYSE sessions (Labor Day skipped)")
+
+    P = lambda st_, **k: pos(strategy=st_, **k)
+    d = "2026-10-20"
+    assert se.rule_exit(P("BRK55"), {"lo20": 95.0}, 94.0, d, cfg, held=3) == "TRAIL"
+    assert se.rule_exit(P("BRK55"), {"lo20": 95.0}, 96.0, d, cfg, held=3) is None
+    assert se.rule_exit(P("HI52"), {"sma50": 95.0}, 94.0, d, cfg, held=3) == "TREND"
+    assert se.rule_exit(P("QBO"), {"sma10": 95.0}, 94.0, d, cfg, held=0) is None
+    assert se.rule_exit(P("QBO"), {"sma10": 95.0}, 94.0, d, cfg, held=2) == "TRAIL"
+    assert se.rule_exit(P("QBO"), {"sma10": 95.0}, 99.0, d, cfg, held=40) == "TIME"
+    r = P("SECROT", symbol="XLE")
+    assert se.rule_exit(r, {}, 50.0, d, cfg, held=20, ctx={"som": 1, "etfs": etf}) == "ROTATE"
+    assert se.rule_exit(r, {}, 50.0, d, cfg, held=20, ctx={"som": 2, "etfs": etf}) is None
+    assert se.rule_exit(P("SECROT", symbol="QQQ"), {}, 50.0, d, cfg, held=20,
+                        ctx={"som": 1, "etfs": etf}) is None
+    ok("exits: BRK55 20-day low, HI52 < SMA50, QBO < SMA10 / 40 sessions, SECROT rotates out month-start")
+    assert se.initial_stop("HI52", 100.0, {}, cfg) == 88.0
+    assert se.initial_stop("MOMR", 100.0, {}, cfg) == 85.0
+    assert se.initial_stop("QBO", 100.0, {"atr20": 2.0}, cfg) == 97.0
+    assert se.trail_stop(P("MOMR", phase="2"), 130.0, cfg) == 110.5
+    ok("stops: HI52 −12%, MOMR −15% + phase-2 trail, QBO 1.5×ATR")
+
+
 def test_sizing_fills_fees():
     print("Sizing / ticks / fills / fees")
     cfg = base_cfg()
@@ -592,7 +648,7 @@ def test_real_config():
 
 
 if __name__ == "__main__":
-    for t in (test_indicators, test_calendar_and_regime, test_candidates,
+    for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
               test_session_with_crash, test_missed_and_holiday, test_backtest, test_real_config):
         t()

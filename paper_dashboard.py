@@ -468,10 +468,10 @@ def _start_backtest() -> bool:
 
 
 def _first_backtest():
-    """No results on this box yet → run one (history download ~2 min)."""
+    """Any strategy without results on this box → run (history ~2 min)."""
     time.sleep(90)
     try:
-        if sbt is not None and not sbt.load_latest():
+        if sbt is not None and set(sbt.load_latest()) != set(se.STRATEGIES):
             _start_backtest()
     except Exception as e:
         print(f"first backtest: {e}", flush=True)

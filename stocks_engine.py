@@ -42,7 +42,13 @@ CLOSE_TIME = "16:00"
 MARK_TIME = "16:10"
 TRACK_INTERVAL_S = 120
 STALE_MARKS_DELIST = 5        # consecutive quote-less marks -> DELISTED
-STRATEGIES = ("MOM", "PB90", "RSI2")
+STRATEGIES = ("MOM", "PB90", "RSI2", "MOMR", "BRK55", "HI52", "QBO", "SECROT")
+ETF_STRATEGIES = {"RSI2", "SECROT"}
+FAMILY = {"MOMR": "MOM"}          # MOMR = MOM mechanics + a regime filter
+
+
+def family(strategy: str) -> str:
+    return FAMILY.get(strategy, strategy)
 
 # NYSE full closures and 13:00 early closes (2026–2027).
 NYSE_HOLIDAYS = {
@@ -73,9 +79,26 @@ DEFAULTS = {
              "time_stop_sessions": 20, "max_new_per_day": 2, "max_open": 5},
     "rsi2": {"enabled": True, "stage": "backtest", "rsi_max": 10.0, "atr_stop": 3.0, "exit_sma": 5,
              "time_stop_sessions": 10, "max_new_per_day": 2, "max_open": 4},
+    "momr": {"enabled": True, "stage": "backtest", "expl_rank_min": 90, "max_new_per_day": 2,
+             "max_open": 8, "ph1_stop": 0.85, "ph2_trail": 0.85, "add_r21_min": 10.0,
+             "add_within_peak": 0.03, "review_days": 28, "review_band": 5.0},
+    "brk55": {"enabled": True, "stage": "backtest", "atr_stop": 2.0,
+              "max_new_per_day": 2, "max_open": 8},
+    "hi52": {"enabled": True, "stage": "backtest", "near_high_pct": 2.0, "expl_rank_min": 80,
+             "stop_pct": 12.0, "max_new_per_day": 2, "max_open": 8},
+    "qbo": {"enabled": True, "stage": "backtest", "r63_rank_min": 90, "r63_min": 25.0,
+            "box_max_pct": 10.0, "atr_stop": 1.5, "time_stop_sessions": 40,
+            "max_new_per_day": 2, "max_open": 6},
+    "secrot": {"enabled": True, "stage": "backtest", "top_n": 3, "entry_sessions": 3,
+               "stop_pct": 15.0, "max_new_per_day": 3, "max_open": 3},
     "gates": {"MOM": {"trades": 60, "weeks": 16, "tripwire": -3000},
               "PB90": {"trades": 100, "weeks": 12, "tripwire": -3000},
-              "RSI2": {"trades": 100, "weeks": 10, "tripwire": -2500}},
+              "RSI2": {"trades": 100, "weeks": 10, "tripwire": -2500},
+              "MOMR": {"trades": 60, "weeks": 16, "tripwire": -3000},
+              "BRK55": {"trades": 80, "weeks": 16, "tripwire": -3000},
+              "HI52": {"trades": 80, "weeks": 16, "tripwire": -3000},
+              "QBO": {"trades": 80, "weeks": 16, "tripwire": -3000},
+              "SECROT": {"trades": 30, "weeks": 26, "tripwire": -3000}},
 }
 
 
@@ -183,6 +206,7 @@ def features(bars) -> dict:
     if len(closes) < 30:
         return None
     r21, r63 = ret_pct(closes, 21), ret_pct(closes, 63)
+    lows = [b["low"] for b in bars]
     return {
         "close": closes[-1], "date": bars[-1]["date"],
         "sma50": sma(closes, 50), "sma200": sma(closes, 200),
@@ -192,6 +216,15 @@ def features(bars) -> dict:
         "expl_raw": (0.5 * r21 + 0.5 * r63) if None not in (r21, r63) else None,
         "hi63": max(closes[-63:]) if len(closes) >= 63 else None,
         "last4": closes[-4:],
+        "r126": ret_pct(closes, 126),
+        "sma10": sma(closes, 10), "sma20": sma(closes, 20),
+        "hi55": max(closes[-55:]) if len(closes) >= 55 else None,
+        "hi252": max(closes[-252:]) if len(closes) >= 252 else None,
+        "lo20": min(lows[-20:]) if len(lows) >= 20 else None,
+        # QBO: the 10 closes BEFORE the last one = the consolidation box
+        "box_hi": max(closes[-11:-1]) if len(closes) >= 11 else None,
+        "box_rng": ((max(closes[-11:-1]) / min(closes[-11:-1]) - 1) * 100
+                    if len(closes) >= 11 else None),
     }
 
 
@@ -204,9 +237,11 @@ def universe_features(bars_by_sym: dict, symbols: list) -> dict:
             feats[s] = f
     expl = [f["expl_raw"] for f in feats.values()]
     r1y = [f["r252"] for f in feats.values()]
+    r3m = [f["r63"] for f in feats.values()]
     for f in feats.values():
         f["expl_rank"] = pct_rank(expl, f["expl_raw"])
         f["r1y_rank"] = pct_rank(r1y, f["r252"])
+        f["r63_rank"] = pct_rank(r3m, f["r63"])
     return feats
 
 
@@ -243,7 +278,7 @@ def _by(key, reverse=True):
     return lambda kv: ((-(kv[1][key] or 0)) if reverse else (kv[1][key] or 0), kv[0])
 
 
-def mom_candidates(feats: dict, c: dict) -> list:
+def mom_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
     out = []
     for s, f in feats.items():
         if None in (f.get("expl_rank"), f.get("sma50"), f.get("sma200"), f.get("r3d")):
@@ -254,7 +289,7 @@ def mom_candidates(feats: dict, c: dict) -> list:
     return [s for s, _ in sorted(out, key=_by("expl_rank"))]
 
 
-def pb90_candidates(feats: dict, c: dict) -> list:
+def pb90_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
     out = []
     for s, f in feats.items():
         need = ("expl_rank", "r1y_rank", "sma200", "hi63", "r3d")
@@ -268,21 +303,105 @@ def pb90_candidates(feats: dict, c: dict) -> list:
     return [s for s, _ in sorted(out, key=_by("expl_rank"))]
 
 
-def rsi2_candidates(feats: dict, c: dict) -> list:
+def rsi2_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
     out = [(s, f) for s, f in feats.items()
            if f.get("sma200") and f.get("rsi2") is not None
            and f["close"] > f["sma200"] and f["rsi2"] < c["rsi_max"]]
     return [s for s, _ in sorted(out, key=_by("rsi2", reverse=False))]
 
 
+def regime_ok(ctx: dict) -> bool:
+    """Risk-on: SPY above its SMA200 and ≥ 50% of stocks above their SMA50."""
+    spy = (ctx or {}).get("spy") or {}
+    b = (ctx or {}).get("breadth")
+    return bool(spy.get("sma200") and spy["close"] > spy["sma200"]
+                and b is not None and b >= 50)
+
+
+def momr_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """MOM entries, only in a risk-on regime (Faber-style filter)."""
+    return mom_candidates(feats, c) if regime_ok(ctx) else []
+
+
+def brk55_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """Turtle breakout: close at its 55-session high, above SMA200."""
+    out = [(s, f) for s, f in feats.items()
+           if f.get("hi55") and f.get("sma200") and f.get("r63") is not None
+           and f["close"] >= f["hi55"] and f["close"] > f["sma200"]]
+    return [s for s, _ in sorted(out, key=_by("r63"))]
+
+
+def hi52_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """52-week-high momentum: within x% of the 1y high, strong, stacked trend."""
+    out = []
+    for s, f in feats.items():
+        if None in (f.get("hi252"), f.get("sma50"), f.get("sma200"), f.get("expl_rank")):
+            continue
+        if (f["close"] >= f["hi252"] * (1 - c["near_high_pct"] / 100)
+                and f["expl_rank"] >= c["expl_rank_min"]
+                and f["close"] > f["sma50"] > f["sma200"]):
+            out.append((s, f))
+    return [s for s, _ in sorted(out, key=_by("expl_rank"))]
+
+
+def qbo_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """High-octane breakout: a top-decile 3-month mover that went sideways in
+    a tight 10-day box and just closed above it, on rising short MAs."""
+    out = []
+    for s, f in feats.items():
+        need = ("r63_rank", "r63", "box_hi", "box_rng", "sma10", "sma20")
+        if any(f.get(k) is None for k in need):
+            continue
+        if (f["r63_rank"] >= c["r63_rank_min"] and f["r63"] >= c["r63_min"]
+                and f["box_rng"] <= c["box_max_pct"] and f["close"] > f["box_hi"]
+                and f["close"] > f["sma10"] > f["sma20"]):
+            out.append((s, f))
+    return [s for s, _ in sorted(out, key=_by("r63"))]
+
+
+def secrot_score(f: dict):
+    if f.get("r63") is None or f.get("r126") is None:
+        return None
+    return 0.5 * f["r63"] + 0.5 * f["r126"]
+
+
+def secrot_top(feats: dict, c: dict) -> list:
+    """Top-N ETFs by 3m+6m momentum that also pass the absolute filter
+    (score > 0 and above SMA200) — dual momentum."""
+    sc = [(s, secrot_score(f)) for s, f in feats.items()
+          if secrot_score(f) is not None and f.get("sma200")
+          and secrot_score(f) > 0 and f["close"] > f["sma200"]]
+    sc.sort(key=lambda x: (-x[1], x[0]))
+    return [s for s, _ in sc[:c["top_n"]]]
+
+
+def secrot_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """Monthly rotation: buys only in the first sessions of a month."""
+    if (ctx or {}).get("som", 99) > c["entry_sessions"]:
+        return []
+    return secrot_top(feats, c)
+
+
+CANDIDATES = {"MOM": mom_candidates, "PB90": pb90_candidates, "RSI2": rsi2_candidates,
+              "MOMR": momr_candidates, "BRK55": brk55_candidates,
+              "HI52": hi52_candidates, "QBO": qbo_candidates,
+              "SECROT": secrot_candidates}
+
+
+def group_of(strategy: str, cfg: dict) -> list:
+    return cfg["universe"]["etfs"] if strategy in ETF_STRATEGIES else cfg["universe"]["stocks"]
+
+
 def initial_stop(strategy: str, entry: float, f: dict, cfg: dict):
-    if strategy == "MOM":
-        return round(entry * cfg["mom"]["ph1_stop"], 2)
+    c = cfg[strategy.lower()]
+    if "ph1_stop" in c:
+        return round(entry * c["ph1_stop"], 2)
+    if "stop_pct" in c:
+        return round(entry * (1 - c["stop_pct"] / 100), 2)
     a = f.get("atr20")
     if not a:
         return None
-    mult = cfg["pb90"]["atr_stop"] if strategy == "PB90" else cfg["rsi2"]["atr_stop"]
-    return round(entry - mult * a, 2)
+    return round(entry - c["atr_stop"] * a, 2)
 
 
 def initial_target(strategy: str, entry: float, f: dict):
@@ -420,7 +539,8 @@ def exit_check(p: dict, last: float):
     return None
 
 
-def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = None):
+def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = None,
+              ctx: dict = None):
     """15:50 rule exits: reason or None. `held` (sessions since entry) may be
     passed by the backtester, whose history predates NYSE_HOLIDAYS."""
     strat = p.get("strategy")
@@ -438,20 +558,37 @@ def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = 
     elif strat == "PB90":
         if held >= cfg["pb90"]["time_stop_sessions"]:
             return "TIME"
-    elif strat == "MOM":
-        c = cfg["mom"]
+    elif family(strat) == "MOM":
+        c = cfg[strat.lower()]
         days = (date.fromisoformat(today) - date.fromisoformat(entry_day)).days
         r = (last / avg_cost(p) - 1) * 100 if avg_cost(p) else 0
         if days >= c["review_days"] and abs(r) <= c["review_band"]:
             return "REVIEW"
+    elif strat == "BRK55":
+        if f and f.get("lo20") and last < f["lo20"]:
+            return "TRAIL"                              # Turtle 20-day-low exit
+    elif strat == "HI52":
+        if f and f.get("sma50") and last < f["sma50"]:
+            return "TREND"
+    elif strat == "QBO":
+        if f and f.get("sma10") and held >= 1 and last < f["sma10"]:
+            return "TRAIL"                              # close below the 10-day MA
+        if held >= cfg["qbo"]["time_stop_sessions"]:
+            return "TIME"
+    elif strat == "SECROT":
+        c = cfg["secrot"]
+        ctx = ctx or {}
+        if ctx.get("som") == 1 and ctx.get("etfs") is not None \
+                and p.get("symbol") not in secrot_top(ctx["etfs"], c):
+            return "ROTATE"
     return None
 
 
 def trail_stop(p: dict, peak: float, cfg: dict):
     """New stop in today's terms: MOM phase 2 trails the peak; else fixed."""
     cur = fnum(p.get("stop_px"))
-    if p.get("strategy") == "MOM" and str(p.get("phase")) == "2" and peak:
-        new = round(peak * cfg["mom"]["ph2_trail"], 2)
+    if family(p.get("strategy")) == "MOM" and str(p.get("phase")) == "2" and peak:
+        new = round(peak * cfg[p["strategy"].lower()]["ph2_trail"], 2)
         return max(cur or 0, new)
     return cur
 
@@ -538,6 +675,23 @@ def build_features(cfg, bars: dict) -> dict:
     """{'stocks': feats ranked among stocks, 'etfs': feats among ETFs}."""
     return {"stocks": universe_features(bars, cfg["universe"]["stocks"]),
             "etfs": universe_features(bars, cfg["universe"]["etfs"])}
+
+
+def session_of_month(ds: str) -> int:
+    """1 on the month's first NYSE session, 2 on the second, …"""
+    d = date.fromisoformat(ds)
+    cur, n = d.replace(day=1), 0
+    while cur <= d:
+        n += is_trading_day(cur)
+        cur += timedelta(days=1)
+    return n
+
+
+def session_ctx(fe: dict, ds: str, som: int = None) -> dict:
+    """Cross-sectional context the strategies may read (regime, calendar)."""
+    return {"today": ds, "som": som if som is not None else session_of_month(ds),
+            "spy": fe["etfs"].get("SPY"), "breadth": breadth50(fe["stocks"]),
+            "etfs": fe["etfs"]}
 
 
 def feat_for(fe: dict, sym: str):
@@ -631,9 +785,8 @@ def do_entries(cfg, ds: str, day_row: dict, fe: dict, data, clock, strategy: str
     ts = iso(clock.now())
     key = strategy.lower()
     c = cfg[key]
-    feats = fe["etfs"] if strategy == "RSI2" else fe["stocks"]
-    cands = {"MOM": mom_candidates, "PB90": pb90_candidates,
-             "RSI2": rsi2_candidates}[strategy](feats, c)
+    feats = fe["etfs"] if strategy in ETF_STRATEGIES else fe["stocks"]
+    cands = CANDIDATES[strategy](feats, c, session_ctx(fe, ds))
     if day_row.get("status") == "DATA_FAIL":
         skip_slot(ds, ts, strategy, "DATA", "premarket bars failed")
         return
@@ -647,7 +800,7 @@ def do_entries(cfg, ds: str, day_row: dict, fe: dict, data, clock, strategy: str
         return
 
     # adds first (MOM double-down) — they belong to already-proven names
-    if strategy == "MOM":
+    if family(strategy) == "MOM":
         for p in held:
             sym, pid = p["symbol"], p["position_id"]
             last = quotes.get(sym)
@@ -789,7 +942,8 @@ def do_tracking(cfg, data, clock, rule_exits: bool, fe: dict, ds: str) -> int:
             n += 1
             continue
         if rule_exits:
-            why = rule_exit(p, feat_for(fe, p["symbol"]), last, ds, cfg)
+            why = rule_exit(p, feat_for(fe, p["symbol"]), last, ds, cfg,
+                            ctx=session_ctx(fe, ds))
             if why:
                 close_campaign(cfg, p, last, why, ts)
                 n += 1

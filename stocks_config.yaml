@@ -67,6 +67,57 @@ rsi2:
   max_new_per_day: 2
   max_open: 4
 
+# ── candidates added 2026-09-30 (owner: "strong edge, survives, high octane")
+# All start at stage: backtest. Rules fixed here BEFORE their first backtest.
+momr:                            # MOM + regime filter (SPY > SMA200, breadth >= 50%)
+  enabled: true
+  stage: backtest
+  expl_rank_min: 90
+  max_new_per_day: 2
+  max_open: 8
+  ph1_stop: 0.85
+  ph2_trail: 0.85
+  add_r21_min: 10.0
+  add_within_peak: 0.03
+  review_days: 28
+  review_band: 5.0
+
+brk55:                           # Turtle: 55-day closing high > SMA200; exit 20-day low
+  enabled: true
+  stage: backtest
+  atr_stop: 2.0
+  max_new_per_day: 2
+  max_open: 8
+
+hi52:                            # 52-week-high momentum (George & Hwang); exit < SMA50
+  enabled: true
+  stage: backtest
+  near_high_pct: 2.0
+  expl_rank_min: 80
+  stop_pct: 12.0
+  max_new_per_day: 2
+  max_open: 8
+
+qbo:                             # Qullamaggie-style box breakout; exit close < SMA10
+  enabled: true
+  stage: backtest
+  r63_rank_min: 90
+  r63_min: 25.0                  # >= +25% in 3 months (the "octane")
+  box_max_pct: 10.0              # prior 10 closes within a 10% range
+  atr_stop: 1.5
+  time_stop_sessions: 40
+  max_new_per_day: 2
+  max_open: 6
+
+secrot:                          # monthly dual-momentum ETF rotation, top 3
+  enabled: true
+  stage: backtest
+  top_n: 3
+  entry_sessions: 3              # buys only in a month's first 3 sessions
+  stop_pct: 15.0                 # catastrophe stop
+  max_new_per_day: 3
+  max_open: 3
+
 # Backtest -> paper promotion bar (fixed BEFORE the first backtest ran)
 backtest_gate:
   min_trades: 50
@@ -81,3 +132,8 @@ gates:
   MOM:  {trades: 60,  weeks: 16, tripwire: -3000}
   PB90: {trades: 100, weeks: 12, tripwire: -3000}
   RSI2: {trades: 100, weeks: 10, tripwire: -2500}
+  MOMR: {trades: 60,  weeks: 16, tripwire: -3000}
+  BRK55: {trades: 80, weeks: 16, tripwire: -3000}
+  HI52: {trades: 80,  weeks: 16, tripwire: -3000}
+  QBO:  {trades: 80,  weeks: 16, tripwire: -3000}
+  SECROT: {trades: 30, weeks: 26, tripwire: -3000}

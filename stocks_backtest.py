@@ -98,12 +98,14 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict
     """Replay one strategy in isolation over [start, end]. Pure: no I/O."""
     key = strategy.lower()
     c = cfg[key]
-    group = cfg["universe"]["etfs"] if strategy == "RSI2" else cfg["universe"]["stocks"]
-    group = [s for s in group if s in bars]
+    group = [s for s in se.group_of(strategy, cfg) if s in bars]
+    stocks = [s for s in cfg["universe"]["stocks"] if s in bars]
+    etfs = [s for s in cfg["universe"]["etfs"] if s in bars]
+    ctx_syms = sorted(set(group) | set(stocks) | set(etfs))
     cal = [b["date"] for b in bars["SPY"] if start <= b["date"] <= end]
-    idx = {s: {b["date"]: i for i, b in enumerate(bars[s])} for s in group}
-    cand_fn = {"MOM": se.mom_candidates, "PB90": se.pb90_candidates,
-               "RSI2": se.rsi2_candidates}[strategy]
+    idx = {s: {b["date"]: i for i, b in enumerate(bars[s])} for s in ctx_syms}
+    cand_fn = se.CANDIDATES[strategy]
+    need_ctx = strategy in ("MOMR", "SECROT")
     eq0 = float(cfg["account_equity"])
     opens, trades, curve = [], [], []
     realized = 0.0
@@ -113,15 +115,26 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict
         i = idx[s].get(d)
         return bars[s][i] if i is not None else None
 
+    som = 0
     for di, d in enumerate(cal):
+        som = 1 if di == 0 or cal[di - 1][:7] != d[:7] else som + 1
+
+        def feats_for(syms):
+            fi = {}
+            for s in syms:
+                i = idx[s].get(d)
+                if i is None or i < 30:
+                    continue
+                fi[s] = bars[s][max(0, i - WINDOW):i]
+            return se.universe_features(fi, list(fi))
         # features from bars strictly before d (what the premarket step sees)
-        feats_in = {}
-        for s in group:
-            i = idx[s].get(d)
-            if i is None or i < 30:
-                continue
-            feats_in[s] = bars[s][max(0, i - WINDOW):i]
-        fe = se.universe_features(feats_in, list(feats_in))
+        fe = feats_for(group)
+        ctx = None
+        if need_ctx:
+            etf_strat = strategy in se.ETF_STRATEGIES
+            fe_all = {"stocks": {} if etf_strat else fe,       # breadth: stock lanes only
+                      "etfs": fe if etf_strat else feats_for(etfs)}
+            ctx = se.session_ctx(fe_all, d, som=som)
         q_open = {s: b["open"] for s in group if (b := today_bar(s, d))}
         new_risk = 0.0
 
@@ -131,7 +144,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict
             return heat, notional
 
         # 1. adds (MOM double-down) then entries, at the open
-        if strategy == "MOM":
+        if se.family(strategy) == "MOM":
             for p in opens:
                 last = q_open.get(p["symbol"])
                 if not p.get("add_ts") and se.mom_add_ok(p, fe.get(p["symbol"]), last, c):
@@ -148,7 +161,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict
                         new_risk += risk
         held = {p["symbol"] for p in opens}
         n_new = 0
-        for sym in cand_fn(fe, c):
+        for sym in cand_fn(fe, c, ctx):
             if sym in held:
                 continue
             if n_new >= c["max_new_per_day"] or len(opens) >= c["max_open"]:
@@ -188,7 +201,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict
                 exit_ = ("TARGET", tgt if fresh else max(b["open"], tgt))
             else:
                 why = se.rule_exit(p, fe.get(p["symbol"]) or _feat_now(bars, idx, p["symbol"], d),
-                                   b["close"], d, cfg, held=di - p["entry_i"])
+                                   b["close"], d, cfg, held=di - p["entry_i"], ctx=ctx)
                 if why:
                     exit_ = (why, b["close"])
             if not exit_:
@@ -230,6 +243,12 @@ def _feat_now(bars, idx, sym, d):
 
 # ── metrics ──────────────────────────────────────────────────────────────────
 
+def _octane(m: dict) -> dict:
+    if m.get("avg_exposure"):
+        m["cagr_on_exposure"] = round(m["cagr"] / m["avg_exposure"], 4)
+    return m
+
+
 def curve_metrics(curve: list, eq0: float) -> dict:
     if len(curve) < 2:
         return {}
@@ -246,7 +265,26 @@ def curve_metrics(curve: list, eq0: float) -> dict:
             "total_return": round(eqs[-1] / eq0 - 1, 4),
             "max_dd_pct": round(dd, 4),
             "sharpe": round(mu / sd * math.sqrt(252), 2) if sd > 0 else None,
-            "avg_exposure": round(sum(c.get("exposure", 1) for c in curve) / len(curve), 3)}
+            "avg_exposure": round(sum(c.get("exposure", 1) for c in curve) / len(curve), 3),
+            # "octane": return per unit of capital actually deployed
+            "cagr_on_exposure": None}
+
+
+def benchmark_curve(bars: dict, symbols: list, cal: list, eq0: float) -> list:
+    per = [s for s in symbols if s in bars]
+    pxs = {s: {b["date"]: b["close"] for b in bars[s]} for s in per}
+    first, out = {}, []
+    for d in cal:
+        vals = []
+        for s in per:
+            v = pxs[s].get(d)
+            if v is None:
+                continue
+            first.setdefault(s, v)
+            vals.append(v / first[s])
+        if vals:
+            out.append(eq0 * sum(vals) / len(vals))
+    return out
 
 
 def benchmark(bars: dict, symbols: list, cal: list, eq0: float) -> dict:
@@ -268,6 +306,34 @@ def benchmark(bars: dict, symbols: list, cal: list, eq0: float) -> dict:
         if vals:
             curve.append({"date": d, "equity": eq0 * sum(vals) / len(vals)})
     return curve_metrics(curve, eq0)
+
+
+STRESS = {"2018 Q4 selloff": ("2018-10-01", "2018-12-24"),
+          "2020 COVID crash": ("2020-02-19", "2020-03-23"),
+          "2022 bear market": ("2022-01-03", "2022-10-12")}
+
+
+def _window_dd(pts):
+    peak, dd = None, 0.0
+    for v in pts:
+        peak = v if peak is None else max(peak, v)
+        dd = min(dd, v / peak - 1)
+    return dd
+
+
+def stress(curve: list, bars: dict, group: list, eq0: float) -> dict:
+    """Strategy vs same-universe hold inside each named crisis window."""
+    out = {}
+    for name, (a, b) in STRESS.items():
+        pts = [c["equity"] for c in curve if a <= c["date"] <= b]
+        if len(pts) < 5:
+            continue
+        cal = [c["date"] for c in curve if a <= c["date"] <= b]
+        bm = benchmark_curve(bars, group, cal, eq0)
+        out[name] = {"strategy_pct": round(pts[-1] / pts[0] - 1, 4),
+                     "strategy_dd": round(_window_dd(pts), 4),
+                     "hold_pct": round(bm[-1] / bm[0] - 1, 4) if bm else None}
+    return out
 
 
 def by_year(trades: list) -> dict:
@@ -318,7 +384,7 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
     cal = [c["date"] for c in sim["curve"]]
     trades = sim["trades"]
     split = cal[int(len(cal) * IS_FRACTION)] if cal else end
-    group = cfg["universe"]["etfs"] if strategy == "RSI2" else cfg["universe"]["stocks"]
+    group = se.group_of(strategy, cfg)
     res = {
         "strategy": strategy, "start": cal[0] if cal else start, "end": cal[-1] if cal else end,
         "sessions": len(cal), "params_hash": params_hash(cfg, strategy),
@@ -327,10 +393,11 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
         "in_sample": sr.stats([t["pnl"] for t in trades if t["exit"] < split]),
         "out_of_sample": sr.stats([t["pnl"] for t in trades if t["exit"] >= split]),
         "oos_from": split,
-        "metrics": curve_metrics(sim["curve"], eq0),
+        "metrics": _octane(curve_metrics(sim["curve"], eq0)),
         "benchmark_spy": benchmark(bars, ["SPY"], cal, eq0),
         "benchmark_universe": benchmark(bars, group, cal, eq0),
         "by_year": by_year(trades),
+        "stress": stress(sim["curve"], bars, group, eq0),
         "exit_reasons": {r: sum(1 for t in trades if t["reason"] == r)
                          for r in sorted({t["reason"] for t in trades})},
         "avg_hold": round(sum(t["held"] for t in trades) / len(trades), 1) if trades else None,
@@ -406,7 +473,9 @@ def summary_text(res: dict) -> str:
          f"(from {res['oos_from']}) n={res['out_of_sample']['n']} PF {res['out_of_sample'].get('pf')} "
          f"exp ${res['out_of_sample'].get('expectancy')}",
          "  by year: " + ", ".join(f"{y} n={v['n']} ${v['pnl']:,.0f}" for y, v in sorted(res['by_year'].items())),
-         f"  exits {res['exit_reasons']}",
+         f"  exits {res['exit_reasons']} | CAGR on exposure {pct(res['metrics'].get('cagr_on_exposure'))}",
+         "  stress: " + "; ".join(f"{k}: {pct(v['strategy_pct'])} (DD {pct(v['strategy_dd'])}) vs hold {pct(v['hold_pct'])}"
+                                   for k, v in (res.get('stress') or {}).items()),
          f"  VERDICT: {res['verdict']['label']}"]
     for c in res["verdict"]["checks"]:
         L.append(f"    [{'✓' if c['ok'] else '✗'}] {c['name']}: {c['detail']}")

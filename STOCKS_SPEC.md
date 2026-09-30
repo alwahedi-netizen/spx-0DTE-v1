@@ -203,3 +203,24 @@ original rules are not edited in place. Every run lands in
 
 Known limits: survivorship bias (above), price-only returns, and stop
 fills approximated from daily highs and lows.
+
+## 10. Candidate round 2 (2026-09-30): "strong edge, survives, high octane"
+
+Five new lanes. Rules were fixed in `stocks_config.yaml` before their first
+run, and all start at `stage: backtest`. MOM stays the untouched control.
+
+| lane | idea (source) | PF | OOS PF | maxDD | 2020 crash (hold −34%) | Sharpe vs hold | verdict |
+|---|---|---|---|---|---|---|---|
+| MOMR | MOM + regime filter (Faber) | 1.80 | 1.93 | −9.9% | −6.6% | 0.69 vs 1.00 | FAIL (benchmark) |
+| BRK55 | 55-day breakout, 20-day-low exit (Turtles) | 1.87 | 1.74 | −12.2% | −12.0% | 0.87 vs 1.00 | FAIL (benchmark) |
+| HI52 | 52-week-high momentum (George & Hwang) | 1.65 | 2.22 | −8.8% | −6.3% | 0.61 vs 1.00 | FAIL (benchmark) |
+| QBO | box breakout of 3-month leaders (Qullamaggie) | 1.06 | 1.03 | −12.5% | −1.0% | 0.16 vs 1.00 | FAIL (no edge: 67% conf) |
+| SECROT | monthly dual-momentum ETF rotation (Antonacci) | 1.70 | 1.92 | −3.0% | −3.0% | 0.60 vs 0.75 | FAIL (benchmark) |
+
+MOMR, BRK55, HI52 and SECROT pass every check except "beat buy-and-hold
+of the same universe". They are real edges that crash far less than
+holding, but they don't beat simply holding a survivorship-biased list of
+today's winners. The bar is NOT moved after seeing results. The honest
+fix is a point-in-time universe (historical index membership), which
+removes the bias instead of benchmarking against it. That's the next
+backtester upgrade; these four get re-judged there.
