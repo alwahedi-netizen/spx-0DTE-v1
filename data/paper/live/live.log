@@ -3659,3 +3659,41 @@
 [2026-09-29T16:00:31-04:00] schwab audit: token refresh failed: HTTP 400
 [2026-09-29T16:01:02-04:00] schwab audit: token refresh failed: HTTP 400
 [2026-09-29T16:01:32-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:02:03-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:02:33-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:03:04-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:03:35-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:04:05-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:04:36-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:05:07-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:05:37-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:06:08-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:06:38-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:07:09-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:07:40-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:08:10-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:08:41-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:09:11-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:09:42-04:00] schwab audit: token refresh failed: HTTP 400
+[2026-09-29T16:09:45-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:10:16-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:10:47-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:11:17-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:11:48-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:12:18-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:12:49-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:13:20-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:13:51-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:14:21-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:14:52-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:15:22-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:15:53-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:16:23-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:16:54-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:17:24-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:17:55-04:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-09-29T16:23:05-04:00] FLY ARMED on …910
+[2026-09-29T16:23:20-04:00] FLYR ARMED on …910
+[2026-09-29T16:23:27-04:00] FLYR DISARMED
+[2026-09-29T16:23:33-04:00] FLYR ARMED on …910 (dry-run)
+[2026-09-29T16:23:45-04:00] ORB ARMED on …910 (dry-run)
