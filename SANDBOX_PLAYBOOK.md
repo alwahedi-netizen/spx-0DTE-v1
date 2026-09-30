@@ -309,8 +309,107 @@ believes — before importing anything external.
 | `RETIRED.md` | permanent registry of dead strategies |
 | `data/paper/*.csv` | the journal — the lab's single source of truth |
 
-**Bootstrapping the stocks sandbox:** new repo, copy `paper_store.py`
-and the deploy scripts nearly verbatim, write the stocks spec FIRST
-(strategies, schema, gates), then follow the phases in §3 in order.
-Do not skip Phase 2 — every hour spent on the fake-clock harness repaid
-itself tenfold when real money was on the line.
+## 8. Keys, permissions & infrastructure — the one-time setup, never again
+
+Everything below already EXISTS for the estate. A new sandbox (stocks
+included) reuses nearly all of it — the point of this section is that
+nothing here should ever be re-created from scratch, and two things
+must NEVER be duplicated. No secret values live in this file or in any
+repo — only names and locations.
+
+### Schwab API (the crown jewels — ONE of everything, ever)
+- **One developer app** (developer.schwab.com) with BOTH products:
+  *Market Data Production* and *Accounts and Trading Production*.
+  App key + secret live on the hub in `/opt/logicon/infra/.env` as
+  `SCHWAB_APP_KEY` / `SCHWAB_APP_SECRET`. **Never create a second app
+  or a second OAuth grant** — a second refresher invalidates the first
+  and takes down everything sharing the token.
+- **One token file**: `/opt/logicon/infra/tokens.json`, pointed at by
+  the env var `LOGICON_TOKENS_FILE` in every consumer's systemd unit.
+  Any new app CONSUMES this file (read + refresh-compatible writes that
+  preserve `refresh_auth_at`); it must never run its own OAuth login —
+  our `schwab_auth.shared_mode()` hard-blocks it in code. Copy that
+  module verbatim into new projects.
+- **Token lifecycle:** access token ~30 min (auto-refresh); refresh
+  token **7 days** → weekly re-auth at `trader.sahmi.ae/reauth`.
+  Schwab auth codes are single-use and expire in ~30 seconds — do the
+  paste fast, click Complete once. On the Schwab approval screen,
+  **tick ALL accounts** — an unticked account (e.g. …910 initially) is
+  simply absent from `accountNumbers` until the next re-auth.
+- **Account prerequisites for live trading:** each account to be traded
+  needs the appropriate options approval level for spreads (or margin/
+  shorting approval for a stocks bot). The bot validates the account
+  tail against `accountNumbers` at arm time.
+- **Trader API quirks we paid to learn** (all handled in `live_meic.py`,
+  copy it): no `Content-Type` header on body-less GETs (400s);
+  limit prices must sit on the instrument's legal tick grid; order ids
+  come from the `Location` response header; fills are reconstructed
+  from `orderActivityCollection` execution legs; rejection reasons are
+  in `statusDescription`. Rate ceiling ~120 req/min — self-pace.
+
+### Other API keys (locations, not values)
+- **FMP** (fundamental/price metrics for the stocks side): key lives in
+  the platform's `.env` on the hub; note some endpoints are plan-gated
+  — batch quotes need the per-symbol fallback the platform already has.
+- **Anthropic / OpenAI** (platform AI Analyst): entered in the
+  platform's Settings page, stored in its config, never in git.
+- **Telegram / email doorbell** (`notify.py`): bot token + chat id /
+  SMTP creds in the platform `.env`; reuse `notify.send` rather than
+  building new channels.
+
+### Server & deploy rails (hub droplet)
+- **Host:** DigitalOcean droplet, Tailscale name `hub`
+  (`ssh root@hub.tail6aba41.ts.net` — Tailscale SSH handles auth).
+- **Layout:** `/opt/logicon/<app>` per app; clones for the auto-updater
+  live in `/root/<repo>`; shared secrets in `/opt/logicon/infra/`.
+- **systemd per app:** a service (e.g. `logicon-paper`) + an update
+  timer (`logicon-paper-update.timer`, every 2 min) that pulls GitHub,
+  RUNS THE TEST SUITE, rsyncs (excluding `.git`, `data/`, credentials)
+  and restarts. Gotchas already solved in `deploy/auto-update-paper.sh`:
+  pin `HOME=/root` (systemd strips it and git loses its config), add
+  `safe.directory`, flock against overlapping runs, ff-only merges,
+  data-only commits skip redeploy, hourly journal snapshot pushes with
+  a reset-on-push-failure so the deployer never wedges.
+- **GitHub:** one repo per project under `alwahedi-netizen`; the hub
+  clone holds stored push credentials (needed for journal snapshots).
+  Push to main = deploy. New project = new repo + copy
+  `deploy/setup_autodeploy.sh`, adjust names, run once via SSH.
+
+### Web / DNS / SSO (sahmi.ae)
+- **Cloudflare:** domain on Cloudflare DNS, A records per subdomain →
+  hub IP, **proxied (orange cloud)**, SSL mode **Full**, **Always Use
+  HTTPS on** (the "Not secure" saga), self-signed origin cert in
+  `/etc/nginx/sahmi-certs/`.
+- **nginx owns 80/443** on the hub (it also serves the Logicon client
+  portal — never bind another server to those ports; Caddy died for
+  this sin). New app = new vhost proxying to its local port, created by
+  a `deploy/setup_*_nginx.sh` script run once by hand — the auto-
+  updater deliberately never touches nginx.
+- **Gate SSO** (`gate.py`, :5260): one login for every `*.sahmi.ae`
+  surface via nginx `auth_request`; cookie `Domain=.sahmi.ae`, 30-day
+  HMAC, PBKDF2 credentials in `gate_credentials.json` + `gate_secret`
+  (chmod 600, NEVER in git, survives deploys via rsync excludes). A new
+  subdomain gets SSO for free by including the auth_request snippet in
+  its vhost — no new logins, which is also why dashboards can iframe
+  each other across subdomains.
+- **Ports in use:** platform 5050/5151 (docker), beta 6050, paper 5250,
+  gate 5260, shine 8795. Pick a fresh port for the stocks sandbox and
+  register it in the nginx setup script.
+
+### App-level env vars (set in each systemd unit)
+`LOGICON_TOKENS_FILE=/opt/logicon/infra/tokens.json`,
+`PAPER_HOST=127.0.0.1` (nginx fronts it), `PAPER_PORT=<app port>`,
+optional `LOGICON_PLATFORM_DIR=/opt/logicon/combo-trader` (read-only
+import of platform modules like the GEX bridge).
+
+### Runtime state that must NEVER be in git
+`armed.json` (what's armed, which account), `state.json` (halts),
+`gate_credentials.json`, `gate_secret`, `tokens.json`, `.env` files.
+The deploy rsync excludes them; keep it that way in the new project.
+
+**Bootstrapping the stocks sandbox:** new repo, copy `paper_store.py`,
+`schwab_auth.py` and the deploy scripts nearly verbatim, write the
+stocks spec FIRST (strategies, schema, gates), then follow the phases
+in §3 in order. Do not skip Phase 2 — every hour spent on the
+fake-clock harness repaid itself tenfold when real money was on the
+line.
