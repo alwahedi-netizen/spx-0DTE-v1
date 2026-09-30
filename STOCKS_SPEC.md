@@ -280,3 +280,32 @@ turned that into a better risk-adjusted return.
 for strategies AND benchmarks, which hurts high-yield holdings most
 (LOWVOL's utilities/staples, ETFTREND's TLT/XLU). A total-return mode
 (Yahoo adjclose) is the next honest upgrade before these are re-judged.
+
+
+## 13. Round 4 (2026-09-30): market-wide effects + dividends
+
+`--total-return` backtests on dividend-adjusted prices (Yahoo adjclose)
+for strategies AND benchmarks. The dashboard shows each lane's most
+rigorous verdict: point-in-time + dividends, then point-in-time, then
+dividends, then basic.
+
+| lane | test | PF | maxDD | in market | return on invested $ | Sharpe vs hold | fails on |
+|---|---|---|---|---|---|---|---|
+| TOM (turn of month, 4 index ETFs) | ETFs+div | 1.52 | −3.8% | 4% | 29% | 0.57 vs 0.78 | Sharpe |
+| SECROT | ETFs+div | 1.97 | −3.1% | 10% | 14% | 0.69 vs 0.84 | Sharpe |
+| RSI2 | ETFs+div | 1.30 | −4.0% | 7% | 18.5% | 0.56 vs 0.84 | Sharpe |
+| IBS (4 index ETFs) | ETFs+div | 1.26 | −3.1% | 6% | 16% | 0.49 vs 0.78 | PF, Sharpe |
+| ETFTREND | ETFs+div | 3.44 | −16.3% | 83% | 8.6% | 0.78 vs 0.84 | DD, Sharpe |
+| LOWVOL | deep+div | 4.15 | −26.6% | 98% | 6% | 0.55 vs 0.67 | DD, Sharpe |
+| LVMOM | deep+div | 1.79 | −25.9% | 97% | 6% | 0.51 vs 0.67 | DD, Sharpe |
+| MOM | deep+div | 1.42 | −22.1% | 52% | 11% | 0.53 vs 0.67 | DD, Sharpe |
+| BRK55 | deep+div | 1.49 | −19.0% | 54% | 10% | 0.53 vs 0.67 | conf, DD, Sharpe |
+
+**Finding:** four short-exposure timing lanes (TOM, SECROT, RSI2, IBS)
+have statistically solid edges (≥ 99% confidence) and near-zero crash
+losses. They fail only on annual Sharpe vs a fully-invested hold,
+because they sit in cash 90–96% of the time and the model pays 0% on
+that cash. Two open methodology questions for the owner (not applied):
+(1) credit idle cash with the T-bill rate and use excess-return Sharpe
+(the textbook definition); (2) test the low-exposure edges STACKED in
+one book, since they trade on different days.

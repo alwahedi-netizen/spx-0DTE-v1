@@ -44,8 +44,8 @@ MARK_TIME = "16:10"
 TRACK_INTERVAL_S = 120
 STALE_MARKS_DELIST = 5        # consecutive quote-less marks -> DELISTED
 STRATEGIES = ("MOM", "PB90", "RSI2", "MOMR", "BRK55", "HI52", "QBO", "SECROT",
-              "LOWVOL", "MOM12", "LVMOM", "RSI2S", "ETFTREND")
-ETF_STRATEGIES = {"RSI2", "SECROT", "ETFTREND"}
+              "LOWVOL", "MOM12", "LVMOM", "RSI2S", "ETFTREND", "TOM", "IBS")
+ETF_STRATEGIES = {"RSI2", "SECROT", "ETFTREND", "TOM", "IBS"}
 FAMILY = {"MOMR": "MOM", "RSI2S": "RSI2"}   # same mechanics, different filter/universe
 # Rotation lanes: hold the top-N by a score, equal-weight, rebalanced monthly.
 ROTATION = {"LOWVOL", "MOM12", "LVMOM", "ETFTREND"}
@@ -106,6 +106,11 @@ DEFAULTS = {
               "exit_sma": 5, "time_stop_sessions": 10, "max_new_per_day": 3, "max_open": 8},
     "etftrend": {"enabled": True, "stage": "backtest", "top_n": 20, "hold_rank": 20,
                  "entry_sessions": 3, "stop_pct": 25.0, "max_new_per_day": 20, "max_open": 20},
+    "tom": {"enabled": True, "stage": "backtest", "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "exit_som": 3, "atr_stop": 3.0, "max_new_per_day": 4, "max_open": 4},
+    "ibs": {"enabled": True, "stage": "backtest", "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "ibs_max": 0.2, "atr_stop": 3.0, "time_stop_sessions": 5,
+            "max_new_per_day": 4, "max_open": 4},
     "gates": {"MOM": {"trades": 60, "weeks": 16, "tripwire": -3000},
               "PB90": {"trades": 100, "weeks": 12, "tripwire": -3000},
               "RSI2": {"trades": 100, "weeks": 10, "tripwire": -2500},
@@ -118,7 +123,9 @@ DEFAULTS = {
               "MOM12": {"trades": 40, "weeks": 26, "tripwire": -5000},
               "LVMOM": {"trades": 40, "weeks": 26, "tripwire": -5000},
               "RSI2S": {"trades": 100, "weeks": 10, "tripwire": -2500},
-              "ETFTREND": {"trades": 30, "weeks": 26, "tripwire": -5000}},
+              "ETFTREND": {"trades": 30, "weeks": 26, "tripwire": -5000},
+              "TOM": {"trades": 60, "weeks": 26, "tripwire": -2500},
+              "IBS": {"trades": 100, "weeks": 16, "tripwire": -2500}},
 }
 
 
@@ -246,6 +253,9 @@ def features(bars) -> dict:
         "box_rng": ((max(closes[-11:-1]) / min(closes[-11:-1]) - 1) * 100
                     if len(closes) >= 11 else None),
         "vol252": _vol(closes, 252),
+        "hi1": bars[-1]["high"],
+        "ibs": ((bars[-1]["close"] - bars[-1]["low"]) / (bars[-1]["high"] - bars[-1]["low"])
+                if bars[-1]["high"] > bars[-1]["low"] else None),
         # 12-1 momentum: the year's return skipping the latest month
         "r12_1": ((closes[-22] / closes[-253] - 1) * 100
                   if len(closes) >= 253 and closes[-253] > 0 else None),
@@ -449,14 +459,31 @@ def rotation_candidates_for(strategy: str):
     return cands
 
 
+def tom_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """Turn of the month: buy every index ETF on the month's last session."""
+    return sorted(feats) if (ctx or {}).get("eom") else []
+
+
+def ibs_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """Internal bar strength: closed in the bottom of its range, in an uptrend."""
+    out = [(s, f) for s, f in feats.items()
+           if f.get("ibs") is not None and f.get("sma200")
+           and f["ibs"] < c["ibs_max"] and f["close"] > f["sma200"]]
+    return [s for s, _ in sorted(out, key=_by("ibs", reverse=False))]
+
+
 CANDIDATES = {"MOM": mom_candidates, "PB90": pb90_candidates, "RSI2": rsi2_candidates,
               "MOMR": momr_candidates, "BRK55": brk55_candidates,
               "HI52": hi52_candidates, "QBO": qbo_candidates,
               "SECROT": secrot_candidates, "RSI2S": rsi2_candidates,
+              "TOM": tom_candidates, "IBS": ibs_candidates,
               **{k: rotation_candidates_for(k) for k in ("LOWVOL", "MOM12", "LVMOM", "ETFTREND")}}
 
 
 def group_of(strategy: str, cfg: dict) -> list:
+    c = cfg.get(strategy.lower()) or {}
+    if c.get("symbols"):
+        return list(c["symbols"])
     return cfg["universe"]["etfs"] if strategy in ETF_STRATEGIES else cfg["universe"]["stocks"]
 
 
@@ -672,6 +699,16 @@ def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = 
             return "TRAIL"                              # close below the 10-day MA
         if held >= cfg["qbo"]["time_stop_sessions"]:
             return "TIME"
+    elif strat == "TOM":
+        if (ctx or {}).get("som") == cfg["tom"]["exit_som"]:
+            return "CALENDAR"
+        if held >= 8:
+            return "TIME"
+    elif strat == "IBS":
+        if f and f.get("hi1") and last > f["hi1"]:
+            return "RULE"                               # closed above yesterday's high
+        if held >= cfg["ibs"]["time_stop_sessions"]:
+            return "TIME"
     elif strat == "SECROT":
         c = cfg["secrot"]
         ctx = ctx or {}
@@ -784,9 +821,17 @@ def session_of_month(ds: str) -> int:
     return n
 
 
-def session_ctx(fe: dict, ds: str, som: int = None) -> dict:
+def is_month_end_session(ds: str) -> bool:
+    d = date.fromisoformat(ds) + timedelta(days=1)
+    while not is_trading_day(d):
+        d += timedelta(days=1)
+    return d.month != date.fromisoformat(ds).month
+
+
+def session_ctx(fe: dict, ds: str, som: int = None, eom: bool = None) -> dict:
     """Cross-sectional context the strategies may read (regime, calendar)."""
     return {"today": ds, "som": som if som is not None else session_of_month(ds),
+            "eom": eom if eom is not None else is_month_end_session(ds),
             "spy": fe["etfs"].get("SPY"), "breadth": breadth50(fe["stocks"]),
             "etfs": fe["etfs"], "stocks": fe["stocks"]}
 

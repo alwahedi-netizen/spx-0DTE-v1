@@ -61,10 +61,12 @@ def bt_dir() -> Path:
 
 # ── history ──────────────────────────────────────────────────────────────────
 
-def load_history(symbols: list, years: int = 10, max_age_h: float = 20) -> dict:
-    """{sym: bars} — long daily history, cached per symbol (git-ignored)."""
+def load_history(symbols: list, years: int = 10, max_age_h: float = 20,
+                 total_return: bool = False) -> dict:
+    """{sym: bars} — long daily history, cached per symbol (git-ignored).
+    total_return: dividend-adjusted bars (Yahoo adjclose) in history_tr/."""
     import stocks_data as sd
-    cache = Path(st.DATA_DIR) / "history"
+    cache = Path(st.DATA_DIR) / ("history_tr" if total_return else "history")
     os.makedirs(cache, exist_ok=True)
     out = {}
     for s in symbols:
@@ -73,7 +75,7 @@ def load_history(symbols: list, years: int = 10, max_age_h: float = 20) -> dict:
             out[s] = json.loads(f.read_text())
             continue
         try:
-            bars = sd.long_bars(s, years)
+            bars = sd.total_return_bars(s, years) if total_return else sd.long_bars(s, years)
         except sd.StocksDataError as e:
             print(f"history: {e}", flush=True)
             if f.exists():
@@ -144,7 +146,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
     idx = {s: {b["date"]: i for i, b in enumerate(v)} for s, v in bars.items()}
     last_day = {s: v[-1]["date"] for s, v in bars.items() if v}
     cand_fn = se.CANDIDATES[strategy]
-    need_ctx = strategy in ("MOMR", "SECROT") or strategy in se.ROTATION
+    need_ctx = strategy in ("MOMR", "SECROT", "TOM") or strategy in se.ROTATION
     eq0 = float(cfg["account_equity"])
     opens, trades, curve = [], [], []
     realized = 0.0
@@ -176,7 +178,8 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
             fe_all = {"stocks": {} if etf_strat else fe,       # breadth: stock lanes only
                       "etfs": fe if etf_strat else
                       feats_for(etfs if strategy == "MOMR" else ["SPY"])}
-            ctx = se.session_ctx(fe_all, d, som=som)
+            eom = di + 1 < len(cal) and cal[di + 1][:7] != d[:7]
+            ctx = se.session_ctx(fe_all, d, som=som, eom=eom)
         q_open = {s: b["open"] for s in group if (b := today_bar(s, d))}
         new_risk = 0.0
 
@@ -453,7 +456,8 @@ def verdict(res: dict, gate: dict, eq0: float) -> dict:
             "label": "PASS — eligible for paper" if passed else "FAIL — stays out of paper"}
 
 
-def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None) -> dict:
+def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None,
+        total_return: bool = False) -> dict:
     eq0 = float(cfg["account_equity"])
     pit = members is not None and strategy not in se.ETF_STRATEGIES
     sim = simulate(cfg, bars, strategy, start, end, members=members if pit else None)
@@ -473,6 +477,7 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None
         "benchmark_spy": benchmark(bars, ["SPY"], cal, eq0),
         "benchmark_universe": benchmark(bars, group, cal, eq0),
         "universe_mode": "pit_sp500" if pit else "fixed_today",
+        "total_return": total_return,
         "by_year": by_year(trades),
         "stress": stress(sim["curve"], bars, group, eq0),
         "exit_reasons": {r: sum(1 for t in trades if t["reason"] == r)
@@ -503,20 +508,22 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None
 def save(res: dict):
     d = bt_dir()
     os.makedirs(d, exist_ok=True)
-    tag = "_pit" if res.get("universe_mode") == "pit_sp500" else ""
+    tag = ("_pit" if res.get("universe_mode") == "pit_sp500" else "") + \
+        ("_tr" if res.get("total_return") else "")
     (d / f"latest_{res['strategy']}{tag}.json").write_text(json.dumps(res))
     path = d / "runs.csv"
-    cols = ["ran_at", "strategy", "universe_mode", "params_hash", "start", "end", "trades", "expectancy",
+    cols = ["ran_at", "strategy", "universe_mode", "total_return", "params_hash", "start", "end", "trades", "expectancy",
             "pf", "confidence", "max_dd_pct", "sharpe", "bench_sharpe", "verdict"]
     if path.exists():                     # upgrade a pre-universe_mode file in place
         with open(path, newline="") as f:
             old = list(csv.DictReader(f))
-        if old and "universe_mode" not in old[0]:
+        if old and "total_return" not in old[0]:
             with open(path, "w", newline="") as f:
                 w = csv.DictWriter(f, fieldnames=cols)
                 w.writeheader()
                 for r in old:
-                    w.writerow({**{c: r.get(c, "") for c in cols}, "universe_mode": "fixed_today"})
+                    w.writerow({**{c: r.get(c, "") for c in cols},
+                                "universe_mode": r.get("universe_mode") or "fixed_today"})
     new = not path.exists()
     with open(path, "a", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols)
@@ -525,6 +532,7 @@ def save(res: dict):
         s = res["stats"]
         w.writerow({"ran_at": res["ran_at"], "strategy": res["strategy"],
                     "universe_mode": res.get("universe_mode", "fixed_today"),
+                    "total_return": "1" if res.get("total_return") else "",
                     "params_hash": res["params_hash"], "start": res["start"], "end": res["end"],
                     "trades": s["n"], "expectancy": s.get("expectancy"), "pf": s.get("pf"),
                     "confidence": s.get("confidence"), "max_dd_pct": res["metrics"].get("max_dd_pct"),
@@ -534,6 +542,25 @@ def save(res: dict):
 
 
 SHIPPED_DIR = Path(__file__).resolve().parent / "reference" / "backtests"
+
+
+RIGOR = ("_pit_tr", "_pit", "_tr", "")     # most rigorous verdict first
+
+
+def load_best() -> dict:
+    """Per strategy, the most rigorous result available: point-in-time +
+    dividends, then point-in-time, then dividends, then the basic run."""
+    out = {}
+    for strat in se.STRATEGIES:
+        for tag in RIGOR:
+            for d in (bt_dir(), SHIPPED_DIR):
+                f = d / f"latest_{strat}{tag}.json"
+                if f.exists() and strat not in out:
+                    try:
+                        out[strat] = json.loads(f.read_text())
+                    except ValueError:
+                        pass
+    return out
 
 
 def load_latest(pit: bool = False) -> dict:
@@ -569,6 +596,7 @@ def summary_text(res: dict) -> str:
     s, m, b, u = res["stats"], res["metrics"], res["benchmark_spy"], res["benchmark_universe"]
     pct = lambda x: "n/a" if x is None else f"{100 * x:.1f}%"
     L = [f"{res['strategy']}  [{res.get('universe_mode', 'fixed_today')}"
+         f"{' + dividends' if res.get('total_return') else ''}"
          f"{', data coverage ' + pct(res.get('pit_coverage')) if res.get('pit_coverage') else ''}]"
          f"  {res['start']} → {res['end']}  ({res['sessions']} sessions, "
          f"{res['universe_size']} symbols, params {res['params_hash']})",
@@ -598,6 +626,8 @@ def main(argv=None):
     ap.add_argument("--years", type=int, default=10)
     ap.add_argument("--start")
     ap.add_argument("--end", default=date.today().isoformat())
+    ap.add_argument("--total-return", action="store_true",
+                    help="dividend-adjusted prices for strategies AND benchmarks (Yahoo)")
     ap.add_argument("--pit", action="store_true",
                     help="point-in-time S&P 500 universe (survivorship control; ~750 "
                          "symbols to download, several minutes per stock strategy)")
@@ -609,7 +639,7 @@ def main(argv=None):
         snaps = load_pit()
         members = members_fn(snaps)
         syms = sorted(set(syms) | pit_tickers(snaps, ""))
-    bars = load_history(syms, years=a.years)
+    bars = load_history(syms, years=a.years, total_return=a.total_return)
     if "SPY" not in bars:
         print("no SPY history — cannot build the calendar", flush=True)
         return 1
@@ -619,7 +649,8 @@ def main(argv=None):
         t0 = time.time()
         if a.pit and strat in se.ETF_STRATEGIES:
             continue                       # ETF lanes have no stock-survivorship issue
-        res = run(cfg, bars, strat, start, a.end, members=members)
+        res = run(cfg, bars, strat, start, a.end, members=members,
+                  total_return=a.total_return)
         save(res)
         print(summary_text(res), flush=True)
         print(f"  ({time.time() - t0:.0f}s)\n", flush=True)

@@ -176,6 +176,27 @@ etftrend:                        # each of the 20 ETFs held while above SMA200 (
   max_new_per_day: 20
   max_open: 20
 
+# ── round 4 (2026-09-30): market-wide effects on the 4 index ETFs (no
+# stock-survivorship issue), judged with dividends. Fixed before first run.
+tom:                             # turn of the month (Ariel 1987; Lakonishok & Smidt)
+  enabled: true
+  stage: backtest
+  symbols: [SPY, QQQ, IWM, DIA]
+  exit_som: 3                    # sell at the close of the new month's 3rd session
+  atr_stop: 3.0
+  max_new_per_day: 4
+  max_open: 4
+
+ibs:                             # internal bar strength < 0.2 in an uptrend
+  enabled: true
+  stage: backtest
+  symbols: [SPY, QQQ, IWM, DIA]
+  ibs_max: 0.2
+  atr_stop: 3.0
+  time_stop_sessions: 5          # exit: close > prior day's high, or 5 sessions
+  max_new_per_day: 4
+  max_open: 4
+
 # Backtest -> paper promotion bar (fixed BEFORE the first backtest ran)
 backtest_gate:
   min_trades: 50
@@ -200,3 +221,5 @@ gates:
   LVMOM: {trades: 40, weeks: 26, tripwire: -5000}
   RSI2S: {trades: 100, weeks: 10, tripwire: -2500}
   ETFTREND: {trades: 30, weeks: 26, tripwire: -5000}
+  TOM:  {trades: 60,  weeks: 26, tripwire: -2500}
+  IBS:  {trades: 100, weeks: 16, tripwire: -2500}

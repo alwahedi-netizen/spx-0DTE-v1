@@ -486,10 +486,11 @@ def api_stocks_backtests():
     p = _bproc["p"]
     log = sbt.bt_dir() / "run.log"
     tail = log.read_text(encoding="utf-8", errors="replace").splitlines()[-40:] if log.exists() else []
-    latest = sbt.load_latest()
-    # the deep (point-in-time S&P 500) verdict is primary where it exists
-    for k, r in sbt.load_latest(pit=True).items():
-        fixed = latest.get(k)
+    basic = sbt.load_latest()
+    latest = sbt.load_best()          # most rigorous verdict per strategy
+    for k, r in latest.items():
+        fixed = basic.get(k) if (r.get("universe_mode") == "pit_sp500"
+                                 or r.get("total_return")) else None
         r["fixed_universe"] = ({"pass": fixed["verdict"]["pass"],
                                 "sharpe": fixed["metrics"].get("sharpe"),
                                 "pf": fixed["stats"].get("pf")} if fixed else None)

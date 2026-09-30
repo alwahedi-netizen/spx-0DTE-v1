@@ -253,6 +253,35 @@ def test_rotation_lanes():
     ok("ETFTREND holds every ETF above its SMA200; RSI2S = RSI2 mechanics on stocks")
 
 
+def test_market_effect_lanes():
+    print("Market-effect lanes (TOM / IBS)")
+    cfg = base_cfg()
+    assert se.group_of("TOM", cfg) == ["SPY", "QQQ", "IWM", "DIA"]
+    assert se.is_month_end_session("2026-09-30") and not se.is_month_end_session("2026-09-29")
+    assert se.is_month_end_session("2026-07-31")          # a Friday
+    assert not se.is_month_end_session("2026-12-30") and se.is_month_end_session("2026-12-31")
+    ok("month-end session detection (weekends/holidays aware)")
+    feats = {"SPY": {}, "QQQ": {}}
+    assert se.tom_candidates(feats, cfg["tom"], {"eom": True}) == ["QQQ", "SPY"]
+    assert se.tom_candidates(feats, cfg["tom"], {"eom": False}) == []
+    P = pos(strategy="TOM", symbol="SPY")
+    assert se.rule_exit(P, {}, 100, "2026-10-05", cfg, held=3, ctx={"som": 3}) == "CALENDAR"
+    assert se.rule_exit(P, {}, 100, "2026-10-02", cfg, held=2, ctx={"som": 2}) is None
+    ok("TOM: buy all four on the month's last session, sell at the 3rd session's close")
+    F = lambda **k: dict({"close": 100.0, "sma200": 90.0, "ibs": 0.1, "hi1": 101.0}, **k)
+    f3 = {"SPY": F(ibs=0.15), "QQQ": F(ibs=0.05), "IWM": F(ibs=0.5), "DIA": F(sma200=110.0)}
+    assert se.ibs_candidates(f3, cfg["ibs"]) == ["QQQ", "SPY"]
+    I = pos(strategy="IBS", symbol="SPY")
+    assert se.rule_exit(I, {"hi1": 101.0}, 101.5, "2026-10-06", cfg, held=1) == "RULE"
+    assert se.rule_exit(I, {"hi1": 101.0}, 100.5, "2026-10-06", cfg, held=1) is None
+    assert se.rule_exit(I, {"hi1": 101.0}, 100.5, "2026-10-12", cfg, held=5) == "TIME"
+    ok("IBS: bottom-20% close in an uptrend; exit above yesterday's high or after 5 sessions")
+    b = mk_bars([100.0, 101.0], date(2026, 9, 29))
+    b[-1].update(high=104.0, low=100.0, close=101.0)
+    assert approx(se.features(b * 20)["ibs"], 0.25)
+    ok("IBS feature = (close − low) / (high − low) of the last bar")
+
+
 def test_sizing_fills_fees():
     print("Sizing / ticks / fills / fees")
     cfg = base_cfg()
@@ -745,6 +774,7 @@ def test_real_config():
 
 if __name__ == "__main__":
     for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates, test_rotation_lanes,
+              test_market_effect_lanes,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
               test_session_with_crash, test_missed_and_holiday, test_backtest, test_pit_universe,
               test_real_config):

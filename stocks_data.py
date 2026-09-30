@@ -136,6 +136,30 @@ def _yahoo_bars(sym: str) -> list:
     return out
 
 
+def total_return_bars(sym: str, years: int = 10) -> list:
+    """Dividend-adjusted daily bars (Yahoo adjclose): OHLC scaled by
+    adjclose/close, so a held position earns its dividends. Backtest only."""
+    res = _yahoo_chart(sym, f"{years}y", "1d")
+    ts = res.get("timestamp") or []
+    ind = res.get("indicators") or {}
+    q = (ind.get("quote") or [{}])[0]
+    adj = ((ind.get("adjclose") or [{}])[0]).get("adjclose") or []
+    out = []
+    for i, t in enumerate(ts):
+        try:
+            o, h, l, c, a = q["open"][i], q["high"][i], q["low"][i], q["close"][i], adj[i]
+        except (KeyError, IndexError):
+            continue
+        if None in (o, h, l, c, a) or not c:
+            continue
+        k = a / c
+        out.append({"date": _day(t, ms=False), "open": o * k, "high": h * k,
+                    "low": l * k, "close": a})
+    if len(out) < 300:
+        raise StocksDataError(f"{sym}: only {len(out)} total-return bars")
+    return out
+
+
 def long_bars(sym: str, years: int = 10) -> list:
     """Long daily history for the backtester — Schwab, Yahoo fallback."""
     try:
