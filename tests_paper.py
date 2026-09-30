@@ -315,6 +315,17 @@ def test_live_meic():
     assert lm.close_limit(-0.10, 2, False) == -0.05  # never flips sign
     ok("signed entry/close limits (ORB debit convention)")
 
+    # 2026-09-30 lessons: market-based emergency limits + persistent
+    # rejection counter (width-cap limits get REJECTED as away-from-market)
+    assert lm.marketable_close_limit(25.40, True) == 29.30   # +15%, tick-legal
+    assert lm.marketable_close_limit(1.00, True) == 1.20     # min $0.20 give
+    assert lm.marketable_close_limit(-4.00, False) == -3.40  # receive less
+    assert lm.marketable_close_limit(-0.10, False) == -0.05  # never flips
+    assert lm.rej_count("rung2|rejx2") == 2
+    assert lm.rej_count("close rejected x1: blah") == 1
+    assert lm.rej_count("rung0") == 0 and lm.rej_count("") == 0
+    ok("emergency closes price from live quotes; reject count survives")
+
     o = lm.vertical_order("PUT", 6600, 6570, "2026-09-29", 1, "OPEN", 1.85)
     assert o["orderType"] == "NET_CREDIT" and o["price"] == "1.85"
     assert [l["instruction"] for l in o["orderLegCollection"]] == \

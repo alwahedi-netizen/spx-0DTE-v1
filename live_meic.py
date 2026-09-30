@@ -51,6 +51,7 @@ STATE_FILE = LIVE_DIR / "state.json"
 LOG_FILE = LIVE_DIR / "live.log"
 
 TRADER_BASE = "https://api.schwabapi.com/trader/v1"
+MARKETDATA_BASE = "https://api.schwabapi.com/marketdata/v1"
 
 # Per-strategy live rails. cap = max mirrored sides/day; entry_last = no new
 # entries after this ET time; daily_stop = realized $ that halts + flattens
@@ -132,6 +133,27 @@ def reprice_entry(credit_theo: float) -> float:
     if credit_theo > 0:
         return spx_tick(max(v, 0.05), up=False)
     return -spx_tick(-v, up=True)
+
+
+def rej_count(note: str) -> int:
+    """Rejected-close attempts encoded in the row note (survives the note
+    being rewritten by resubmissions — 2026-09-30 lesson: the counter was
+    wiped each cycle and one row resubmitted 2,000+ rejected orders)."""
+    m = re.search(r"rejx(\d+)|close rejected x(\d+)", note or "")
+    return int(m.group(1) or m.group(2)) if m else 0
+
+
+def marketable_close_limit(value: float, credit_position: bool) -> float:
+    """Close limit priced FROM THE LIVE MARKET with a ~15% (min $0.20)
+    concession, tick-snapped. Replaces the width-cap 'ceiling' idea, which
+    Schwab's price-reasonability check REJECTS as significantly away from
+    market (2026-09-30: every 30.00-limit HALT close bounced while the
+    position rode to settlement)."""
+    give = max(0.20, 0.15 * abs(value))
+    if credit_position:
+        return spx_tick(max(value, 0.05) + give, up=True)
+    v = min(value + give, -0.05)          # receive less, never flip sign
+    return -spx_tick(-v, up=False)
 
 
 def close_limit(exit_theo: float, rung: int, credit_position: bool) -> float:
@@ -434,6 +456,15 @@ class Broker:
         r.raise_for_status()
         return r.json()
 
+    def quotes(self, symbols: list) -> dict:
+        if self.dry:
+            return {}
+        import requests
+        r = requests.get(f"{MARKETDATA_BASE}/quotes", headers=self._headers(),
+                         params={"symbols": ",".join(symbols)}, timeout=20)
+        r.raise_for_status()
+        return r.json()
+
     def cancel(self, order_id: str):
         if self.dry:
             return
@@ -528,13 +559,47 @@ def _is_credit_row(r) -> bool:
         return True
 
 
+def _spread_value(br, r):
+    """Live spread value from leg quotes (short mid - long mid, signed to
+    our convention). None when quotes are unavailable."""
+    pc = "P" if r["side"] == "PUT" else "C"
+    s_sym = osi_symbol("SPXW", r["expiry"], pc, float(r["short_strike"]))
+    l_sym = osi_symbol("SPXW", r["expiry"], pc, float(r["long_strike"]))
+    try:
+        q = br.quotes([s_sym, l_sym])
+
+        def m(sym):
+            d = (q.get(sym) or {}).get("quote") or {}
+            b, a = d.get("bidPrice"), d.get("askPrice")
+            if b is not None and a is not None and (b + a) > 0:
+                return (b + a) / 2
+            return d.get("mark") or d.get("lastPrice")
+        ms, ml = m(s_sym), m(l_sym)
+        if ms is None or ml is None:
+            return None
+        return round(float(ms) - float(ml), 4)
+    except Exception as e:
+        log(f"{r['position_id']} quotes: {e}")
+        return None
+
+
 def _close_side(br, r, reason, exit_theo, rung=0):
     credit_pos = _is_credit_row(r)
-    if reason in ("HALT", "MANUAL"):
-        # Emergency, guaranteed-marketable: credit spreads pay up to the full
-        # width (they can't be worth more); debit spreads accept a nickel.
-        limit = (abs(float(r["short_strike"]) - float(r["long_strike"]))
-                 if credit_pos else -0.05)
+    # In the final minutes Schwab rejects 0DTE closes ("contract no longer
+    # valid") — stop trying and let settlement reconcile book the row.
+    if r.get("expiry") == _now().date().isoformat() and             _now().strftime("%H:%M") >= "15:57":
+        r.update(status="STUCK",
+                 note=((r.get("note") or "") + " | too late to close, will "
+                       "cash-settle").strip(" |"))
+        log(f"{r['position_id']} too late to close — leaving to settlement")
+        return
+    rej = rej_count(r.get("note") or "")
+    if reason in ("HALT", "MANUAL") or rej > 0:
+        # Emergency or retry-after-rejection: price FROM THE MARKET.
+        v = _spread_value(br, r)
+        if v is None:
+            v = exit_theo if exit_theo else (1.0 if credit_pos else -1.0)
+        limit = marketable_close_limit(v, credit_pos)
     else:
         limit = close_limit(exit_theo, rung, credit_pos)
     o = vertical_order(r["side"], float(r["short_strike"]), float(r["long_strike"]),
@@ -546,7 +611,7 @@ def _close_side(br, r, reason, exit_theo, rung=0):
         r.update(note=f"close failed: {e}"[:120])
         return
     r.update(status="CLOSING", close_order_id=oid, close_limit=f"{limit:.2f}",
-             exit_reason=reason, note=f"rung{rung}",
+             exit_reason=reason, note=f"rung{rung}|rejx{rej}",
              closed_ts=_now().isoformat(timespec="seconds"))
     log(f"{r['position_id']} CLOSE ({reason}) submitted @ {limit:+.2f}")
 
@@ -569,8 +634,7 @@ def _poll_closing(br, r):
     if s in ("CANCELED", "REJECTED", "EXPIRED"):
         # Escalate at most twice, then STUCK: never loop rejected orders.
         why = (j.get("statusDescription") or s)[:80]
-        n = int((r.get("note") or "x0").rsplit("x", 1)[-1] or 0) + 1 \
-            if "close rejected" in (r.get("note") or "") else 1
+        n = rej_count(r.get("note") or "") + 1
         if n >= 3:
             r.update(status="STUCK", note=f"close rejected x{n}: {why}")
             log(f"{r['position_id']} close rejected x{n} ({why}) — STUCK, "
@@ -580,7 +644,8 @@ def _poll_closing(br, r):
             log(f"{r['position_id']} close {s} ({why}) — retry {n}/3")
         return
     age = (_now() - datetime.fromisoformat(r["closed_ts"])).total_seconds()
-    rung = int((r.get("note") or "rung0")[-1] or 0) if (r.get("note") or "").startswith("rung") else 0
+    m = re.search(r"rung(\d)", r.get("note") or "")
+    rung = int(m.group(1)) if m else 0
     if age > ORDER_WAIT_S and rung < 2:
         br.cancel(r["close_order_id"])
         exit_theo = (abs(float(r["close_limit"])) - CLOSE_SLIPS[rung]) \
