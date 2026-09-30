@@ -1,0 +1,2 @@
+date,status,spy_close,spy_sma200,spy_sma10m,spy_regime,vix,breadth50,bars_source,notes
+2026-09-30,OK,764.20,719.25,712.96,ABOVE,15.79,40.0,schwab:100,
