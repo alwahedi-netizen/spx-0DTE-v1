@@ -43,9 +43,12 @@ CLOSE_TIME = "16:00"
 MARK_TIME = "16:10"
 TRACK_INTERVAL_S = 120
 STALE_MARKS_DELIST = 5        # consecutive quote-less marks -> DELISTED
-STRATEGIES = ("MOM", "PB90", "RSI2", "MOMR", "BRK55", "HI52", "QBO", "SECROT")
-ETF_STRATEGIES = {"RSI2", "SECROT"}
-FAMILY = {"MOMR": "MOM"}          # MOMR = MOM mechanics + a regime filter
+STRATEGIES = ("MOM", "PB90", "RSI2", "MOMR", "BRK55", "HI52", "QBO", "SECROT",
+              "LOWVOL", "MOM12", "LVMOM", "RSI2S", "ETFTREND")
+ETF_STRATEGIES = {"RSI2", "SECROT", "ETFTREND"}
+FAMILY = {"MOMR": "MOM", "RSI2S": "RSI2"}   # same mechanics, different filter/universe
+# Rotation lanes: hold the top-N by a score, equal-weight, rebalanced monthly.
+ROTATION = {"LOWVOL", "MOM12", "LVMOM", "ETFTREND"}
 
 
 def family(strategy: str) -> str:
@@ -92,6 +95,17 @@ DEFAULTS = {
             "max_new_per_day": 2, "max_open": 6},
     "secrot": {"enabled": True, "stage": "backtest", "top_n": 3, "entry_sessions": 3,
                "stop_pct": 15.0, "max_new_per_day": 3, "max_open": 3},
+    "lowvol": {"enabled": True, "stage": "backtest", "top_n": 15, "hold_rank": 25,
+               "entry_sessions": 3, "stop_pct": 30.0, "max_new_per_day": 15, "max_open": 15},
+    "mom12": {"enabled": True, "stage": "backtest", "top_n": 15, "hold_rank": 25,
+              "entry_sessions": 3, "stop_pct": 30.0, "regime": "spy200",
+              "max_new_per_day": 15, "max_open": 15},
+    "lvmom": {"enabled": True, "stage": "backtest", "top_n": 15, "hold_rank": 25,
+              "entry_sessions": 3, "stop_pct": 30.0, "max_new_per_day": 15, "max_open": 15},
+    "rsi2s": {"enabled": True, "stage": "backtest", "rsi_max": 5.0, "atr_stop": 3.0,
+              "exit_sma": 5, "time_stop_sessions": 10, "max_new_per_day": 3, "max_open": 8},
+    "etftrend": {"enabled": True, "stage": "backtest", "top_n": 20, "hold_rank": 20,
+                 "entry_sessions": 3, "stop_pct": 25.0, "max_new_per_day": 20, "max_open": 20},
     "gates": {"MOM": {"trades": 60, "weeks": 16, "tripwire": -3000},
               "PB90": {"trades": 100, "weeks": 12, "tripwire": -3000},
               "RSI2": {"trades": 100, "weeks": 10, "tripwire": -2500},
@@ -99,7 +113,12 @@ DEFAULTS = {
               "BRK55": {"trades": 80, "weeks": 16, "tripwire": -3000},
               "HI52": {"trades": 80, "weeks": 16, "tripwire": -3000},
               "QBO": {"trades": 80, "weeks": 16, "tripwire": -3000},
-              "SECROT": {"trades": 30, "weeks": 26, "tripwire": -3000}},
+              "SECROT": {"trades": 30, "weeks": 26, "tripwire": -3000},
+              "LOWVOL": {"trades": 40, "weeks": 26, "tripwire": -5000},
+              "MOM12": {"trades": 40, "weeks": 26, "tripwire": -5000},
+              "LVMOM": {"trades": 40, "weeks": 26, "tripwire": -5000},
+              "RSI2S": {"trades": 100, "weeks": 10, "tripwire": -2500},
+              "ETFTREND": {"trades": 30, "weeks": 26, "tripwire": -5000}},
 }
 
 
@@ -226,7 +245,20 @@ def features(bars) -> dict:
         "box_hi": max(closes[-11:-1]) if len(closes) >= 11 else None,
         "box_rng": ((max(closes[-11:-1]) / min(closes[-11:-1]) - 1) * 100
                     if len(closes) >= 11 else None),
+        "vol252": _vol(closes, 252),
+        # 12-1 momentum: the year's return skipping the latest month
+        "r12_1": ((closes[-22] / closes[-253] - 1) * 100
+                  if len(closes) >= 253 and closes[-253] > 0 else None),
     }
+
+
+def _vol(closes, n):
+    """Annualized stdev of daily returns over the last n sessions."""
+    if len(closes) < n + 1:
+        return None
+    r = [closes[i] / closes[i - 1] - 1 for i in range(len(closes) - n, len(closes))]
+    m = sum(r) / n
+    return (sum((x - m) ** 2 for x in r) / (n - 1)) ** 0.5 * (252 ** 0.5) * 100
 
 
 def universe_features(bars_by_sym: dict, symbols: list) -> dict:
@@ -381,10 +413,47 @@ def secrot_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
     return secrot_top(feats, c)
 
 
+def rotation_scores(feats: dict, strategy: str, c: dict) -> list:
+    """[(sym, score)] best first, eligible names only."""
+    out = []
+    if strategy == "LOWVOL":
+        out = [(s, -f["vol252"]) for s, f in feats.items() if f.get("vol252")]
+    elif strategy == "MOM12":
+        out = [(s, f["r12_1"]) for s, f in feats.items() if f.get("r12_1") is not None]
+    elif strategy == "LVMOM":
+        el = [(s, f) for s, f in feats.items()
+              if f.get("vol252") and f.get("r12_1") is not None]
+        mom = sorted(f["r12_1"] for _, f in el)
+        vol = sorted(-f["vol252"] for _, f in el)
+        out = [(s, bisect.bisect_right(mom, f["r12_1"]) + bisect.bisect_right(vol, -f["vol252"]))
+               for s, f in el]
+    elif strategy == "ETFTREND":
+        out = [(s, f["r126"]) for s, f in feats.items()
+               if f.get("sma200") and f.get("r126") is not None and f["close"] > f["sma200"]]
+    out.sort(key=lambda x: (-x[1], x[0]))
+    return out
+
+
+def rotation_regime_ok(c: dict, ctx: dict) -> bool:
+    if c.get("regime") != "spy200":
+        return True
+    spy = (ctx or {}).get("spy") or {}
+    return bool(spy.get("sma200")) and spy["close"] > spy["sma200"]
+
+
+def rotation_candidates_for(strategy: str):
+    def cands(feats: dict, c: dict, ctx: dict = None) -> list:
+        if (ctx or {}).get("som", 99) > c["entry_sessions"] or not rotation_regime_ok(c, ctx):
+            return []
+        return [s for s, _ in rotation_scores(feats, strategy, c)[:c["top_n"]]]
+    return cands
+
+
 CANDIDATES = {"MOM": mom_candidates, "PB90": pb90_candidates, "RSI2": rsi2_candidates,
               "MOMR": momr_candidates, "BRK55": brk55_candidates,
               "HI52": hi52_candidates, "QBO": qbo_candidates,
-              "SECROT": secrot_candidates}
+              "SECROT": secrot_candidates, "RSI2S": rsi2_candidates,
+              **{k: rotation_candidates_for(k) for k in ("LOWVOL", "MOM12", "LVMOM", "ETFTREND")}}
 
 
 def group_of(strategy: str, cfg: dict) -> list:
@@ -420,6 +489,23 @@ def mom_add_ok(p: dict, f: dict, last: float, c: dict) -> bool:
 
 
 # ── sizing / fills / fees (pure) ─────────────────────────────────────────────
+
+def size_for(strategy: str, entry: float, stop: float, cfg: dict, heat_used: float,
+             budget_used: float, notional_used: float):
+    """Rotation lanes are equal-weight portfolios (a slot = 1/top_n of equity,
+    cash-limited only); every other lane uses the risk-unit sizing."""
+    c = cfg.get(strategy.lower()) or {}
+    if strategy not in ROTATION:
+        return size_position(entry, stop, cfg, heat_used, budget_used, notional_used)
+    eq = float(cfg["account_equity"])
+    qty = int(eq * c.get("invested", 0.98) / c["top_n"] // entry)
+    if qty < 1:
+        return 0, 0.0, "QTY"
+    risk = round(qty * max(0.0, entry - (stop or 0)), 2)
+    if notional_used + qty * entry > eq + 1e-9:
+        return 0, risk, "CASH"
+    return qty, risk, ""
+
 
 def size_position(entry: float, stop: float, cfg: dict, heat_used: float,
                   budget_used: float, notional_used: float):
@@ -546,8 +632,20 @@ def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = 
     entry_day = (p.get("entry_ts") or "")[:10]
     if held is None:
         held = sessions_between(entry_day, today)
-    if strat == "RSI2":
-        c = cfg["rsi2"]
+    if strat in ROTATION:
+        c = cfg[strat.lower()]
+        ctx = ctx or {}
+        if ctx.get("som") == 1:
+            if not rotation_regime_ok(c, ctx):
+                return "REGIME"
+            feats = ctx.get("etfs") if strat in ETF_STRATEGIES else ctx.get("stocks")
+            if feats:
+                keep = [s for s, _ in rotation_scores(feats, strat, c)[:c["hold_rank"]]]
+                if p.get("symbol") not in keep:
+                    return "ROTATE"
+        return None
+    if family(strat) == "RSI2":
+        c = cfg[strat.lower()]
         if f and len(f.get("last4") or []) == c["exit_sma"] - 1:
             sma_now = (sum(f["last4"]) + last) / c["exit_sma"]
             if last > sma_now:
@@ -690,7 +788,7 @@ def session_ctx(fe: dict, ds: str, som: int = None) -> dict:
     """Cross-sectional context the strategies may read (regime, calendar)."""
     return {"today": ds, "som": som if som is not None else session_of_month(ds),
             "spy": fe["etfs"].get("SPY"), "breadth": breadth50(fe["stocks"]),
-            "etfs": fe["etfs"]}
+            "etfs": fe["etfs"], "stocks": fe["stocks"]}
 
 
 def feat_for(fe: dict, sym: str):
@@ -874,8 +972,8 @@ def do_entries(cfg, ds: str, day_row: dict, fe: dict, data, clock, strategy: str
         stop = initial_stop(strategy, last, f, cfg)
         tgt = initial_target(strategy, last, f)
         b = book_state(ds, quotes)
-        qty, risk, reason = size_position(last, stop, cfg, b["heat"], b["budget"],
-                                          b["notional"])
+        qty, risk, reason = size_for(strategy, last, stop, cfg, b["heat"], b["budget"],
+                                     b["notional"])
         if reason:
             _sig(ds, ts, strategy, "SKIP", skip_reason=reason, last=_f2(last),
                  stop_px=_f2(stop), risk_usd=_f2(risk), **base)

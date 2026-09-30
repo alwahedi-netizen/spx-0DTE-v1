@@ -120,6 +120,62 @@ secrot:                          # monthly dual-momentum ETF rotation, top 3
   max_new_per_day: 3
   max_open: 3
 
+# ── round 3 (2026-09-30): the evidence-backed families, judged on the DEEP
+# (point-in-time S&P 500) test. Rules fixed here before their first run.
+# Rotation lanes: equal-weight portfolios of top_n names, entries in a
+# month's first entry_sessions, exits at the month's first close when a name
+# falls below hold_rank (buffer cuts turnover), catastrophe stop_pct.
+lowvol:                          # low-volatility anomaly: 15 calmest (1y vol)
+  enabled: true
+  stage: backtest
+  top_n: 15
+  hold_rank: 25
+  entry_sessions: 3
+  stop_pct: 30.0
+  max_new_per_day: 15
+  max_open: 15
+
+mom12:                           # 12-1 momentum, 15 names, cash when SPY < SMA200
+  enabled: true
+  stage: backtest
+  top_n: 15
+  hold_rank: 25
+  entry_sessions: 3
+  stop_pct: 30.0
+  regime: spy200
+  max_new_per_day: 15
+  max_open: 15
+
+lvmom:                           # momentum + low-vol blended rank, 15 names
+  enabled: true
+  stage: backtest
+  top_n: 15
+  hold_rank: 25
+  entry_sessions: 3
+  stop_pct: 30.0
+  max_new_per_day: 15
+  max_open: 15
+
+rsi2s:                           # Connors RSI(2) < 5 dip-buy on S&P 500 stocks > SMA200
+  enabled: true
+  stage: backtest
+  rsi_max: 5.0
+  atr_stop: 3.0
+  exit_sma: 5
+  time_stop_sessions: 10
+  max_new_per_day: 3
+  max_open: 8
+
+etftrend:                        # each of the 20 ETFs held while above SMA200 (monthly)
+  enabled: true
+  stage: backtest
+  top_n: 20
+  hold_rank: 20
+  entry_sessions: 3
+  stop_pct: 25.0
+  max_new_per_day: 20
+  max_open: 20
+
 # Backtest -> paper promotion bar (fixed BEFORE the first backtest ran)
 backtest_gate:
   min_trades: 50
@@ -139,3 +195,8 @@ gates:
   HI52: {trades: 80,  weeks: 16, tripwire: -3000}
   QBO:  {trades: 80,  weeks: 16, tripwire: -3000}
   SECROT: {trades: 30, weeks: 26, tripwire: -3000}
+  LOWVOL: {trades: 40, weeks: 26, tripwire: -5000}
+  MOM12: {trades: 40, weeks: 26, tripwire: -5000}
+  LVMOM: {trades: 40, weeks: 26, tripwire: -5000}
+  RSI2S: {trades: 100, weeks: 10, tripwire: -2500}
+  ETFTREND: {trades: 30, weeks: 26, tripwire: -5000}

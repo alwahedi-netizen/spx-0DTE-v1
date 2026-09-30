@@ -144,7 +144,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
     idx = {s: {b["date"]: i for i, b in enumerate(v)} for s, v in bars.items()}
     last_day = {s: v[-1]["date"] for s, v in bars.items() if v}
     cand_fn = se.CANDIDATES[strategy]
-    need_ctx = strategy in ("MOMR", "SECROT")
+    need_ctx = strategy in ("MOMR", "SECROT") or strategy in se.ROTATION
     eq0 = float(cfg["account_equity"])
     opens, trades, curve = [], [], []
     realized = 0.0
@@ -174,7 +174,8 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
         if need_ctx:
             etf_strat = strategy in se.ETF_STRATEGIES
             fe_all = {"stocks": {} if etf_strat else fe,       # breadth: stock lanes only
-                      "etfs": fe if etf_strat else feats_for(etfs)}
+                      "etfs": fe if etf_strat else
+                      feats_for(etfs if strategy == "MOMR" else ["SPY"])}
             ctx = se.session_ctx(fe_all, d, som=som)
         q_open = {s: b["open"] for s in group if (b := today_bar(s, d))}
         new_risk = 0.0
@@ -214,7 +215,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
             stop = se.initial_stop(strategy, last, f, cfg)
             tgt = se.initial_target(strategy, last, f)
             heat, notional = book(last_close)
-            qty, risk, why = se.size_position(last, stop, cfg, heat, new_risk, notional)
+            qty, risk, why = se.size_for(strategy, last, stop, cfg, heat, new_risk, notional)
             if why:
                 continue
             tier = se.tier_of(sym, cfg)

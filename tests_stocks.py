@@ -213,6 +213,46 @@ def test_new_candidates():
     ok("stops: HI52 −12%, MOMR −15% + phase-2 trail, QBO 1.5×ATR")
 
 
+def test_rotation_lanes():
+    print("Rotation lanes (LOWVOL / MOM12 / LVMOM / ETFTREND) + RSI2S")
+    cfg = base_cfg()
+    F = lambda **k: dict({"close": 100.0, "sma200": 90.0, "r126": 5.0,
+                          "vol252": 25.0, "r12_1": 10.0}, **k)
+    feats = {"A": F(vol252=15.0, r12_1=5.0), "B": F(vol252=30.0, r12_1=40.0),
+             "C": F(vol252=20.0, r12_1=45.0), "D": F(vol252=45.0, r12_1=-10.0)}
+    c = dict(cfg["lowvol"], top_n=2, hold_rank=3)
+    assert [s_ for s_, _ in se.rotation_scores(feats, "LOWVOL", c)] == ["A", "C", "B", "D"]
+    assert [s_ for s_, _ in se.rotation_scores(feats, "MOM12", c)] == ["C", "B", "A", "D"]
+    assert [s_ for s_, _ in se.rotation_scores(feats, "LVMOM", c)][:1] == ["C"]
+    ok("scores: LOWVOL calmest first, MOM12 strongest 12-1, LVMOM best blend (C)")
+    fn = se.CANDIDATES["LOWVOL"]
+    assert fn(feats, c, {"som": 1}) == ["A", "C"] and fn(feats, c, {"som": 4}) == []
+    ok("entries only in the month's first sessions, top_n names")
+    m = dict(cfg["mom12"], top_n=2, hold_rank=3)
+    down = {"som": 1, "spy": {"close": 400, "sma200": 450}, "stocks": feats}
+    up = {**down, "spy": {"close": 500, "sma200": 450}}
+    assert se.CANDIDATES["MOM12"](feats, m, down) == [] and se.CANDIDATES["MOM12"](feats, m, up) == ["C", "B"]
+    ok("MOM12 buys nothing when SPY is below its 200-day average")
+    cfg2 = dict(cfg, lowvol=c, mom12=m)
+    P = lambda st_, sym: pos(strategy=st_, symbol=sym)
+    ctx = {"som": 1, "stocks": feats}
+    assert se.rule_exit(P("LOWVOL", "B"), {}, 100, "2026-10-01", cfg2, held=20, ctx=ctx) is None
+    assert se.rule_exit(P("LOWVOL", "D"), {}, 100, "2026-10-01", cfg2, held=20, ctx=ctx) == "ROTATE"
+    assert se.rule_exit(P("LOWVOL", "D"), {}, 100, "2026-10-02", cfg2, held=20,
+                        ctx={**ctx, "som": 2}) is None
+    assert se.rule_exit(P("MOM12", "C"), {}, 100, "2026-10-01", cfg2, held=20, ctx=down) == "REGIME"
+    ok("month-start exits: rank beyond hold_rank rotates out (buffer keeps #3); regime-off sells all")
+    q, r, why = se.size_for("LOWVOL", 50.0, 35.0, cfg2, 1e9, 1e9, 0)
+    assert why == "" and q == int(100000 * 0.98 / 2 // 50.0)
+    assert se.size_for("LOWVOL", 50.0, 35.0, cfg2, 0, 0, 99000)[2] == "CASH"
+    ok("rotation sizing: equal-weight slots, only cash-limited (heat/budget don't apply)")
+    e = {"SPY": F(r126=8.0), "XLE": F(close=80.0), "GLD": F(r126=12.0)}
+    assert se.CANDIDATES["ETFTREND"](e, cfg["etftrend"], {"som": 2}) == ["GLD", "SPY"]
+    assert se.family("RSI2S") == "RSI2" and se.initial_stop("RSI2S", 100.0, {"atr20": 2.0}, cfg) == 94.0
+    assert se.rule_exit(pos(strategy="RSI2S"), {"last4": [100] * 4}, 101.0, "2026-10-06", cfg) == "RULE"
+    ok("ETFTREND holds every ETF above its SMA200; RSI2S = RSI2 mechanics on stocks")
+
+
 def test_sizing_fills_fees():
     print("Sizing / ticks / fills / fees")
     cfg = base_cfg()
@@ -704,7 +744,7 @@ def test_real_config():
 
 
 if __name__ == "__main__":
-    for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates,
+    for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates, test_rotation_lanes,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
               test_session_with_crash, test_missed_and_holiday, test_backtest, test_pit_universe,
               test_real_config):

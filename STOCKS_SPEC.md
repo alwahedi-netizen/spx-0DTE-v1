@@ -254,3 +254,29 @@ better in the recent window (2024–26, held-out PF 1.3–2.8) than in
 the index in all three crashes, but paid for that in the good years.
 The deep test is now the promotion test for stock lanes; ETF lanes
 (RSI2, SECROT) have no stock-survivorship issue and keep their verdicts.
+
+## 12. Round 3 (2026-09-30): evidence-backed families + MOM stopped
+
+MOM was moved back to `stage: backtest` (owner), so no lane is paper
+trading. Round 3 tested the families with the strongest published,
+survivorship-free evidence. The rotation lanes are equal-weight portfolios
+rebalanced monthly (`size_for`, `ROTATION`).
+
+| lane | idea | test | PF | maxDD | Sharpe vs hold | verdict |
+|---|---|---|---|---|---|---|
+| ETFTREND | each ETF held while > SMA200 (Faber) | ETFs | 2.95 | −16.3% | 0.69 vs 0.75 | FAIL (closest: DD + Sharpe) |
+| LOWVOL | 15 lowest-vol S&P names | deep | 2.46 | −28.9% | 0.37 vs 0.58 | FAIL |
+| LVMOM | momentum × low-vol blend, 15 | deep | 1.39 | −28.1% | 0.34 vs 0.58 | FAIL |
+| MOM12 | 12-1 momentum, 15, SPY>SMA200 | deep | 1.22 | −49.3% | 0.33 vs 0.58 | FAIL |
+| RSI2S | RSI(2)<5 dip-buy on S&P stocks | deep | 0.97 | −17.8% | −0.10 vs 0.58 | FAIL (no edge) |
+
+**Reading across 3 rounds / 16 lanes:** on a fair test, no long-only rule
+set here beats owning the index on a risk-adjusted basis over 2017–2026.
+That fits the literature: published anomalies decay, and this decade was
+won by mega-cap indexing. The lanes consistently cut crash losses; none
+turned that into a better risk-adjusted return.
+
+**Known modelling gap:** returns are price-only. Dividends are missing
+for strategies AND benchmarks, which hurts high-yield holdings most
+(LOWVOL's utilities/staples, ETFTREND's TLT/XLU). A total-return mode
+(Yahoo adjclose) is the next honest upgrade before these are re-judged.
