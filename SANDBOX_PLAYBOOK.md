@@ -222,7 +222,78 @@ pattern (browser-only operation, arm panels, live-vs-paper report).
    with a nightly broker-positions reconcile (qty + avg cost vs ledger)
    and mark-to-market bookkeeping.
 
-## 6. File map (reference implementation, this repo)
+## 6. Idea sourcing — where the lab's strategies came from
+
+Every strategy in this lab came from one of THREE wells. Draw from all
+three on the next project, in this order of trust:
+
+### 6a. Our own journal (the best well — free, honest, ours)
+The lab's strongest ideas were mined from its own data, not imported:
+- **FLYR** came from noticing FLY's take-profits landed ~1h after entry,
+  leaving the rest of the afternoon's decay unharvested → reload rule.
+- **MNG** came from splitting every strategy's P&L by the daily GEX
+  regime tag (+$2,230 negative-GEX vs −$1,821 positive for MEIC).
+- **PBW's mandate** ("premium selling that survives whipsaw") came from
+  the autopsy of BAND/LATE — the journal showed the FAILURE MODE
+  precisely, which told us the shape of the fix.
+**Method to copy:** tag every trading day with regime features (for the
+options lab: GEX sign, VIX level, band containment; for stocks: market
+breadth, SPY vs 10-month SMA, sector RS, VIX). Then split every
+strategy's P&L by every tag at each weekly review. A significant split
+= a candidate NEW strategy (never an edit to the running control).
+
+### 6b. The practitioner canon (import, then verify in paper)
+The imported strategies are documented community/practitioner systems —
+these names and sources are from my (Claude's) training knowledge of
+the 0DTE trading ecosystem, recorded here as research leads to verify,
+not as fetched citations:
+- **MEIC** — "Multiple Entry Iron Condor", popularized by Tammy
+  Chambless; discussed extensively in the Option Omega backtesting
+  community and its podcast circuit (search: "MEIC Tammy Chambless").
+- **FLY / iron-fly pin trades** — the classic 0DTE "theta harvest at
+  the pin"; widely documented among SPX 0DTE sellers.
+- **PBW (broken-wing butterfly)** — the Ron Bertino / Trading Dominion
+  school of structured premium (also the "A14"-style BWB variants);
+  hallmark: no upside risk, bounded left tail.
+- **METF / ORB** — standard EMA-trend-filtered verticals and the
+  Opening Range Breakout, textbook intraday systems (ORB literature
+  goes back to Toby Crabel's work on opening range).
+- **LATE** — the "power hour theta" claim circulating in 0DTE forums;
+  the lab FALSIFIED our condor implementation of it in 16 trades.
+**Where to scan for more of this canon** (options and stocks alike):
+Option Omega and similar backtest-platform blogs/communities; the
+r/thetagang and 0DTE trader forums (ideas, never conclusions); Tastylive
+research segments (mechanics and POP framing); CBOE's own index-options
+research notes; podcast transcripts of systematic 0DTE traders. For
+STOCKS specifically: the academic factor canon (momentum — Jegadeesh &
+Titman; trend following on indices — Meb Faber's 10-month SMA timing;
+post-earnings drift; low-volatility anomaly), Stockbee/Qullamaggie-style
+momentum-breakout practitioner playbooks, and O'Neil/CANSLIM-descended
+relative-strength methods. Treat ALL of it as hypothesis, never edge:
+the lab exists because most of the canon fails out-of-sample or
+regime-shifts — BAND and LATE both came from plausible canon and died
+in under 6 weeks.
+
+### 6c. The estate's own tooling (signals we already compute)
+The main platform already produces graded momentum scans (21-point
+score), the Slope 5y log-trend screen with its PULLBACK lane, GEX
+regime tags, expected-move bands, and the two-phase exit engine built
+from the pick_behavior study of the owner's own fills. Each of those is
+a strategy seed with its infrastructure already paid for. The stocks
+sandbox should start here — systematizing what the platform already
+believes — before importing anything external.
+
+### The vetting checklist (before ANY idea gets a lab slot)
+- [ ] check `RETIRED.md` — is this a dead idea wearing a new name?
+- [ ] state the edge's SOURCE in one sentence (whose behavior pays us?)
+- [ ] state the regime it should fail in (if you can't, you don't
+      understand it yet) — that becomes its tripwire
+- [ ] define entry/exit/sizing so a machine needs zero judgment
+- [ ] pre-register the gate (trades-or-weeks + money tripwire) in the
+      spec BEFORE the first paper trade
+- [ ] confirm it's cheap to test (defined risk, fits the daily budget)
+
+## 7. File map (reference implementation, this repo)
 
 | File | Role |
 |---|---|
