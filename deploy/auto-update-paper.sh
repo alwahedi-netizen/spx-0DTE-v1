@@ -60,7 +60,9 @@ else
 
 # Gate the deploy on the offline regression suite: a push that breaks the
 # rules engine must never reach the live journal.
-if ! (cd "$CLONE" && python3 tests_paper.py >/tmp/paper-tests.log 2>&1); then
+# tests_stocks.py gates the stocks sandbox the same way (STOCKS_SPEC.md §8).
+if ! (cd "$CLONE" && python3 tests_paper.py >/tmp/paper-tests.log 2>&1 \
+      && python3 tests_stocks.py >>/tmp/paper-tests.log 2>&1); then
   log "TESTS FAILED — deploy blocked. tail /tmp/paper-tests.log:"
   tail -5 /tmp/paper-tests.log
   exit 0
@@ -90,12 +92,16 @@ fi  # end deploy stage ($cur != $r)
 # Gives the paper-test record an off-server copy and lets analysis run from
 # anywhere. Only data/ changes are pushed; the data-only short-circuit above
 # keeps these snapshots from triggering redeploys.
-if [ -d "$APP_DIR/data/paper" ]; then
+if [ -d "$APP_DIR/data/paper" ] || [ -d "$APP_DIR/data/stocks" ]; then
   last=$(git -C "$CLONE" log -1 --format=%ct -- data 2>/dev/null)
   [ -n "$last" ] || last=0
   if [ $(( $(date +%s) - last )) -ge 3600 ]; then
     mkdir -p "$CLONE/data/paper"
     rsync -a "$APP_DIR/data/paper/" "$CLONE/data/paper/"   # incl. engine logs (small, invaluable for remote diagnosis)
+    if [ -d "$APP_DIR/data/stocks" ]; then                 # stocks journal; bars cache stays on the hub
+      mkdir -p "$CLONE/data/stocks"
+      rsync -a --exclude 'cache' "$APP_DIR/data/stocks/" "$CLONE/data/stocks/"
+    fi
     if [ -n "$(git -C "$CLONE" status --porcelain -- data)" ]; then
       git -C "$CLONE" add data
       git -C "$CLONE" -c user.name="Logicon Hub" -c user.email="alwahedi@logicon.ae"         commit -q -m "journal snapshot $(TZ=America/New_York date '+%F %H:%M ET')

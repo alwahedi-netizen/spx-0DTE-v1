@@ -7,3 +7,6 @@ __pycache__/
 
 # The journal CSVs in data/paper/ are intentionally NOT ignored:
 # committing them keeps the paper-test record with the code.
+
+# stocks sandbox: daily-bars cache is rebuilt each session (journal CSVs ARE committed)
+data/stocks/cache/

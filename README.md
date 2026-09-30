@@ -126,3 +126,25 @@ alone, no API.
 - `schwab_auth.py` — minimal Schwab OAuth (auth / status CLI)
 - `logicon_env.py` — `.env` secrets loader
 - `tests_paper.py` — offline regression suite (fixture chains, no API)
+
+## Paper Lab sections (paper.sahmi.ae)
+
+The dashboard is now the **Logicon Paper Lab**, one section per asset class,
+mirroring the trader's desks:
+
+| path | section | state |
+|---|---|---|
+| `/` | Overview: every sandbox's headline numbers + phase | — |
+| `/stocks` | **Stocks & ETFs**: MOM / PB90 / RSI2 (spec: `STOCKS_SPEC.md`) | paper |
+| `/options` | Options: the SPX 0DTE lab above (was `/`) | live pilot |
+| `/crypto`, `/fx`, `/commodities` | planned: what changes per asset class | planned |
+
+`/suggested` is unchanged (the platform iframes it).
+
+Stocks sandbox files: `stocks_engine.py` (rules + idempotent session loop),
+`stocks_store.py` (journal in `data/stocks/`), `stocks_data.py` (Schwab via
+the shared grant, Yahoo fallback), `stocks_report.py` (scorecard + gates),
+`stocks_config.yaml`, `tests_stocks.py` (deploy gate, next to
+`tests_paper.py`). The dashboard supervises `stocks_engine.py run` as its own
+process, 09:10–16:25 ET on NYSE trading days. Paper only — no stocks order path
+exists.

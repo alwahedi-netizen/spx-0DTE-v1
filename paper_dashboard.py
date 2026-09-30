@@ -31,6 +31,16 @@ import paper_report
 import paper_store as st
 import schwab_auth
 
+# The stocks sandbox is a sibling lab: if its code ever fails to import, the
+# options lab (and the MEIC live mirror) must keep running regardless.
+try:
+    import stocks_engine as se
+    import stocks_report as sr
+    import stocks_store as sst
+except Exception as _e:        # pragma: no cover — deploy gate tests both
+    se = sr = sst = None
+    print(f"stocks sandbox disabled: {_e!r}", flush=True)
+
 BASE_DIR = Path(__file__).resolve().parent
 HOST = os.environ.get("PAPER_HOST", "127.0.0.1")
 PORT = int(os.environ.get("PAPER_PORT", "5250"))
@@ -39,6 +49,7 @@ RESTART_BACKOFF_S = 180   # engine exits clean when the day is done; don't spin
 
 app = Flask(__name__, static_folder=str(BASE_DIR / "static"))
 _proc = {"p": None, "log": None, "started": 0.0, "last_exit": None}
+_sproc = {"p": None, "log": None, "started": 0.0, "last_exit": None}
 
 
 # ── MEIC live mirror loop ────────────────────────────────────────────────────
@@ -102,11 +113,71 @@ def _supervisor():
         time.sleep(20)
 
 
+# ── stocks sandbox supervisor (own process, own journal) ────────────────────
+
+def _stocks_window(now) -> tuple:
+    if se is None:
+        return False, "stocks code failed to import"
+    if not se.is_trading_day(now.date()):
+        return False, "market closed today"
+    hm = now.strftime("%H:%M")
+    if not ("09:10" <= hm <= "16:25"):
+        return False, "outside session window (09:10-16:25 ET)"
+    if sst.rows_for_date("eod", now.date().isoformat()):
+        return False, "session marked — done for today"
+    return True, ""
+
+
+def _stocks_supervisor():
+    while True:
+        try:
+            now = pe.now_et()
+            p = _sproc["p"]
+            if p is not None and p.poll() is not None:
+                _sproc["last_exit"] = p.returncode
+                _sproc["p"] = None
+                p = None
+            should, _why = _stocks_window(now)
+            if should and p is None and time.time() - _sproc["started"] > RESTART_BACKOFF_S:
+                log_dir = sst.DATA_DIR / "logs"
+                os.makedirs(log_dir, exist_ok=True)
+                lp = log_dir / f"engine_{now.date().isoformat()}.log"
+                f = open(lp, "a", encoding="utf-8")
+                _sproc["p"] = subprocess.Popen(
+                    [sys.executable, str(BASE_DIR / "stocks_engine.py"), "run"],
+                    stdout=f, stderr=subprocess.STDOUT, cwd=str(BASE_DIR))
+                _sproc["log"] = str(lp)
+                _sproc["started"] = time.time()
+                print(f"stocks engine started (pid {_sproc['p'].pid}) -> {lp}", flush=True)
+        except Exception as e:
+            print(f"stocks supervisor: {e}", flush=True)
+        time.sleep(20)
+
+
 # ── pages / API ──────────────────────────────────────────────────────────────
+# Sections mirror the trader's desks: Overview · Stocks & ETFs · Options ·
+# Crypto · FX · Commodities. /suggested stays as-is (iframed by the platform).
 
 @app.get("/")
 def index():
+    return send_from_directory(app.static_folder, "lab.html")
+
+
+@app.get("/options")
+def options_page():
     return send_from_directory(app.static_folder, "paper.html")
+
+
+@app.get("/stocks")
+def stocks_page():
+    return send_from_directory(app.static_folder, "stocks.html")
+
+
+@app.get("/crypto")
+@app.get("/fx")
+@app.get("/commodities")
+def planned_page():
+    return send_from_directory(app.static_folder, "planned.html")
 
 
 @app.get("/api/state")
@@ -289,8 +360,113 @@ def api_auth_complete():
     return jsonify({"ok": True, "status": schwab_auth.token_status()})
 
 
+# ── stocks sandbox API ───────────────────────────────────────────────────────
+
+def _stocks_guard():
+    if se is None:
+        return jsonify({"error": "stocks sandbox unavailable (import failed)"}), 503
+    return None
+
+
+@app.get("/api/stocks/state")
+def api_stocks_state():
+    bad = _stocks_guard()
+    if bad:
+        return bad
+    cfg = se.load_config()
+    now = pe.now_et()
+    ds = now.date().isoformat()
+    day = (sst.rows_for_date("day", ds) or [None])[0]
+    positions = sst.read("positions")
+    marks = se.last_marks()
+    opens, closed = [], []
+    for p in positions:
+        m = marks.get(p["position_id"]) or {}
+        row = dict(p, mark=m.get("close"), mark_date=m.get("date"),
+                   unrealized=m.get("unrealized"), stale=m.get("stale"),
+                   eff_qty=round(se.eff_qty(p), 4), avg_cost=round(se.avg_cost(p), 4),
+                   held=se.sessions_between((p.get("entry_ts") or ds)[:10],
+                                            (p.get("exit_ts") or ds)[:10]))
+        (opens if sst.is_open(p) else closed).append(row)
+    closed.sort(key=lambda r: r.get("exit_ts") or "", reverse=True)
+    b = se.book_state(ds, {})
+    eq = float(cfg["account_equity"])
+    p = _sproc["p"]
+    running = p is not None and p.poll() is None
+    should, why = _stocks_window(now)
+    eod = sst.read("eod")
+    return jsonify({
+        "now": pe.iso(now), "date": ds,
+        "engine": {"running": running,
+                   "state": "running" if running else (why or "idle (will start in window)"),
+                   "last_exit": _sproc["last_exit"]},
+        "auth": {"shared": schwab_auth.shared_mode(), "status": schwab_auth.token_status()},
+        "day": day,
+        "signals": [r for r in sst.signals_for(ds)],
+        "open": opens, "closed": closed[:60],
+        "book": {"heat": round(b["heat"], 2), "heat_cap": eq * cfg["heat_cap_pct"],
+                 "new_risk": round(b["budget"], 2), "new_risk_cap": eq * cfg["daily_new_risk_pct"],
+                 "notional": round(b["notional"], 2), "equity": eq,
+                 "last_eod": eod[-1] if eod else None},
+        "summary": sr.summary(cfg),
+    })
+
+
+@app.get("/api/stocks/report")
+def api_stocks_report():
+    bad = _stocks_guard()
+    return bad or jsonify({"text": sr.text_report()})
+
+
+@app.get("/api/stocks/log")
+def api_stocks_log():
+    bad = _stocks_guard()
+    if bad:
+        return bad
+    lp = sst.DATA_DIR / "logs" / f"engine_{pe.now_et().date().isoformat()}.log"
+    if not lp.exists():
+        return jsonify({"text": "(no stocks engine log for today yet)"})
+    lines = lp.read_text(encoding="utf-8", errors="replace").splitlines()
+    return jsonify({"text": "\n".join(lines[-200:])})
+
+
+@app.post("/api/stocks/fill")
+def api_stocks_fill():
+    bad = _stocks_guard()
+    if bad:
+        return bad
+    j = request.get_json(force=True, silent=True) or {}
+
+    def num(x):
+        return None if x in (None, "") else float(x)
+    try:
+        upd = se.apply_fill(se.load_config(), j.get("position_id", ""),
+                            entry=num(j.get("entry")), add=num(j.get("add")),
+                            exit_=num(j.get("exit")), note=(j.get("note") or None))
+    except KeyError:
+        return jsonify({"error": "no such position_id"}), 404
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify({"ok": True, "updates": upd})
+
+
+@app.get("/api/lab/overview")
+def api_lab_overview():
+    """One call for the Overview page: each section's headline numbers."""
+    out = {"options": {"pnl_all": paper_report.pnl_summary().get("all", {}),
+                       "live": live_meic.sync_summary()}}
+    if se is not None:
+        s = sr.summary()
+        out["stocks"] = {"strategies": {k: {"n": v["n"], "total": v.get("total"),
+                                            "open": v["open"], "unrealized": v["unrealized"]}
+                                        for k, v in s["strategies"].items()},
+                         "weeks_running": s["weeks_running"]}
+    return jsonify(out)
+
+
 def main():
     threading.Thread(target=_supervisor, daemon=True).start()
+    threading.Thread(target=_stocks_supervisor, daemon=True).start()
     threading.Thread(target=_live_loop, daemon=True).start()
     print(f"SPX Paper Trader dashboard: http://{HOST}:{PORT}/", flush=True)
     app.run(host=HOST, port=PORT, debug=False, threaded=True)

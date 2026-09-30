@@ -1,0 +1,62 @@
+# stocks_config.yaml — Stocks & ETF sandbox (see STOCKS_SPEC.md)
+# One fixed config for the test window. Mirrors stocks_engine.DEFAULTS.
+# Changing a strategy rule after its first trade = a NEW strategy (spec §0).
+
+account_equity: 100000
+risk_per_trade_pct: 0.005        # $500 per campaign = qty x stop distance
+max_notional_pct: 0.08           # per-campaign notional cap
+heat_cap_pct: 0.08               # sum of open stop risk
+daily_new_risk_pct: 0.02         # sum of today's entries + adds initial risk
+
+slippage_bps: {large: 5, etf: 2}
+sell_fee_bps: 0.278              # SEC fee on sell notional
+taf_per_share: 0.000166          # FINRA TAF on sells (capped per trade)
+taf_cap: 8.30
+
+universe:
+  stocks: [AAPL, MSFT, NVDA, AMZN, GOOGL, META, AVGO, TSLA, JPM, V, MA, UNH,
+           XOM, LLY, JNJ, PG, HD, COST, ABBV, MRK, PEP, KO, WMT, BAC, CVX,
+           ORCL, CRM, AMD, NFLX, ADBE, TMO, LIN, ACN, MCD, CSCO, ABT, WFC,
+           DHR, TXN, QCOM, INTU, CAT, GE, AMAT, IBM, NOW, ISRG, UBER, BKNG,
+           GS, SPGI, PLTR, PANW, MU, LRCX, KLAC, ANET, CRWD, DE, LMT, RTX,
+           HON, UNP, SBUX, NKE, TJX, MDT, BLK, AXP, MS, C, SCHW, VRTX, REGN,
+           ADP, CMG, TMUS, COP, PGR, ETN]
+  etfs: [SPY, QQQ, IWM, DIA, XLK, XLF, XLE, XLV, XLI, XLY, XLP, XLU, XLB,
+         XLRE, XLC, SMH, GLD, TLT, EEM, EFA]
+
+mom:
+  enabled: true
+  expl_rank_min: 90
+  max_new_per_day: 2
+  max_open: 8
+  ph1_stop: 0.85                 # exit at entry x 0.85
+  ph2_trail: 0.85                # exit at peak x 0.85 once added-to
+  add_r21_min: 10.0              # double-down: 1M >= +10%
+  add_within_peak: 0.03          #              within 3% of peak close
+  review_days: 28                # going-nowhere review...
+  review_band: 5.0               # ...when return is within +/- 5%
+
+pb90:
+  enabled: true
+  expl_rank_min: 75
+  r1y_rank_min: 70
+  pb_lo: 2.0                     # % below the 63-session high
+  pb_hi: 12.0
+  atr_stop: 2.0
+  time_stop_sessions: 20
+  max_new_per_day: 2
+  max_open: 5
+
+rsi2:
+  enabled: true
+  rsi_max: 10.0
+  atr_stop: 3.0
+  exit_sma: 5
+  time_stop_sessions: 10
+  max_new_per_day: 2
+  max_open: 4
+
+gates:
+  MOM:  {trades: 60,  weeks: 16, tripwire: -3000}
+  PB90: {trades: 100, weeks: 12, tripwire: -3000}
+  RSI2: {trades: 100, weeks: 10, tripwire: -2500}
