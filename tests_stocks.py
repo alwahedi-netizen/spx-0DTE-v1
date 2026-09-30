@@ -17,6 +17,9 @@ import tempfile
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+import random
+
+import stocks_backtest as bt
 import stocks_engine as se
 import stocks_report as sr
 import stocks_store as st
@@ -43,6 +46,8 @@ def base_cfg(**over):
     cfg["universe"] = {"stocks": ["AAA", "BBB", "CCC", "DDD", "EEE", "FFF",
                                   "GGG", "HHH", "III", "JJJ"],
                        "etfs": ["SPY", "QQQ", "XLE"]}
+    for k in ("mom", "pb90", "rsi2"):
+        cfg[k] = dict(cfg[k], stage="paper")
     cfg.update(over)
     return cfg
 
@@ -495,6 +500,88 @@ def test_missed_and_holiday():
     ok("NYSE holiday → SKIPPED_HOLIDAY day row, nothing else")
 
 
+def rw_universe(n=520, seed=7):
+    """Deterministic random walks with drift for the 10 stocks + 3 ETFs."""
+    rnd = random.Random(seed)
+    out = {}
+    for i, sym in enumerate(base_cfg()["universe"]["stocks"] + ["SPY", "QQQ", "XLE"]):
+        px, bars = 50.0 + i, []
+        drift = 0.0002 * (i % 5)
+        for _ in range(n):
+            o = px * (1 + rnd.gauss(0, 0.004))
+            c = o * (1 + drift + rnd.gauss(0, 0.015))
+            bars.append((o, max(o, c) * (1 + abs(rnd.gauss(0, 0.004))),
+                         min(o, c) * (1 - abs(rnd.gauss(0, 0.004))), c))
+            px = c
+        out[sym] = [{"date": d, "open": o, "high": h, "low": l, "close": c}
+                    for d, (o, h, l, c) in zip(trading_days_back(date(2026, 9, 29), n), bars)]
+    return out
+
+
+def test_backtest():
+    print("Backtester (same brain, no look-ahead)")
+    cfg = base_cfg()
+    bars = rw_universe()
+    cal = [b["date"] for b in bars["SPY"]]
+    start, cut = cal[bt.WINDOW], cal[430]
+    base = {s_: bt.simulate(cfg, bars, s_, start, cal[-1]) for s_ in se.STRATEGIES}
+    assert sum(len(r["trades"]) for r in base.values()) > 20, \
+        {k: len(v["trades"]) for k, v in base.items()}
+    ok("replays all three strategies on the engine's own functions → trades")
+    fut = {s_: [dict(b, open=b["open"] * 0.5, high=b["high"] * 0.5, low=b["low"] * 0.5,
+                     close=b["close"] * 0.5) if b["date"] >= cut else b for b in v]
+           for s_, v in bars.items()}
+    for s_ in se.STRATEGIES:
+        a = [t for t in base[s_]["trades"] if t["exit"] < cut]
+        b = [t for t in bt.simulate(cfg, fut, s_, start, cal[-1])["trades"] if t["exit"] < cut]
+        assert a == b, s_
+        ca = [c for c in base[s_]["curve"] if c["date"] < cut]
+        cb = [c for c in bt.simulate(cfg, fut, s_, start, cal[-1])["curve"] if c["date"] < cut]
+        assert ca == cb, s_
+    ok("no look-ahead: rewriting the future never changes past trades or equity")
+
+    # gap through the stop fills at the OPEN, not at the stop
+    closes = [30 * 1.006 ** k for k in range(400)]
+    g = {"AAA": mk_bars(closes, date(2026, 9, 29))}
+    gap_day = g["AAA"][350]["date"]
+    for i, b_ in enumerate(g["AAA"]):
+        if i >= 350:
+            px = closes[349] * 0.70 * 1.001 ** (i - 350)
+            g["AAA"][i] = dict(b_, open=px, high=px * 1.01, low=px * 0.99, close=px)
+    for s_ in cfg["universe"]["stocks"][1:] + ["SPY"]:
+        g[s_] = mk_bars([40.0] * 400, date(2026, 9, 29))
+    r = bt.simulate(cfg, g, "MOM", g["SPY"][300]["date"], g["SPY"][-1]["date"])
+    t = [t_ for t_ in r["trades"] if t_["exit"] == gap_day]
+    assert len(t) == 1 and t[0]["reason"] == "STOPPED", r["trades"]
+    assert t[0]["exit_px"] == se.sim_sell(g["AAA"][350]["open"], 5) and t[0]["added"]
+    ok("gap through a stop fills at the open (MOM phase 2 after its double-down)")
+
+    m = bt.benchmark({"X": mk_bars([10, 15, 20], date(2026, 9, 29)),
+                      "Y": mk_bars([10, 10, 20], date(2026, 9, 29))},
+                     ["X", "Y"], trading_days_back(date(2026, 9, 29), 3), 100000)
+    assert approx(m["total_return"], 1.0, 1e-9)
+    ok("equal-weight buy-and-hold benchmark")
+
+    gate = dict(bt.GATE_DEFAULTS)
+    good = {"stats": {"n": 80, "expectancy": 50, "confidence": 0.95, "pf": 1.5},
+            "in_sample": {}, "out_of_sample": {"expectancy": 10, "pf": 1.2},
+            "metrics": {"max_dd_pct": -0.10, "sharpe": 1.1},
+            "benchmark_universe": {"sharpe": 0.9}}
+    assert bt.verdict(good, gate, 1e5)["pass"]
+    for k, v in (("stats", {**good["stats"], "pf": 1.2}),
+                 ("out_of_sample", {"expectancy": -5, "pf": 0.9}),
+                 ("metrics", {"max_dd_pct": -0.2, "sharpe": 1.1}),
+                 ("benchmark_universe", {"sharpe": 1.3})):
+        assert not bt.verdict({**good, k: v}, gate, 1e5)["pass"], k
+    ok("promotion verdict: every check can fail it (PF, OOS, drawdown, beat buy-and-hold)")
+
+    c2 = base_cfg()
+    c2["pb90"] = dict(c2["pb90"], stage="backtest")
+    assert se.in_paper(c2, "MOM") and not se.in_paper(c2, "PB90")
+    assert not se.in_paper(se.load_config("/nonexistent"), "MOM")
+    ok("paper engine only enters strategies promoted to stage: paper (default: backtest)")
+
+
 def test_real_config():
     print("Shipped config")
     cfg = se.load_config()
@@ -507,7 +594,7 @@ def test_real_config():
 if __name__ == "__main__":
     for t in (test_indicators, test_calendar_and_regime, test_candidates,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
-              test_session_with_crash, test_missed_and_holiday, test_real_config):
+              test_session_with_crash, test_missed_and_holiday, test_backtest, test_real_config):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)

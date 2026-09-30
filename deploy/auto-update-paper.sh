@@ -100,7 +100,7 @@ if [ -d "$APP_DIR/data/paper" ] || [ -d "$APP_DIR/data/stocks" ]; then
     rsync -a "$APP_DIR/data/paper/" "$CLONE/data/paper/"   # incl. engine logs (small, invaluable for remote diagnosis)
     if [ -d "$APP_DIR/data/stocks" ]; then                 # stocks journal; bars cache stays on the hub
       mkdir -p "$CLONE/data/stocks"
-      rsync -a --exclude 'cache' "$APP_DIR/data/stocks/" "$CLONE/data/stocks/"
+      rsync -a --exclude 'cache' --exclude 'history' "$APP_DIR/data/stocks/" "$CLONE/data/stocks/"
     fi
     if [ -n "$(git -C "$CLONE" status --porcelain -- data)" ]; then
       git -C "$CLONE" add data

@@ -136,6 +136,38 @@ def _yahoo_bars(sym: str) -> list:
     return out
 
 
+def long_bars(sym: str, years: int = 10) -> list:
+    """Long daily history for the backtester — Schwab, Yahoo fallback."""
+    try:
+        j = _schwab_get("/pricehistory", {"symbol": sym, "periodType": "year",
+                                          "period": min(20, max(1, years)),
+                                          "frequencyType": "daily", "frequency": 1})
+        out = [{"date": _day(c["datetime"]), "open": float(c["open"]),
+                "high": float(c["high"]), "low": float(c["low"]),
+                "close": float(c["close"])}
+               for c in j.get("candles") or [] if c.get("close") is not None]
+        if len(out) >= 300:
+            return out
+    except StocksDataError:
+        pass
+    res = _yahoo_chart(sym, f"{years}y", "1d")
+    ts = res.get("timestamp") or []
+    q = ((res.get("indicators") or {}).get("quote") or [{}])[0]
+    out = []
+    for i, t in enumerate(ts):
+        try:
+            o, h, l, c = q["open"][i], q["high"][i], q["low"][i], q["close"][i]
+        except (KeyError, IndexError):
+            continue
+        if None in (o, h, l, c):
+            continue
+        out.append({"date": _day(t, ms=False), "open": float(o), "high": float(h),
+                    "low": float(l), "close": float(c)})
+    if len(out) < 300:
+        raise StocksDataError(f"{sym}: only {len(out)} long bars")
+    return out
+
+
 def bars_for(sym: str) -> tuple:
     """(bars, source) — Schwab first, Yahoo fallback."""
     try:

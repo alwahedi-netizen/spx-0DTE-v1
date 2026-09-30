@@ -24,8 +24,17 @@ universe:
   etfs: [SPY, QQQ, IWM, DIA, XLK, XLF, XLE, XLV, XLI, XLY, XLP, XLU, XLB,
          XLRE, XLC, SMH, GLD, TLT, EEM, EFA]
 
+# stage: backtest -> paper -> retired (STOCKS_SPEC.md §9). The paper engine
+# trades ONLY strategies at `stage: paper`; a strategy gets there by passing
+# the backtest gate below (stocks_backtest.py) and the owner promoting it.
+# Backtest verdicts 2026-09-30 (10y Yahoo history, params as below):
+#   MOM  PASS (PF 2.32, OOS PF 2.8, Sharpe 1.02 vs 1.00 universe hold) -> paper
+#   PB90 FAIL (PF 1.16, Sharpe 0.51 vs 1.00)                           -> backtest
+#   RSI2 FAIL (PF 1.27, Sharpe 0.51 vs 0.75)                           -> backtest
+
 mom:
   enabled: true
+  stage: paper
   expl_rank_min: 90
   max_new_per_day: 2
   max_open: 8
@@ -38,6 +47,7 @@ mom:
 
 pb90:
   enabled: true
+  stage: backtest
   expl_rank_min: 75
   r1y_rank_min: 70
   pb_lo: 2.0                     # % below the 63-session high
@@ -49,6 +59,7 @@ pb90:
 
 rsi2:
   enabled: true
+  stage: backtest
   rsi_max: 10.0
   atr_stop: 3.0
   exit_sma: 5
@@ -56,6 +67,16 @@ rsi2:
   max_new_per_day: 2
   max_open: 4
 
+# Backtest -> paper promotion bar (fixed BEFORE the first backtest ran)
+backtest_gate:
+  min_trades: 50
+  min_pf: 1.3
+  min_confidence: 0.90          # t-CDF that expectancy > 0
+  oos_min_pf: 1.1               # last 30% of the window, held out
+  max_dd_pct: 0.15
+  beat_benchmark_sharpe: true   # vs equal-weight hold of the SAME universe
+
+# Paper -> live-pilot gates
 gates:
   MOM:  {trades: 60,  weeks: 16, tripwire: -3000}
   PB90: {trades: 100, weeks: 12, tripwire: -3000}

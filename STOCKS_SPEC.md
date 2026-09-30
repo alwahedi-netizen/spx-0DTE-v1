@@ -168,3 +168,38 @@ Otherwise the platform should just own SPY. Fewer than 20 closed trades
 - The hub deploy gate runs `tests_paper.py` **and** `tests_stocks.py`.
 - Hourly journal snapshots include `data/stocks/` (the bars cache is
   excluded).
+
+## 9. The pipeline: BACKTEST → PAPER → LIVE (added 2026-09-30, owner rule)
+
+No strategy paper-trades until it has passed a historical backtest.
+`stocks_backtest.py` replays the **same functions** the paper engine
+trades with (candidates, sizing, stops, adds, trailing, rule exits, fills,
+fees) over ~9 years of daily bars. It never sees a bar dated on or after
+the simulated day, and a test proves it: rewriting the future never
+changes past trades. The paper engine only enters strategies whose config
+says `stage: paper`.
+
+**Promotion bar (fixed before the first backtest ran, `backtest_gate`):**
+≥ 50 trades; expectancy > 0 at ≥ 90% t-CDF confidence; PF ≥ 1.3; the
+held-out last 30% of the window keeps expectancy > 0 and PF ≥ 1.1; max
+drawdown ≤ 15%; Sharpe ≥ an equal-weight buy-and-hold of the **same**
+universe. That last check neutralizes survivorship bias: the universe is
+today's winners, so any long strategy looks good on its history.
+
+**First verdicts (2026-09-30, Yahoo 10y history, the §3 parameters):**
+
+| | trades | PF | conf | OOS PF | maxDD | Sharpe vs hold | verdict |
+|---|---|---|---|---|---|---|---|
+| MOM | 538 | 2.32 | 100% | 2.80 | −11.9% | 1.02 vs 1.00 | **PASS → paper** |
+| PB90 | 1104 | 1.16 | 98% | 1.31 | −9.6% | 0.51 vs 1.00 | FAIL → backtest |
+| RSI2 | 845 | 1.27 | 99% | 1.70 | −3.3% | 0.51 vs 0.75 | FAIL → backtest |
+
+MOM's pass on the benchmark check is a near-tie. Its edge over simply
+holding the universe is risk-shape (−12% vs −33% drawdown), not return.
+PB90 and RSI2 have real but thin edges (≥ 97% confidence, PF < 1.3). An
+improved variant enters as a NEW strategy name through this same gate; the
+original rules are not edited in place. Every run lands in
+`data/stocks/backtests/runs.csv` with its parameter hash.
+
+Known limits: survivorship bias (above), price-only returns, and stop
+fills approximated from daily highs and lows.

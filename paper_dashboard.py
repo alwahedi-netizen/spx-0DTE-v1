@@ -34,11 +34,12 @@ import schwab_auth
 # The stocks sandbox is a sibling lab: if its code ever fails to import, the
 # options lab (and the MEIC live mirror) must keep running regardless.
 try:
+    import stocks_backtest as sbt
     import stocks_engine as se
     import stocks_report as sr
     import stocks_store as sst
 except Exception as _e:        # pragma: no cover — deploy gate tests both
-    se = sr = sst = None
+    se = sr = sst = sbt = None
     print(f"stocks sandbox disabled: {_e!r}", flush=True)
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -50,6 +51,7 @@ RESTART_BACKOFF_S = 180   # engine exits clean when the day is done; don't spin
 app = Flask(__name__, static_folder=str(BASE_DIR / "static"))
 _proc = {"p": None, "log": None, "started": 0.0, "last_exit": None}
 _sproc = {"p": None, "log": None, "started": 0.0, "last_exit": None}
+_bproc = {"p": None, "started": 0.0}
 
 
 # ── MEIC live mirror loop ────────────────────────────────────────────────────
@@ -409,6 +411,7 @@ def api_stocks_state():
                  "notional": round(b["notional"], 2), "equity": eq,
                  "last_eod": eod[-1] if eod else None},
         "summary": sr.summary(cfg),
+        "stages": {k: cfg[k.lower()].get("stage", "backtest") for k in se.STRATEGIES},
     })
 
 
@@ -450,6 +453,57 @@ def api_stocks_fill():
     return jsonify({"ok": True, "updates": upd})
 
 
+def _start_backtest() -> bool:
+    """Launch stocks_backtest.py (all strategies) unless one is running."""
+    p = _bproc["p"]
+    if p is not None and p.poll() is None:
+        return False
+    d = sbt.bt_dir()
+    os.makedirs(d, exist_ok=True)
+    f = open(d / "run.log", "w", encoding="utf-8")
+    _bproc["p"] = subprocess.Popen([sys.executable, str(BASE_DIR / "stocks_backtest.py")],
+                                   stdout=f, stderr=subprocess.STDOUT, cwd=str(BASE_DIR))
+    _bproc["started"] = time.time()
+    return True
+
+
+def _first_backtest():
+    """No results on this box yet → run one (history download ~2 min)."""
+    time.sleep(90)
+    try:
+        if sbt is not None and not sbt.load_latest():
+            _start_backtest()
+    except Exception as e:
+        print(f"first backtest: {e}", flush=True)
+
+
+@app.get("/api/stocks/backtests")
+def api_stocks_backtests():
+    bad = _stocks_guard()
+    if bad:
+        return bad
+    cfg = se.load_config()
+    p = _bproc["p"]
+    log = sbt.bt_dir() / "run.log"
+    tail = log.read_text(encoding="utf-8", errors="replace").splitlines()[-40:] if log.exists() else []
+    latest = sbt.load_latest()
+    for r in latest.values():
+        r.pop("trades_tail", None)
+    return jsonify({"latest": latest, "variants": sbt.variants_tried(),
+                    "stages": {k: cfg[k.lower()].get("stage", "backtest") for k in se.STRATEGIES},
+                    "gate": dict(sbt.GATE_DEFAULTS, **(cfg.get("backtest_gate") or {})),
+                    "running": p is not None and p.poll() is None,
+                    "started": _bproc["started"], "log": "\n".join(tail)})
+
+
+@app.post("/api/stocks/backtest/run")
+def api_stocks_backtest_run():
+    bad = _stocks_guard()
+    if bad:
+        return bad
+    return jsonify({"started": _start_backtest()})
+
+
 @app.get("/api/lab/overview")
 def api_lab_overview():
     """One call for the Overview page: each section's headline numbers."""
@@ -467,6 +521,7 @@ def api_lab_overview():
 def main():
     threading.Thread(target=_supervisor, daemon=True).start()
     threading.Thread(target=_stocks_supervisor, daemon=True).start()
+    threading.Thread(target=_first_backtest, daemon=True).start()
     threading.Thread(target=_live_loop, daemon=True).start()
     print(f"SPX Paper Trader dashboard: http://{HOST}:{PORT}/", flush=True)
     app.run(host=HOST, port=PORT, debug=False, threaded=True)

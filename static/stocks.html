@@ -76,6 +76,15 @@
   .rules { font-size:12px; color:var(--mut); line-height:1.55; }
   .rules b { color:var(--ink); }
   input[type=number] { width:84px; }
+  .bts { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:12px; }
+  .bt { border:1px solid var(--line); border-radius:9px; padding:10px 12px; background:#fcfbf8; }
+  .bt .hd { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:6px; }
+  .bt .hd b { font-size:15px; }
+  .bt ul { list-style:none; padding:0; margin:6px 0 0; font-size:12px; }
+  .bt li { padding:1px 0; } .bt li .y { color:var(--green); } .bt li .n { color:var(--red); }
+  .bt .spark { height:56px; margin:6px 0 2px; }
+  .spark .bm { fill:none; stroke:#b9b2a2; stroke-width:1.2; stroke-dasharray:4 3; }
+  .pipe { font-size:12px; color:var(--mut); margin:0 0 10px; }
 </style>
 </head>
 <body>
@@ -120,6 +129,18 @@
       <div class="sum" id="sparkSub">No sessions marked yet.</div>
     </div>
   </div>
+
+  <section>
+    <h2>Backtests <span class="mut" style="text-transform:none">(backtest → paper → live · same rule functions as the paper engine, replayed on daily history)</span></h2>
+    <p class="pipe">A strategy only trades in paper after it <b>passes</b> every check below and is promoted (<code>stage: paper</code> in stocks_config.yaml).
+      The bar was fixed before the first run. Each run is logged with a hash of its parameters, so the number of variants tried stays visible.
+      Caveats: the universe is today's large caps (survivorship bias flatters longs, which is why each strategy must beat buy-and-hold of the same universe). Prices only, no dividends.
+      Stop fills come from daily highs and lows.</p>
+    <div style="margin-bottom:10px"><button id="btRun" onclick="runBacktest()">Run backtests (10y)</button>
+      <span class="msg" id="btMsg"></span></div>
+    <div class="bts" id="btCards"><div class="mut">No backtest results yet.</div></div>
+    <pre id="btLog" style="display:none;margin-top:10px;max-height:180px"></pre>
+  </section>
 
   <section>
     <h2>Gates <span class="mut" style="text-transform:none">(pre-registered in STOCKS_SPEC.md — the gate decides, not the mood)</span></h2>
@@ -278,7 +299,9 @@ async function refresh(){
   $("gateTable").querySelector("tbody").innerHTML = Object.entries(sm).map(([k, r]) => {
     const g = r.gate, pct = Math.min(100, Math.round(100 * g.progress));
     const conf = r.confidence === undefined || r.confidence === null ? "–" : Math.round(100*r.confidence) + "%";
-    const status = g.tripped ? `<span class="badge bad">tripwire — review</span>`
+    const stage = (s.stages || {})[k] || "backtest";
+    const status = stage !== "paper" ? `<span class="mut">stage: ${esc(stage)} — no new paper entries</span>`
+      : g.tripped ? `<span class="badge bad">tripwire — review</span>`
       : pct >= 100 ? `<span class="badge ok">gate reached — verdict due</span>`
       : !g.admissible ? `<span class="mut">&lt;20 closed · inadmissible</span>` : `<span class="mut">papering</span>`;
     return `<tr><td class="strat">${esc(k)}</td><td>${r.n}</td><td>${r.open}</td>
@@ -336,6 +359,59 @@ async function refresh(){
   }).join("");
 }
 
+
+function curveSvg(res){
+  const c = res.curve || [];
+  if (c.length < 2) return "";
+  const ys = c.map(p => p.equity), lo = Math.min(...ys), hi = Math.max(...ys), span = (hi - lo) || 1;
+  const X = i => 2 + i * 296 / (c.length - 1), Y = v => 52 - (v - lo) / span * 48;
+  return `<svg class="spark" viewBox="0 0 300 56" preserveAspectRatio="none" role="img" aria-label="Backtest equity">` +
+    `<polyline class="ln" points="${c.map((p,i) => X(i).toFixed(1)+","+Y(p.equity).toFixed(1)).join(" ")}"></polyline></svg>`;
+}
+const pct = x => (x === null || x === undefined) ? "–" : (100*x).toFixed(1) + "%";
+
+async function loadBacktests(){
+  let j;
+  try { j = await (await fetch("/api/stocks/backtests")).json(); } catch(e){ return; }
+  if (j.error) return;
+  $("btRun").disabled = j.running;
+  $("btMsg").textContent = j.running ? "running… (history download ~2 min on first run)" : "";
+  $("btLog").style.display = j.running || (j.log && !Object.keys(j.latest).length) ? "block" : "none";
+  $("btLog").textContent = j.log || "";
+  const strats = Object.keys(j.stages);
+  if (!Object.keys(j.latest).length){ $("btCards").innerHTML = `<div class="mut">No backtest results yet${j.running ? " — first run in progress" : ""}.</div>`; }
+  else $("btCards").innerHTML = strats.map(k => {
+    const r = j.latest[k], stage = j.stages[k];
+    const stageB = `<span class="badge ${stage === "paper" ? "ok" : stage === "retired" ? "bad" : ""}">stage: ${esc(stage)}</span>`;
+    if (!r) return `<div class="bt"><div class="hd"><b>${esc(k)}</b>${stageB}</div><div class="mut">not run yet</div></div>`;
+    const s = r.stats, m = r.metrics, u = r.benchmark_universe, sp = r.benchmark_spy, v = r.verdict;
+    const years = Object.entries(r.by_year || {}).map(([y, o]) =>
+      `<span class="${o.pnl >= 0 ? "pos" : "neg"}" title="${o.n} trades">${y.slice(2)}:${o.pnl >= 0 ? "+" : "−"}${Math.abs(Math.round(o.pnl/1000))}k</span>`).join(" ");
+    return `<div class="bt">
+      <div class="hd"><b>${esc(k)}</b><span>${stageB}
+        <span class="badge ${v.pass ? "ok" : "bad"}">${v.pass ? "PASS" : "FAIL"}</span></span></div>
+      <div class="mut" style="font-size:11px">${esc(r.start)} → ${esc(r.end)} · ${r.universe_size} symbols ·
+        params ${esc(r.params_hash)} · ${j.variants[k] || 1} variant(s) tried · ran ${esc((r.ran_at || "").replace("T"," ").slice(0,16))}</div>
+      ${curveSvg(r)}
+      <div class="kv"><span>Trades · win · avg hold</span><b>${s.n} · ${pct(s.win_rate)} · ${r.avg_hold ?? "–"}d</b></div>
+      <div class="kv"><span>Expectancy · conf · PF</span><b>${money(s.expectancy)} · ${pct(s.confidence)} · ${f2(s.pf)}</b></div>
+      <div class="kv"><span>CAGR · max DD · Sharpe</span><b>${pct(m.cagr)} · ${pct(m.max_dd_pct)} · ${f2(m.sharpe)}</b></div>
+      <div class="kv"><span>Universe hold (CAGR · DD · Sharpe)</span><b class="mut">${pct(u.cagr)} · ${pct(u.max_dd_pct)} · ${f2(u.sharpe)}</b></div>
+      <div class="kv"><span>SPY hold</span><b class="mut">${pct(sp.cagr)} · ${pct(sp.max_dd_pct)} · ${f2(sp.sharpe)}</b></div>
+      <div class="kv"><span>Avg exposure</span><b>${pct(m.avg_exposure)}</b></div>
+      <div style="font-size:11.5px;margin-top:4px">${years}</div>
+      <ul>${v.checks.map(c => `<li><span class="${c.ok ? "y" : "n"}">${c.ok ? "✓" : "✗"}</span> ${esc(c.name)} — <span class="mut">${esc(c.detail)}</span></li>`).join("")}</ul>
+    </div>`;
+  }).join("");
+  if (j.running) setTimeout(loadBacktests, 5000);
+}
+
+async function runBacktest(){
+  $("btMsg").textContent = "starting…";
+  try { await fetch("/api/stocks/backtest/run", {method:"POST"}); } catch(e){}
+  setTimeout(loadBacktests, 800);
+}
+
 async function saveFill(id, kind){
   const body = { position_id: id, note: $("fn_"+id).value };
   if (kind === "entry") body.entry = $("fe_"+id).value;
@@ -371,7 +447,8 @@ async function refreshLog(){
 // don't clobber a fill being typed: skip table refresh while an input has focus
 setInterval(() => { if (!document.activeElement || document.activeElement.tagName !== "INPUT") refresh(); }, 15000);
 setInterval(refreshLog, 10000);
-refresh(); refreshLog();
+refresh(); refreshLog(); loadBacktests();
+setInterval(loadBacktests, 60000);
 </script>
 </body>
 </html>

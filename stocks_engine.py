@@ -64,14 +64,14 @@ DEFAULTS = {
     "taf_per_share": 0.000166,
     "taf_cap": 8.30,
     "universe": {"stocks": [], "etfs": []},
-    "mom": {"enabled": True, "expl_rank_min": 90, "max_new_per_day": 2,
+    "mom": {"enabled": True, "stage": "backtest", "expl_rank_min": 90, "max_new_per_day": 2,
             "max_open": 8, "ph1_stop": 0.85, "ph2_trail": 0.85,
             "add_r21_min": 10.0, "add_within_peak": 0.03,
             "review_days": 28, "review_band": 5.0},
-    "pb90": {"enabled": True, "expl_rank_min": 75, "r1y_rank_min": 70,
+    "pb90": {"enabled": True, "stage": "backtest", "expl_rank_min": 75, "r1y_rank_min": 70,
              "pb_lo": 2.0, "pb_hi": 12.0, "atr_stop": 2.0,
              "time_stop_sessions": 20, "max_new_per_day": 2, "max_open": 5},
-    "rsi2": {"enabled": True, "rsi_max": 10.0, "atr_stop": 3.0, "exit_sma": 5,
+    "rsi2": {"enabled": True, "stage": "backtest", "rsi_max": 10.0, "atr_stop": 3.0, "exit_sma": 5,
              "time_stop_sessions": 10, "max_new_per_day": 2, "max_open": 4},
     "gates": {"MOM": {"trades": 60, "weeks": 16, "tripwire": -3000},
               "PB90": {"trades": 100, "weeks": 12, "tripwire": -3000},
@@ -420,11 +420,13 @@ def exit_check(p: dict, last: float):
     return None
 
 
-def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict):
-    """15:50 rule exits: reason or None."""
+def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = None):
+    """15:50 rule exits: reason or None. `held` (sessions since entry) may be
+    passed by the backtester, whose history predates NYSE_HOLIDAYS."""
     strat = p.get("strategy")
     entry_day = (p.get("entry_ts") or "")[:10]
-    held = sessions_between(entry_day, today)
+    if held is None:
+        held = sessions_between(entry_day, today)
     if strat == "RSI2":
         c = cfg["rsi2"]
         if f and len(f.get("last4") or []) == c["exit_sma"] - 1:
@@ -473,6 +475,13 @@ def detect_split(prev_mark_close: float, adj_close_same_day: float):
 
 def _f2(x):
     return "" if x is None else f"{x:.2f}"
+
+
+def in_paper(cfg: dict, strategy: str) -> bool:
+    """Only strategies promoted past their backtest (stage: paper) take new
+    entries. Open campaigns of a demoted strategy keep being tracked/exited."""
+    c = cfg.get(strategy.lower()) or {}
+    return bool(c.get("enabled")) and c.get("stage") == "paper"
 
 
 def entry_pending(ds: str, strategy: str) -> bool:
@@ -888,7 +897,7 @@ def run_session(cfg: dict, data, clock) -> str:
         if now.date() != d:
             return "rolled"
         for strat in STRATEGIES:
-            if not cfg[strat.lower()].get("enabled") or not entry_pending(ds, strat):
+            if not in_paper(cfg, strat) or not entry_pending(ds, strat):
                 continue
             if now < t_entry:
                 continue

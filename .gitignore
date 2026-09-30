@@ -10,3 +10,5 @@ __pycache__/
 
 # stocks sandbox: daily-bars cache is rebuilt each session (journal CSVs ARE committed)
 data/stocks/cache/
+# backtest price history cache (re-downloaded; results in data/stocks/backtests ARE committed)
+data/stocks/history/
