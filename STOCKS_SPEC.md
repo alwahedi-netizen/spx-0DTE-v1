@@ -309,3 +309,28 @@ that cash. Two open methodology questions for the owner (not applied):
 (1) credit idle cash with the T-bill rate and use excess-return Sharpe
 (the textbook definition); (2) test the low-exposure edges STACKED in
 one book, since they trade on different days.
+
+
+## 14. Round 5 (owner-approved): T-bill cash + a stacked book
+
+Two methodology changes, made with the owner's OK after round 4:
+`--cash-yield` pays the 13-week T-bill rate (Yahoo ^IRX) on idle cash,
+and Sharpe is computed on excess returns over it (the textbook
+definition), for strategies AND benchmarks. `STACK` runs TOM + SECROT +
+RSI2 + IBS on one account (P&L and exposure add). It must also fit
+(peak exposure ≤ 100%).
+
+| lane | CAGR | maxDD | exposure | excess Sharpe vs hold | verdict |
+|---|---|---|---|---|---|
+| STACK | 6.2% | −5.7% | 28% (peak 104%) | 0.65 vs 0.69 | FAIL (Sharpe by 0.04; fit 104%) |
+| ETFTREND | 8.1% | −16.1% | 83% | 0.61 vs 0.69 | FAIL (DD, Sharpe) |
+| SECROT | 3.7% | −2.9% | 10% | 0.56 vs 0.69 | FAIL (Sharpe) |
+| TOM | 3.7% | −1.8% | 4% | 0.52 vs 0.65 | FAIL (Sharpe) |
+| RSI2 | 3.6% | −2.6% | 7% | 0.44 vs 0.69 | FAIL (Sharpe) |
+| IBS | 3.4% | −2.6% | 6% | 0.42 vs 0.65 | FAIL (PF, Sharpe) |
+
+The fixes lowered both sides: the index's excess Sharpe fell 0.84 → 0.69,
+and the timing lanes (mostly in T-bills) lost most of their excess return
+too. STACK is the best risk profile found (crash losses of 2–5% vs 15–31%
+for holding, 2,247 trades, 100% confidence), but it does not beat the
+index per unit of risk. No lane is promoted.

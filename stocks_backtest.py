@@ -86,6 +86,48 @@ def load_history(symbols: list, years: int = 10, max_age_h: float = 20,
     return out
 
 
+def load_rates(years: int = 10, max_age_h: float = 20) -> dict:
+    """{date: daily risk-free rate} from the 13-week T-bill, forward-filled
+    by callers (rates are annual %, /252 per session)."""
+    import stocks_data as sd
+    f = Path(st.DATA_DIR) / "history_tr" / "_IRX.json"
+    os.makedirs(f.parent, exist_ok=True)
+    if f.exists() and time.time() - f.stat().st_mtime < max_age_h * 3600:
+        rows = json.loads(f.read_text())
+    else:
+        rows = sd.tbill_rates(years)
+        f.write_text(json.dumps(rows))
+    return {d: r / 100 / 252 for d, r in rows}
+
+
+def rf_series(rf: dict, cal: list) -> list:
+    """Daily risk-free rates aligned to the calendar (forward-filled)."""
+    out, last = [], 0.0
+    keys = sorted(rf)
+    import bisect
+    for d in cal:
+        i = bisect.bisect_right(keys, d) - 1
+        last = rf[keys[i]] if i >= 0 else last
+        out.append(last)
+    return out
+
+
+def apply_cash_yield(curve: list, rf: dict, eq0: float) -> tuple:
+    """Credit T-bill interest on idle cash (equity − invested notional) each
+    session. Returns (new curve, total interest)."""
+    if not curve:
+        return curve, 0.0
+    rates = rf_series(rf, [c["date"] for c in curve])
+    out, interest = [], 0.0
+    for i, c in enumerate(curve):
+        if i:
+            prev = out[-1]
+            cash = prev["equity"] - curve[i - 1].get("exposure", 0) * eq0
+            interest += max(0.0, cash) * rates[i]
+        out.append({**c, "equity": round(c["equity"] + interest, 2)})
+    return out, round(interest, 2)
+
+
 # ── simulation ───────────────────────────────────────────────────────────────
 
 def _pos(pid, strat, sym, tier, d, qty, entry, stop, tgt, risk, fill):
@@ -303,11 +345,13 @@ def _octane(m: dict) -> dict:
     return m
 
 
-def curve_metrics(curve: list, eq0: float) -> dict:
+def curve_metrics(curve: list, eq0: float, rf: dict = None) -> dict:
+    """rf given → Sharpe on EXCESS returns over the T-bill (textbook)."""
     if len(curve) < 2:
         return {}
     eqs = [c["equity"] for c in curve]
-    rets = [eqs[i] / eqs[i - 1] - 1 for i in range(1, len(eqs)) if eqs[i - 1] > 0]
+    rates = rf_series(rf, [c["date"] for c in curve]) if rf else [0.0] * len(curve)
+    rets = [eqs[i] / eqs[i - 1] - 1 - rates[i] for i in range(1, len(eqs)) if eqs[i - 1] > 0]
     yrs = len(curve) / 252
     peak, dd = eqs[0], 0.0
     for e in eqs:
@@ -325,6 +369,7 @@ def curve_metrics(curve: list, eq0: float) -> dict:
 
 
 def benchmark_curve(bars: dict, symbols: list, cal: list, eq0: float) -> list:
+    """Equal-weight buy-and-hold equity values (one per calendar day with data)."""
     per = [s for s in symbols if s in bars]
     pxs = {s: {b["date"]: b["close"] for b in bars[s]} for s in per}
     first, out = {}, []
@@ -365,7 +410,7 @@ def pit_index_curve(bars: dict, members, cal: list, eq0: float) -> tuple:
     return out, (have / total if total else None)
 
 
-def benchmark(bars: dict, symbols: list, cal: list, eq0: float) -> dict:
+def benchmark(bars: dict, symbols: list, cal: list, eq0: float, rf: dict = None) -> dict:
     """Equal-weight buy-and-hold of `symbols` from the first to last day."""
     per = [s for s in symbols if s in bars]
     if not per:
@@ -383,7 +428,7 @@ def benchmark(bars: dict, symbols: list, cal: list, eq0: float) -> dict:
             vals.append(v / first[s])
         if vals:
             curve.append({"date": d, "equity": eq0 * sum(vals) / len(vals)})
-    return curve_metrics(curve, eq0)
+    return curve_metrics(curve, eq0, rf)
 
 
 STRESS = {"2018 Q4 selloff": ("2018-10-01", "2018-12-24"),
@@ -456,15 +501,54 @@ def verdict(res: dict, gate: dict, eq0: float) -> dict:
             "label": "PASS — eligible for paper" if passed else "FAIL — stays out of paper"}
 
 
+def combine(sims: list) -> dict:
+    """One $-account running several lanes: P&L streams add, exposures add.
+    Valid while the combined exposure stays <= 100% (reported, checked)."""
+    by = {}
+    for sim in sims:
+        for c in sim["curve"]:
+            r = by.setdefault(c["date"], {"pnl": 0.0, "exposure": 0.0, "n": 0})
+            r["pnl"] += c["equity"]
+            r["exposure"] += c.get("exposure", 0)
+            r["n"] += 1
+    k = len(sims)
+    curve = []
+    for d in sorted(by):
+        r = by[d]
+        if r["n"] != k:
+            continue
+        # sum of (equity_i − eq0) + eq0, with every lane starting at eq0
+        curve.append({"date": d, "equity": round(r["pnl"] - (k - 1) * sims[0]["eq0"], 2),
+                      "exposure": round(r["exposure"], 4)})
+    trades = sorted((t for sim in sims for t in sim["trades"]), key=lambda t: t["exit"])
+    return {"trades": trades, "curve": curve,
+            "open_at_end": sum(sim["open_at_end"] for sim in sims),
+            "max_exposure": max((c["exposure"] for c in curve), default=0)}
+
+
 def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None,
-        total_return: bool = False) -> dict:
+        total_return: bool = False, rf: dict = None) -> dict:
     eq0 = float(cfg["account_equity"])
-    pit = members is not None and strategy not in se.ETF_STRATEGIES
-    sim = simulate(cfg, bars, strategy, start, end, members=members if pit else None)
+    if strategy == "STACK":
+        comps = cfg["stack"]["components"]
+        sims = []
+        for cs in comps:
+            sim_ = simulate(cfg, bars, cs, start, end)
+            sim_["eq0"] = eq0
+            sims.append(sim_)
+        sim = combine(sims)
+        group = sorted({s for cs in comps for s in se.group_of(cs, cfg)})
+        pit = False
+    else:
+        pit = members is not None and strategy not in se.ETF_STRATEGIES
+        sim = simulate(cfg, bars, strategy, start, end, members=members if pit else None)
+        group = se.group_of(strategy, cfg)
+    interest = 0.0
+    if rf:
+        sim["curve"], interest = apply_cash_yield(sim["curve"], rf, eq0)
     cal = [c["date"] for c in sim["curve"]]
     trades = sim["trades"]
     split = cal[int(len(cal) * IS_FRACTION)] if cal else end
-    group = se.group_of(strategy, cfg)
     res = {
         "strategy": strategy, "start": cal[0] if cal else start, "end": cal[-1] if cal else end,
         "sessions": len(cal), "params_hash": params_hash(cfg, strategy),
@@ -473,9 +557,11 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None
         "in_sample": sr.stats([t["pnl"] for t in trades if t["exit"] < split]),
         "out_of_sample": sr.stats([t["pnl"] for t in trades if t["exit"] >= split]),
         "oos_from": split,
-        "metrics": _octane(curve_metrics(sim["curve"], eq0)),
-        "benchmark_spy": benchmark(bars, ["SPY"], cal, eq0),
-        "benchmark_universe": benchmark(bars, group, cal, eq0),
+        "metrics": _octane(curve_metrics(sim["curve"], eq0, rf)),
+        "benchmark_spy": benchmark(bars, ["SPY"], cal, eq0, rf),
+        "benchmark_universe": benchmark(bars, group, cal, eq0, rf),
+        "cash_yield": bool(rf), "interest": interest,
+        "max_exposure": sim.get("max_exposure"),
         "universe_mode": "pit_sp500" if pit else "fixed_today",
         "total_return": total_return,
         "by_year": by_year(trades),
@@ -491,7 +577,7 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None
     if pit:
         ic, cov = pit_index_curve(bars, members, cal, eq0)
         res["benchmark_universe"] = curve_metrics(
-            [{"date": d, "equity": e} for d, e in zip(cal, ic)], eq0)
+            [{"date": d, "equity": e} for d, e in zip(cal, ic)], eq0, rf)
         res["pit_coverage"] = round(cov, 4) if cov is not None else None
         res["universe_size"] = len({s for d in cal[::21] for s in members(d)})
         res["stress"] = stress(sim["curve"], bars, [], eq0)
@@ -502,6 +588,13 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None
     gate = dict(GATE_DEFAULTS, **(cfg.get("backtest_gate") or {}))
     res["gate"] = gate
     res["verdict"] = verdict(res, gate, eq0)
+    if strategy == "STACK":                    # a shared account can't exceed its cash
+        ok_ = (res["max_exposure"] or 0) <= 1.0
+        res["verdict"]["checks"].append({"name": "fits one account", "ok": ok_,
+                                         "detail": f"peak combined exposure {round(100 * (res['max_exposure'] or 0))}% (≤ 100%)"})
+        res["verdict"]["pass"] = res["verdict"]["pass"] and ok_
+        res["verdict"]["label"] = ("PASS — eligible for paper" if res["verdict"]["pass"]
+                                   else "FAIL — stays out of paper")
     return res
 
 
@@ -509,15 +602,15 @@ def save(res: dict):
     d = bt_dir()
     os.makedirs(d, exist_ok=True)
     tag = ("_pit" if res.get("universe_mode") == "pit_sp500" else "") + \
-        ("_tr" if res.get("total_return") else "")
+        ("_tr" if res.get("total_return") else "") + ("_rf" if res.get("cash_yield") else "")
     (d / f"latest_{res['strategy']}{tag}.json").write_text(json.dumps(res))
     path = d / "runs.csv"
-    cols = ["ran_at", "strategy", "universe_mode", "total_return", "params_hash", "start", "end", "trades", "expectancy",
+    cols = ["ran_at", "strategy", "universe_mode", "total_return", "cash_yield", "params_hash", "start", "end", "trades", "expectancy",
             "pf", "confidence", "max_dd_pct", "sharpe", "bench_sharpe", "verdict"]
     if path.exists():                     # upgrade a pre-universe_mode file in place
         with open(path, newline="") as f:
             old = list(csv.DictReader(f))
-        if old and "total_return" not in old[0]:
+        if old and "cash_yield" not in old[0]:
             with open(path, "w", newline="") as f:
                 w = csv.DictWriter(f, fieldnames=cols)
                 w.writeheader()
@@ -533,6 +626,7 @@ def save(res: dict):
         w.writerow({"ran_at": res["ran_at"], "strategy": res["strategy"],
                     "universe_mode": res.get("universe_mode", "fixed_today"),
                     "total_return": "1" if res.get("total_return") else "",
+                    "cash_yield": "1" if res.get("cash_yield") else "",
                     "params_hash": res["params_hash"], "start": res["start"], "end": res["end"],
                     "trades": s["n"], "expectancy": s.get("expectancy"), "pf": s.get("pf"),
                     "confidence": s.get("confidence"), "max_dd_pct": res["metrics"].get("max_dd_pct"),
@@ -544,14 +638,15 @@ def save(res: dict):
 SHIPPED_DIR = Path(__file__).resolve().parent / "reference" / "backtests"
 
 
-RIGOR = ("_pit_tr", "_pit", "_tr", "")     # most rigorous verdict first
+RIGOR = ("_pit_tr_rf", "_pit_tr", "_pit", "_tr_rf", "_tr", "_rf", "")   # most rigorous first
+BT_ONLY = ("STACK",)          # backtest-only books (combinations of lanes)
 
 
 def load_best() -> dict:
     """Per strategy, the most rigorous result available: point-in-time +
     dividends, then point-in-time, then dividends, then the basic run."""
     out = {}
-    for strat in se.STRATEGIES:
+    for strat in se.STRATEGIES + BT_ONLY:
         for tag in RIGOR:
             for d in (bt_dir(), SHIPPED_DIR):
                 f = d / f"latest_{strat}{tag}.json"
@@ -597,6 +692,7 @@ def summary_text(res: dict) -> str:
     pct = lambda x: "n/a" if x is None else f"{100 * x:.1f}%"
     L = [f"{res['strategy']}  [{res.get('universe_mode', 'fixed_today')}"
          f"{' + dividends' if res.get('total_return') else ''}"
+         f"{' + T-bill cash, excess Sharpe' if res.get('cash_yield') else ''}"
          f"{', data coverage ' + pct(res.get('pit_coverage')) if res.get('pit_coverage') else ''}]"
          f"  {res['start']} → {res['end']}  ({res['sessions']} sessions, "
          f"{res['universe_size']} symbols, params {res['params_hash']})",
@@ -611,7 +707,9 @@ def summary_text(res: dict) -> str:
          f"(from {res['oos_from']}) n={res['out_of_sample']['n']} PF {res['out_of_sample'].get('pf')} "
          f"exp ${res['out_of_sample'].get('expectancy')}",
          "  by year: " + ", ".join(f"{y} n={v['n']} ${v['pnl']:,.0f}" for y, v in sorted(res['by_year'].items())),
-         f"  exits {res['exit_reasons']} | CAGR on exposure {pct(res['metrics'].get('cagr_on_exposure'))}",
+         f"  exits {res['exit_reasons']} | CAGR on exposure {pct(res['metrics'].get('cagr_on_exposure'))}"
+         f" | cash interest ${res.get('interest', 0):,.0f}"
+         f"{' | peak exposure ' + pct(res.get('max_exposure')) if res.get('max_exposure') is not None else ''}",
          "  stress: " + "; ".join(f"{k}: {pct(v['strategy_pct'])} (DD {pct(v['strategy_dd'])}) vs hold {pct(v['hold_pct'])}"
                                    for k, v in (res.get('stress') or {}).items()),
          f"  VERDICT: {res['verdict']['label']}"]
@@ -622,7 +720,9 @@ def summary_text(res: dict) -> str:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Backtest the stocks sandbox rules")
-    ap.add_argument("--strategy", choices=list(se.STRATEGIES))
+    ap.add_argument("--strategy", choices=list(se.STRATEGIES) + list(BT_ONLY))
+    ap.add_argument("--cash-yield", action="store_true",
+                    help="pay T-bill interest on idle cash; Sharpe on excess returns")
     ap.add_argument("--years", type=int, default=10)
     ap.add_argument("--start")
     ap.add_argument("--end", default=date.today().isoformat())
@@ -645,12 +745,13 @@ def main(argv=None):
         return 1
     # first tradable day: one WINDOW of warm-up after the start of history
     start = a.start or bars["SPY"][min(WINDOW, len(bars["SPY"]) - 1)]["date"]
+    rf = load_rates(a.years) if a.cash_yield else None
     for strat in ([a.strategy] if a.strategy else se.STRATEGIES):
         t0 = time.time()
         if a.pit and strat in se.ETF_STRATEGIES:
             continue                       # ETF lanes have no stock-survivorship issue
         res = run(cfg, bars, strat, start, a.end, members=members,
-                  total_return=a.total_return)
+                  total_return=a.total_return, rf=rf)
         save(res)
         print(summary_text(res), flush=True)
         print(f"  ({time.time() - t0:.0f}s)\n", flush=True)

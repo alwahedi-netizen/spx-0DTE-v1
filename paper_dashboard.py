@@ -498,7 +498,8 @@ def api_stocks_backtests():
     for r in latest.values():
         r.pop("trades_tail", None)
     return jsonify({"latest": latest, "variants": sbt.variants_tried(),
-                    "stages": {k: cfg[k.lower()].get("stage", "backtest") for k in se.STRATEGIES},
+                    "stages": {**{k: cfg[k.lower()].get("stage", "backtest") for k in se.STRATEGIES},
+                               **{k: "backtest" for k in sbt.BT_ONLY}},
                     "gate": dict(sbt.GATE_DEFAULTS, **(cfg.get("backtest_gate") or {})),
                     "running": p is not None and p.poll() is None,
                     "started": _bproc["started"], "log": "\n".join(tail)})

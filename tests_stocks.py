@@ -707,6 +707,32 @@ def test_backtest():
     ok("paper engine only enters strategies promoted to stage: paper (default: backtest)")
 
 
+def test_cash_yield_and_stack():
+    print("Cash yield (T-bill) + stacked book")
+    days = trading_days_back(date(2026, 9, 29), 4)
+    curve = [{"date": d, "equity": 100000.0, "exposure": 0.25} for d in days]
+    rf = {days[0]: 0.0001}
+    out, interest = bt.apply_cash_yield(curve, rf, 100000.0)
+    # 3 accrual days on $75k idle cash at 1bp/day, compounding on the credited cash
+    assert approx(interest, 75000 * 0.0001 + 75007.5 * 0.0001 + 75015.0008 * 0.0001, 0.02)
+    assert out[-1]["equity"] == round(100000 + interest, 2)
+    ok("idle cash (equity − invested) earns the day's T-bill rate")
+    flat = [{"date": d, "equity": 100000 * 1.0001 ** i} for i, d in enumerate(days)]
+    m0 = bt.curve_metrics(flat, 100000.0)
+    m1 = bt.curve_metrics(flat, 100000.0, rf)
+    assert m0["sharpe"] is None or m0["sharpe"] > 5            # riskless growth
+    assert m1["sharpe"] is None                                  # zero excess, zero vol
+    ok("Sharpe on excess returns: earning exactly the T-bill scores zero edge")
+    a = {"trades": [{"exit": days[1], "pnl": 10}], "open_at_end": 0, "eq0": 100000.0,
+         "curve": [{"date": d, "equity": 100000 + 10 * i, "exposure": 0.3} for i, d in enumerate(days)]}
+    b = {"trades": [{"exit": days[2], "pnl": -5}], "open_at_end": 1, "eq0": 100000.0,
+         "curve": [{"date": d, "equity": 100000 - 5 * i, "exposure": 0.5} for i, d in enumerate(days)]}
+    c = bt.combine([a, b])
+    assert [x["equity"] for x in c["curve"]] == [100000 + 5 * i for i in range(4)]
+    assert c["max_exposure"] == 0.8 and len(c["trades"]) == 2 and c["open_at_end"] == 1
+    ok("stacked book: P&L and exposure add on one account; peak exposure reported")
+
+
 def test_pit_universe():
     print("Point-in-time universe (survivorship control)")
     snaps = bt.load_pit()
@@ -776,7 +802,7 @@ if __name__ == "__main__":
     for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates, test_rotation_lanes,
               test_market_effect_lanes,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
-              test_session_with_crash, test_missed_and_holiday, test_backtest, test_pit_universe,
+              test_session_with_crash, test_missed_and_holiday, test_backtest, test_cash_yield_and_stack, test_pit_universe,
               test_real_config):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")

@@ -111,6 +111,7 @@ DEFAULTS = {
     "ibs": {"enabled": True, "stage": "backtest", "symbols": ["SPY", "QQQ", "IWM", "DIA"],
             "ibs_max": 0.2, "atr_stop": 3.0, "time_stop_sessions": 5,
             "max_new_per_day": 4, "max_open": 4},
+    "stack": {"components": ["TOM", "SECROT", "RSI2", "IBS"]},
     "gates": {"MOM": {"trades": 60, "weeks": 16, "tripwire": -3000},
               "PB90": {"trades": 100, "weeks": 12, "tripwire": -3000},
               "RSI2": {"trades": 100, "weeks": 10, "tripwire": -2500},

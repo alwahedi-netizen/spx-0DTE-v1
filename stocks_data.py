@@ -136,6 +136,19 @@ def _yahoo_bars(sym: str) -> list:
     return out
 
 
+def tbill_rates(years: int = 10) -> list:
+    """[(date, annual % yield)] of the 13-week T-bill (Yahoo ^IRX) — the
+    backtester's risk-free rate and the interest paid on idle cash."""
+    res = _yahoo_chart("^IRX", f"{years}y", "1d")
+    ts = res.get("timestamp") or []
+    q = ((res.get("indicators") or {}).get("quote") or [{}])[0]
+    out = [(_day(t, ms=False), float(c)) for t, c in zip(ts, q.get("close") or [])
+           if c is not None]
+    if len(out) < 300:
+        raise StocksDataError(f"^IRX: only {len(out)} rows")
+    return out
+
+
 def total_return_bars(sym: str, years: int = 10) -> list:
     """Dividend-adjusted daily bars (Yahoo adjclose): OHLC scaled by
     adjclose/close, so a held position earns its dividends. Backtest only."""

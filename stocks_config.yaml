@@ -197,6 +197,13 @@ ibs:                             # internal bar strength < 0.2 in an uptrend
   max_new_per_day: 4
   max_open: 4
 
+# ── round 5 (owner 2026-09-30): backtest-only STACK book — the four
+# low-exposure ETF edges that failed ONLY on Sharpe, run together on one
+# account. Chosen after seeing results (selection bias: the held-out
+# window and paper are the guard). Judged with dividends + T-bill cash.
+stack:
+  components: [TOM, SECROT, RSI2, IBS]
+
 # Backtest -> paper promotion bar (fixed BEFORE the first backtest ran)
 backtest_gate:
   min_trades: 50

@@ -393,7 +393,8 @@ async function loadBacktests(){
       <div style="font-size:11.5px;margin:-2px 0 3px">${r.universe_mode === "pit_sp500"
         ? `<span class="pill">deep test · point-in-time S&amp;P 500 · price coverage ${pct(r.pit_coverage)}</span>`
         : `<span class="pill">${r.universe_size > 20 ? "today's 100 symbols" : "ETFs"}</span>`}${r.total_return
-        ? ` <span class="pill">+ dividends</span>` : ""}${r.fixed_universe
+        ? ` <span class="pill">+ dividends</span>` : ""}${r.cash_yield
+        ? ` <span class="pill">+ T-bill cash</span>` : ""}${r.fixed_universe
         ? ` <span class="mut">basic test: ${r.fixed_universe.pass ? "pass" : "fail"}</span>` : ""}</div>
       <div class="mut" style="font-size:11px">${esc(r.start)} → ${esc(r.end)} · ${r.universe_size} symbols ·
         params ${esc(r.params_hash)} · ${j.variants[k] || 1} variant(s) tried · ran ${esc((r.ran_at || "").replace("T"," ").slice(0,16))}</div>
