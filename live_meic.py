@@ -703,31 +703,40 @@ def sync_once() -> dict:
             elif r["status"] == "CLOSING":
                 _poll_closing(b, r)
 
-        # 2. daily loss caps — per strategy, plus the global stop
+        # 2. daily loss caps — per strategy, plus the global stop over REAL
+        # money only (a dry-run rehearsal loss must never halt live books)
         rs = realized_by_strat(ledger)
         halted = state.setdefault("halted", {})
         for strat in amap:
             if rs.get(strat, 0) <= STRATS[strat]["daily_stop"] and not halted.get(strat):
                 halted[strat] = True
                 log(f"{strat} DAILY STOP hit ({rs.get(strat, 0):+.0f}) — halting")
-        if sum(rs.values()) <= GLOBAL_DAILY_STOP and not state.get("global_halt"):
+        real_total = sum(v for s, v in rs.items()
+                         if s in amap and not bool(amap[s].get("dry_run")))
+        if real_total <= GLOBAL_DAILY_STOP and not state.get("global_halt"):
             state["global_halt"] = True
             for strat in amap:
                 halted[strat] = True
-            log(f"GLOBAL DAILY STOP hit ({sum(rs.values()):+.0f}) — halting all")
+            log(f"GLOBAL DAILY STOP hit ({real_total:+.0f}) — halting all")
         for r in ledger.values():
             s = strat_of(r["position_id"])
             if halted.get(s) and s in amap and r["status"] == "OPEN":
                 _close_side(br_for(s), r, "HALT", 0.0, rung=2)
 
         # 3. Schwab is ground truth, per account: audit, absorb, hold on
-        # mismatch (only that account's strategies are held)
+        # mismatch (only that account's LIVE strategies are held).
+        # 2026-09-30 lesson: scope the audit to strategies on THIS broker
+        # key (tail AND live-mode) — a dry-run strategy's shadow rows can
+        # never exist at Schwab, and auditing them against the real account
+        # raised a phantom DESYNC that held FLY out of its debut.
         desync = set()
         schwab = {}
         for (tail, dry), b in brokers.items():
             if dry:
                 continue
-            strats_here = {s for s, c in amap.items() if c["account_tail"] == tail}
+            strats_here = {s for s, c in amap.items()
+                           if c["account_tail"] == tail
+                           and not bool(c.get("dry_run"))}
             rows = [r for r in ledger.values()
                     if strat_of(r["position_id"]) in strats_here]
             try:
