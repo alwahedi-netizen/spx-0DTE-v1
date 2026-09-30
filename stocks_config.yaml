@@ -28,13 +28,15 @@ universe:
 # trades ONLY strategies at `stage: paper`; a strategy gets there by passing
 # the backtest gate below (stocks_backtest.py) and the owner promoting it.
 # Backtest verdicts 2026-09-30 (10y Yahoo history, params as below):
-#   MOM  PASS (PF 2.32, OOS PF 2.8, Sharpe 1.02 vs 1.00 universe hold) -> paper
+#   MOM  PASS (PF 2.32, OOS PF 2.8, Sharpe 1.02 vs 1.00 universe hold) -> paper,
+#        then FAIL on the deep test (STOCKS_SPEC §11) -> back to backtest
 #   PB90 FAIL (PF 1.16, Sharpe 0.51 vs 1.00)                           -> backtest
 #   RSI2 FAIL (PF 1.27, Sharpe 0.51 vs 0.75)                           -> backtest
 
 mom:
   enabled: true
-  stage: paper
+  stage: backtest                # owner 2026-09-30: stopped — FAILS the deep
+                                 # (point-in-time S&P 500) test: PF 1.30, DD -19%
   expl_rank_min: 90
   max_new_per_day: 2
   max_open: 8
