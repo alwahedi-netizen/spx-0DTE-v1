@@ -14,7 +14,7 @@ MOM  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, param
     [✓] out-of-sample: last 30%: n=154 PF 2.84 (≥ 1.1)
     [✓] drawdown: -12.3% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.98 vs 1.0 (same-universe buy-and-hold)
-  (176s)
+  (172s)
 
 PB90  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, params 59f8ee58d2)
   trades 1105 | win 62.8% | expectancy $24.5 ± 12.83 | conf 97.2% | PF 1.15 | avg hold 5.8 sessions
@@ -32,7 +32,7 @@ PB90  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, para
     [✓] out-of-sample: last 30%: n=387 PF 1.31 (≥ 1.1)
     [✓] drawdown: -9.3% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.48 vs 1.0 (same-universe buy-and-hold)
-  (177s)
+  (174s)
 
 RSI2  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 20 symbols, params 72d60d637e)
   trades 845 | win 67.7% | expectancy $12.32 ± 5.26 | conf 99.0% | PF 1.25 | avg hold 2.4 sessions
@@ -68,7 +68,7 @@ MOMR  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, para
     [✓] out-of-sample: last 30%: n=169 PF 1.93 (≥ 1.1)
     [✓] drawdown: -10.8% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.65 vs 1.0 (same-universe buy-and-hold)
-  (225s)
+  (223s)
 
 BRK55  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, params 6cd6cb684a)
   trades 397 | win 35.3% | expectancy $176.73 ± 56.57 | conf 99.9% | PF 1.8 | avg hold 34.0 sessions
@@ -86,7 +86,7 @@ BRK55  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, par
     [✓] out-of-sample: last 30%: n=130 PF 1.55 (≥ 1.1)
     [✓] drawdown: -12.3% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.86 vs 1.0 (same-universe buy-and-hold)
-  (179s)
+  (194s)
 
 HI52  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, params 835358d077)
   trades 428 | win 36.0% | expectancy $90.02 ± 32.71 | conf 99.7% | PF 1.67 | avg hold 34.9 sessions
@@ -104,7 +104,7 @@ HI52  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, para
     [✓] out-of-sample: last 30%: n=132 PF 2.22 (≥ 1.1)
     [✓] drawdown: -8.8% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.62 vs 1.0 (same-universe buy-and-hold)
-  (180s)
+  (184s)
 
 QBO  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, params ebb9f222f8)
   trades 667 | win 33.0% | expectancy $8.55 ± 24.21 | conf 63.8% | PF 1.05 | avg hold 7.1 sessions
@@ -122,7 +122,7 @@ QBO  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, param
     [✗] out-of-sample: last 30%: n=235 PF 1.03 (≥ 1.1)
     [✓] drawdown: -13.0% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.13 vs 1.0 (same-universe buy-and-hold)
-  (178s)
+  (183s)
 
 SECROT  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 20 symbols, params 0d65cdfff4)
   trades 120 | win 55.0% | expectancy $61.34 ± 32.75 | conf 96.8% | PF 1.69 | avg hold 50.5 sessions
@@ -158,7 +158,7 @@ LOWVOL  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, pa
     [✓] out-of-sample: last 30%: n=8 PF 7.4 (≥ 1.1)
     [✗] drawdown: -24.8% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.63 vs 1.0 (same-universe buy-and-hold)
-  (180s)
+  (185s)
 
 MOM12  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, params e9886fb518)
   trades 251 | win 47.4% | expectancy $504.08 ± 144.39 | conf 100.0% | PF 2.45 | avg hold 90.0 sessions
@@ -176,7 +176,7 @@ MOM12  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, par
     [✓] out-of-sample: last 30%: n=55 PF 8.46 (≥ 1.1)
     [✗] drawdown: -27.1% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.65 vs 1.0 (same-universe buy-and-hold)
-  (175s)
+  (181s)
 
 LVMOM  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, params 8829017fc6)
   trades 109 | win 55.0% | expectancy $839.86 ± 228.54 | conf 100.0% | PF 4.1 | avg hold 222.9 sessions
@@ -194,7 +194,7 @@ LVMOM  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, par
     [✓] out-of-sample: last 30%: n=21 PF 6.45 (≥ 1.1)
     [✗] drawdown: -22.2% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.8 vs 1.0 (same-universe buy-and-hold)
-  (179s)
+  (182s)
 
 RSI2S  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, params a73824c76c)
   trades 1775 | win 65.5% | expectancy $10.67 ± 5.14 | conf 98.1% | PF 1.15 | avg hold 2.6 sessions
@@ -212,7 +212,7 @@ RSI2S  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 80 symbols, par
     [✓] out-of-sample: last 30%: n=616 PF 1.36 (≥ 1.1)
     [✓] drawdown: -9.9% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.41 vs 1.0 (same-universe buy-and-hold)
-  (175s)
+  (178s)
 
 ETFTREND  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 20 symbols, params 28108ccc99)
   trades 193 | win 42.0% | expectancy $282.12 ± 74.24 | conf 100.0% | PF 2.97 | avg hold 144.6 sessions
@@ -230,7 +230,7 @@ ETFTREND  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 20 symbols, 
     [✓] out-of-sample: last 30%: n=41 PF 13.05 (≥ 1.1)
     [✗] drawdown: -16.3% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.69 vs 0.75 (same-universe buy-and-hold)
-  (45s)
+  (46s)
 
 TOM  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 4 symbols, params 73b5c9728c)
   trades 428 | win 58.9% | expectancy $26.65 ± 8.07 | conf 99.9% | PF 1.52 | avg hold 2.9 sessions
@@ -248,7 +248,7 @@ TOM  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 4 symbols, params
     [✓] out-of-sample: last 30%: n=128 PF 1.24 (≥ 1.1)
     [✓] drawdown: -3.8% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.57 vs 0.72 (same-universe buy-and-hold)
-  (10s)
+  (9s)
 
 IBS  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 4 symbols, params 6f9401f1a1)
   trades 803 | win 68.0% | expectancy $10.72 ± 4.62 | conf 99.0% | PF 1.25 | avg hold 2.2 sessions
@@ -284,7 +284,7 @@ VTSPY  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 1 symbols, para
     [✓] out-of-sample: last 30%: n=32 PF 3.12 (≥ 1.1)
     [✗] drawdown: -23.1% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.64 vs 0.75 (same-universe buy-and-hold)
-  (2s)
+  (3s)
 
 VT4  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 4 symbols, params dbdd83d9c3)
   trades 428 | win 62.9% | expectancy $159.05 ± 47.88 | conf 100.0% | PF 1.5 | avg hold 19.8 sessions
@@ -302,7 +302,7 @@ VT4  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 4 symbols, params
     [✓] out-of-sample: last 30%: n=128 PF 2.61 (≥ 1.1)
     [✗] drawdown: -23.4% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.56 vs 0.72 (same-universe buy-and-hold)
-  (9s)
+  (10s)
 
 RPAR  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 3 symbols, params 4e5c070773)
   trades 321 | win 55.5% | expectancy $190.77 ± 74.14 | conf 99.5% | PF 1.44 | avg hold 19.9 sessions
@@ -339,4 +339,61 @@ RPTREND  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 5 symbols, pa
     [✓] drawdown: -11.7% (limit −15%)
     [✗] beats buy-and-hold: Sharpe 0.52 vs 0.66 (same-universe buy-and-hold)
   (12s)
+
+TSMOM  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 20 symbols, params c8e12a3504)
+  trades 1518 | win 57.2% | expectancy $17.15 ± 5.25 | conf 99.9% | PF 1.25 | avg hold 19.9 sessions
+  CAGR 2.5% | maxDD -19.7% | Sharpe 0.33 | avg exposure 55.4%
+  SPY buy&hold: CAGR 13.1% maxDD -34.1% Sharpe 0.75
+  universe buy&hold: CAGR 12.4% maxDD -30.9% Sharpe 0.75
+  in-sample n=960 PF 0.98 | out-of-sample (from 2024-01-19) n=558 PF 1.99 exp $48.89
+  by year: 2017 n=51 $2,660, 2018 n=170 $-5,240, 2019 n=149 $6,459, 2020 n=159 $-7,821, 2021 n=214 $6,869, 2022 n=99 $-7,723, 2023 n=118 $3,549, 2024 n=217 $8,702, 2025 n=191 $9,947, 2026 n=150 $8,634
+  exits {'REBAL': 1515, 'STOPPED': 3} | CAGR on exposure 4.5% | cash interest $0
+  stress: 2018 Q4 selloff: -8.9% (DD -8.9%) vs hold -16.0%; 2020 COVID crash: -19.0% (DD -19.0%) vs hold -31.2%; 2022 bear market: -7.7% (DD -7.9%) vs hold -22.6%
+  VERDICT: FAIL — stays out of paper
+    [✓] trades: 1518 ≥ 50
+    [✓] expectancy: $17.15 at 100% conf (≥ 99%)
+    [✗] profit factor: 1.25 ≥ 1.3
+    [✓] out-of-sample: last 30%: n=558 PF 1.99 (≥ 1.1)
+    [✗] drawdown: -19.7% (limit −15%)
+    [✗] beats buy-and-hold: Sharpe 0.33 vs 0.75 (same-universe buy-and-hold)
+    [✗] beats hold in held-out window: last 30%: Sharpe 1.11 vs 1.23
+  (46s)
+
+GAPFADE  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 4 symbols, params 2746442a52)
+  trades 526 | win 51.7% | expectancy $5.61 ± 3.96 | conf 92.1% | PF 1.18 | avg hold 0.0 sessions
+  CAGR 0.3% | maxDD -2.3% | Sharpe 0.31 | avg exposure 0.0%
+  SPY buy&hold: CAGR 13.1% maxDD -34.1% Sharpe 0.75
+  universe buy&hold: CAGR 13.2% maxDD -34.3% Sharpe 0.72
+  in-sample n=330 PF 1.15 | out-of-sample (from 2024-01-19) n=196 PF 1.24 exp $6.0
+  by year: 2017 n=1 $18, 2018 n=49 $1,531, 2019 n=44 $-830, 2020 n=83 $352, 2021 n=78 $398, 2022 n=21 $-243, 2023 n=47 $624, 2024 n=68 $-636, 2025 n=58 $1,269, 2026 n=77 $468
+  exits {'EOD': 512, 'STOPPED': 14} | CAGR on exposure n/a | cash interest $0
+  stress: 2018 Q4 selloff: 0.1% (DD -0.1%) vs hold -21.3%; 2020 COVID crash: -0.3% (DD -0.5%) vs hold -34.9%; 2022 bear market: -0.4% (DD -0.6%) vs hold -26.5%
+  VERDICT: FAIL — stays out of paper
+    [✓] trades: 526 ≥ 50
+    [✗] expectancy: $5.61 at 92% conf (≥ 99%)
+    [✗] profit factor: 1.18 ≥ 1.3
+    [✓] out-of-sample: last 30%: n=196 PF 1.24 (≥ 1.1)
+    [✓] drawdown: -2.3% (limit −15%)
+    [✗] beats buy-and-hold: Sharpe 0.31 vs 0.72 (same-universe buy-and-hold)
+    [✗] beats hold in held-out window: last 30%: Sharpe 0.47 vs 1.04
+  (9s)
+
+OVN  [fixed_today]  2017-10-11 → 2026-09-29  (2253 sessions, 2 symbols, params 196f933144)
+  trades 4504 | win 52.8% | expectancy $-0.81 ± 6.1 | conf 44.7% | PF 0.99 | avg hold 1.0 sessions
+  CAGR -0.4% | maxDD -34.7% | Sharpe 0.04 | avg exposure 98.0%
+  SPY buy&hold: CAGR 13.1% maxDD -34.1% Sharpe 0.75
+  universe buy&hold: CAGR 16.7% maxDD -31.2% Sharpe 0.84
+  in-sample n=3152 PF 0.95 | out-of-sample (from 2024-01-19) n=1352 PF 1.11 exp $12.59
+  by year: 2017 n=110 $1,260, 2018 n=502 $1,068, 2019 n=504 $1,250, 2020 n=506 $7,738, 2021 n=504 $3,590, 2022 n=502 $-29,503, 2023 n=500 $-3,720, 2024 n=504 $12,611, 2025 n=500 $396, 2026 n=372 $1,650
+  exits {'OPEN': 4504} | CAGR on exposure -0.4% | cash interest $0
+  stress: 2018 Q4 selloff: -0.8% (DD -3.9%) vs hold -21.3%; 2020 COVID crash: -28.7% (DD -30.0%) vs hold -31.1%; 2022 bear market: -26.5% (DD -26.7%) vs hold -30.0%
+  VERDICT: FAIL — stays out of paper
+    [✓] trades: 4504 ≥ 50
+    [✗] expectancy: $-0.81 at 45% conf (≥ 99%)
+    [✗] profit factor: 0.99 ≥ 1.3
+    [✓] out-of-sample: last 30%: n=1352 PF 1.11 (≥ 1.1)
+    [✗] drawdown: -34.7% (limit −15%)
+    [✗] beats buy-and-hold: Sharpe 0.04 vs 0.84 (same-universe buy-and-hold)
+    [✗] beats hold in held-out window: last 30%: Sharpe 0.62 vs 1.15
+  (0s)
 
