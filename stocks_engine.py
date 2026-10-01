@@ -45,12 +45,15 @@ TRACK_INTERVAL_S = 120
 STALE_MARKS_DELIST = 5        # consecutive quote-less marks -> DELISTED
 STRATEGIES = ("MOM", "PB90", "RSI2", "MOMR", "BRK55", "HI52", "QBO", "SECROT",
               "LOWVOL", "MOM12", "LVMOM", "RSI2S", "ETFTREND", "TOM", "IBS",
-              "VTSPY", "VT4", "RPAR", "RPTREND")
+              "VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM", "GAPFADE", "OVN")
 ETF_STRATEGIES = {"RSI2", "SECROT", "ETFTREND", "TOM", "IBS",
-                  "VTSPY", "VT4", "RPAR", "RPTREND"}
+                  "VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM", "GAPFADE", "OVN"}
+# Close-to-open lanes need a close entry (MOC) the paper engine doesn't have
+# yet — backtest-only until one passes.
+OVERNIGHT = {"OVN"}
 # Weighted lanes: every eligible symbol held at a computed weight, sold at
 # the close of the month's last session and re-bought at the next open.
-WEIGHTED = {"VTSPY", "VT4", "RPAR", "RPTREND"}
+WEIGHTED = {"VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM"}
 FAMILY = {"MOMR": "MOM", "RSI2S": "RSI2"}   # same mechanics, different filter/universe
 # Rotation lanes: hold the top-N by a score, equal-weight, rebalanced monthly.
 ROTATION = {"LOWVOL", "MOM12", "LVMOM", "ETFTREND"}
@@ -117,6 +120,16 @@ DEFAULTS = {
             "ibs_max": 0.2, "atr_stop": 3.0, "time_stop_sessions": 5,
             "max_new_per_day": 4, "max_open": 4},
     "stack": {"components": ["TOM", "SECROT", "RSI2", "IBS"]},
+    "tsmom": {"enabled": True, "stage": "backtest", "strict": True,
+              "symbols": ["SPY", "QQQ", "IWM", "DIA", "XLK", "XLF", "XLE", "XLV", "XLI", "XLY",
+                          "XLP", "XLU", "XLB", "XLRE", "XLC", "SMH", "GLD", "TLT", "EEM", "EFA"],
+              "weighting": "tsmom", "target_vol": 15.0, "entry_sessions": 1, "stop_pct": 30.0,
+              "max_new_per_day": 20, "max_open": 20},
+    "gapfade": {"enabled": True, "stage": "backtest", "strict": True,
+                "symbols": ["SPY", "QQQ", "IWM", "DIA"], "gap_pct": 0.75, "atr_stop": 2.0,
+                "max_new_per_day": 4, "max_open": 4},
+    "ovn": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["SPY", "QQQ"],
+            "invested": 0.98},
     "vtspy": {"enabled": True, "stage": "backtest", "symbols": ["SPY"], "weighting": "vol_target",
               "target_vol": 15.0, "entry_sessions": 1, "stop_pct": 30.0,
               "max_new_per_day": 1, "max_open": 1},
@@ -146,7 +159,10 @@ DEFAULTS = {
               "TOM": {"trades": 60, "weeks": 26, "tripwire": -2500},
               "IBS": {"trades": 100, "weeks": 16, "tripwire": -2500},
               **{k: {"trades": 24, "weeks": 26, "tripwire": -5000}
-                 for k in ("VTSPY", "VT4", "RPAR", "RPTREND")}},
+                 for k in ("VTSPY", "VT4", "RPAR", "RPTREND")},
+              "TSMOM": {"trades": 40, "weeks": 26, "tripwire": -5000},
+              "GAPFADE": {"trades": 60, "weeks": 26, "tripwire": -2500},
+              "OVN": {"trades": 200, "weeks": 12, "tripwire": -3000}},
 }
 
 
@@ -502,6 +518,12 @@ def lane_weights(strategy: str, feats: dict, c: dict) -> dict:
         n = len(c["symbols"])
         return {s: min(1.0, c["target_vol"] / feats[s]["vol21"]) / n
                 for s in syms if feats[s].get("vol21")}
+    if c["weighting"] == "tsmom":
+        # time-series momentum: long while the 12-month return is positive,
+        # each 1/N slot scaled to the target vol (never levered)
+        n = len(c["symbols"])
+        return {s: min(1.0, c["target_vol"] / feats[s]["vol63"]) / n for s in syms
+                if feats[s].get("vol63") and (feats[s].get("r252") or 0) > 0}
     if c["weighting"] == "inverse_vol":
         inv = {s: 1.0 / feats[s]["vol63"] for s in syms if feats[s].get("vol63")}
         tot = sum(inv.values())
@@ -511,6 +533,25 @@ def lane_weights(strategy: str, feats: dict, c: dict) -> dict:
                     if feats[s].get("sma200") and feats[s]["close"] > feats[s]["sma200"]}
         return {s: v / tot for s, v in keep.items()} if tot else {}
     return {}
+
+
+def gapfade_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    """Opened >= gap_pct below yesterday's close, in an uptrend (needs the
+    session's opening quotes in ctx['open'])."""
+    opens = (ctx or {}).get("open") or {}
+    out = []
+    for s, f in feats.items():
+        o = opens.get(s)
+        if not o or not f.get("sma200") or f["close"] <= f["sma200"]:
+            continue
+        gap = (o / f["close"] - 1) * 100
+        if gap <= -c["gap_pct"]:
+            out.append((s, gap))
+    return [s for s, _ in sorted(out, key=lambda x: (x[1], x[0]))]
+
+
+def ovn_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
+    return sorted(feats)
 
 
 def weighted_candidates_for(strategy: str):
@@ -527,7 +568,8 @@ CANDIDATES = {"MOM": mom_candidates, "PB90": pb90_candidates, "RSI2": rsi2_candi
               "HI52": hi52_candidates, "QBO": qbo_candidates,
               "SECROT": secrot_candidates, "RSI2S": rsi2_candidates,
               "TOM": tom_candidates, "IBS": ibs_candidates,
-              **{k: weighted_candidates_for(k) for k in ("VTSPY", "VT4", "RPAR", "RPTREND")},
+              **{k: weighted_candidates_for(k) for k in ("VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM")},
+              "GAPFADE": gapfade_candidates, "OVN": ovn_candidates,
               **{k: rotation_candidates_for(k) for k in ("LOWVOL", "MOM12", "LVMOM", "ETFTREND")}}
 
 
@@ -713,6 +755,8 @@ def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = 
         held = sessions_between(entry_day, today)
     if strat in WEIGHTED:
         return "REBAL" if (ctx or {}).get("eom") else None
+    if strat == "GAPFADE":
+        return "EOD"                                    # intraday only: out by the close
     if strat in ROTATION:
         c = cfg[strat.lower()]
         ctx = ctx or {}
@@ -982,7 +1026,15 @@ def do_entries(cfg, ds: str, day_row: dict, fe: dict, data, clock, strategy: str
     key = strategy.lower()
     c = cfg[key]
     feats = fe["etfs"] if strategy in ETF_STRATEGIES else fe["stocks"]
-    cands = CANDIDATES[strategy](feats, c, session_ctx(fe, ds))
+    feats = {k: v for k, v in feats.items() if not c.get("symbols") or k in c["symbols"]}
+    ctx_ = session_ctx(fe, ds)
+    if strategy == "GAPFADE":
+        try:
+            ctx_["open"] = data.quotes(sorted(feats))
+        except Exception as e:
+            skip_slot(ds, ts, strategy, "DATA", f"quotes: {e}")
+            return
+    cands = CANDIDATES[strategy](feats, c, ctx_) if strategy not in OVERNIGHT else []
     if day_row.get("status") == "DATA_FAIL":
         skip_slot(ds, ts, strategy, "DATA", "premarket bars failed")
         return

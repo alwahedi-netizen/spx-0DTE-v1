@@ -357,3 +357,21 @@ and bonds fell together. This matches the out-of-sample literature
 dominates: at this count a lucky pass is likely, so any future pass needs
 its held-out window and paper record weighed more heavily than the
 full-window numbers.
+
+
+## 16. Round 7 (owner: keep searching, stricter bar — 2026-10-01)
+
+New lanes carry `strict: true`: 99% confidence AND beating buy-and-hold
+inside the held-out last 30% (the multiple-testing guard after 25 lanes).
+
+| lane | idea | PF | maxDD | Sharpe vs hold (full / held-out) | verdict |
+|---|---|---|---|---|---|
+| TSMOM | 12m time-series momentum, 20 ETFs, vol-scaled | 1.34 | −20.5% | 0.26 vs 0.69 / 0.91 vs 1.02 | FAIL |
+| GAPFADE | buy ≥0.75% gap-down opens, sell at close | 1.20 | −1.3% | 0.33 vs 0.65 / 0.57 vs 0.84 | FAIL (94% conf) |
+| OVN | hold SPY/QQQ only overnight | 1.01 | −31.3% | −0.07 vs 0.76 / 0.32 vs 0.96 | FAIL (no edge after costs) |
+
+OVN: the famous overnight anomaly has no edge left once each night's
+round trip pays the sandbox's ETF cost model (2 bps per side).
+TSMOM was hit by whipsaws in 2018–2023 (in-sample PF 1.06).
+
+**Tally: 28 lanes, 0 pass.**

@@ -310,6 +310,43 @@ def test_weighted_lanes():
     ok("sized by weight; sold at the month's last close, re-bought next open")
 
 
+def test_round7_lanes():
+    print("Round 7 lanes (TSMOM / GAPFADE / OVN) + strict bar")
+    cfg = base_cfg()
+    c = dict(cfg["tsmom"], symbols=["A", "B", "C", "D"])
+    F = lambda **k: dict({"close": 100.0, "sma200": 90.0, "vol63": 15.0, "r252": 10.0}, **k)
+    w = se.lane_weights("TSMOM", {"A": F(), "B": F(vol63=30.0), "C": F(r252=-5.0), "D": F()}, c)
+    assert approx(w["A"], 0.25) and approx(w["B"], 0.125) and "C" not in w
+    ok("TSMOM: long only while 12m return > 0, each quarter-slot vol-scaled")
+    g = {"SPY": F(), "QQQ": F(), "IWM": F(sma200=120.0)}
+    ctx = {"open": {"SPY": 99.0, "QQQ": 99.5, "IWM": 98.0}}
+    assert se.gapfade_candidates(g, cfg["gapfade"], ctx) == ["SPY"]
+    assert se.gapfade_candidates(g, cfg["gapfade"], {}) == []
+    assert se.rule_exit(pos(strategy="GAPFADE"), {}, 100, "2026-10-01", cfg, held=0) == "EOD"
+    ok("GAPFADE: ≥0.75% gap-down open in an uptrend; always flat by the close")
+    days = trading_days_back(date(2026, 9, 29), 3)
+    bars = {"SPY": [{"date": d, "open": o, "high": 200, "low": 1, "close": cl}
+                    for d, o, cl in zip(days, (100, 102, 101), (101, 100, 103))],
+            "QQQ": [{"date": d, "open": 50, "high": 99, "low": 1, "close": 50} for d in days]}
+    r = bt.simulate_overnight(dict(cfg, ovn=dict(cfg["ovn"], symbols=["SPY"])), bars, "OVN",
+                              days[0], days[-1])
+    q = int(100000 * 0.98 // 101)
+    t1 = r["trades"][0]
+    assert t1["entry"] == days[0] and t1["exit"] == days[1] and t1["qty"] == q
+    assert approx(t1["pnl"], round((se.sim_sell(102, 2) - se.sim_buy(101, 2)) * q
+                                   - se.sell_fees(se.sim_sell(102, 2), q, cfg), 2))
+    ok("OVN: bought at the close, sold at the next open, slippage + fees charged")
+    gate = dict(bt.GATE_DEFAULTS, min_confidence=0.99)
+    good = {"stats": {"n": 80, "expectancy": 50, "confidence": 0.995, "pf": 1.5},
+            "in_sample": {}, "out_of_sample": {"expectancy": 10, "pf": 1.2},
+            "metrics": {"max_dd_pct": -0.10, "sharpe": 1.1}, "benchmark_universe": {"sharpe": 0.9},
+            "strict": True, "oos_metrics": {"sharpe": 1.0}, "oos_benchmark": {"sharpe": 0.8}}
+    assert bt.verdict(good, gate, 1e5)["pass"]
+    assert not bt.verdict({**good, "oos_metrics": {"sharpe": 0.7}}, gate, 1e5)["pass"]
+    assert not bt.verdict({**good, "stats": {**good["stats"], "confidence": 0.98}}, gate, 1e5)["pass"]
+    ok("strict bar: 99% confidence and beating hold in the held-out window are both required")
+
+
 def test_sizing_fills_fees():
     print("Sizing / ticks / fills / fees")
     cfg = base_cfg()
@@ -828,7 +865,7 @@ def test_real_config():
 
 if __name__ == "__main__":
     for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates, test_rotation_lanes,
-              test_market_effect_lanes, test_weighted_lanes,
+              test_market_effect_lanes, test_weighted_lanes, test_round7_lanes,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
               test_session_with_crash, test_missed_and_holiday, test_backtest, test_cash_yield_and_stack, test_pit_universe,
               test_real_config):

@@ -250,6 +250,42 @@ rptrend:                         # risk parity on 5 assets, only those > SMA200
   max_new_per_day: 5
   max_open: 5
 
+# ── round 7 (owner: keep searching, stricter bar — 2026-10-01). strict:
+# true applies backtest_gate_strict (99% confidence) PLUS "beats buy-and-hold
+# in the held-out last 30%". Fixed before their first run.
+tsmom:                           # time-series momentum (Moskowitz, Ooi & Pedersen 2012)
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA, XLK, XLF, XLE, XLV, XLI, XLY, XLP, XLU, XLB,
+            XLRE, XLC, SMH, GLD, TLT, EEM, EFA]
+  weighting: tsmom               # long while 12m return > 0; 1/N x min(1, 15%/vol63)
+  target_vol: 15.0
+  entry_sessions: 1
+  stop_pct: 30.0
+  max_new_per_day: 20
+  max_open: 20
+
+gapfade:                         # buy a >= 0.75% gap-down open in an uptrend, sell at the close
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA]
+  gap_pct: 0.75
+  atr_stop: 2.0
+  max_new_per_day: 4
+  max_open: 4
+
+ovn:                             # overnight: buy at the close, sell at the next open
+  enabled: true                  # (backtest-only: the paper engine has no MOC slot yet)
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ]
+  invested: 0.98
+
+backtest_gate_strict:
+  min_confidence: 0.99
+
 # Backtest -> paper promotion bar (fixed BEFORE the first backtest ran)
 backtest_gate:
   min_trades: 50
@@ -280,3 +316,6 @@ gates:
   VT4:  {trades: 24,  weeks: 26, tripwire: -5000}
   RPAR: {trades: 24,  weeks: 26, tripwire: -5000}
   RPTREND: {trades: 24, weeks: 26, tripwire: -5000}
+  TSMOM: {trades: 40, weeks: 26, tripwire: -5000}
+  GAPFADE: {trades: 60, weeks: 26, tripwire: -2500}
+  OVN:  {trades: 200, weeks: 12, tripwire: -3000}

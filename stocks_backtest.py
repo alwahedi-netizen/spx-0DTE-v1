@@ -178,6 +178,8 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
     """Replay one strategy in isolation over [start, end]. Pure: no I/O.
     members: optional d -> set of tickers — the point-in-time stock universe
     (stock lanes only); names that later left the index are included."""
+    if strategy in se.OVERNIGHT:
+        return simulate_overnight(cfg, bars, strategy, start, end)
     key = strategy.lower()
     c = cfg[key]
     pit = members is not None and strategy not in se.ETF_STRATEGIES
@@ -188,7 +190,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
     idx = {s: {b["date"]: i for i, b in enumerate(v)} for s, v in bars.items()}
     last_day = {s: v[-1]["date"] for s, v in bars.items() if v}
     cand_fn = se.CANDIDATES[strategy]
-    need_ctx = (strategy in ("MOMR", "SECROT", "TOM") or strategy in se.ROTATION
+    need_ctx = (strategy in ("MOMR", "SECROT", "TOM", "GAPFADE") or strategy in se.ROTATION
                 or strategy in se.WEIGHTED)
     eq0 = float(cfg["account_equity"])
     opens, trades, curve = [], [], []
@@ -224,6 +226,8 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
             eom = di + 1 < len(cal) and cal[di + 1][:7] != d[:7]
             ctx = se.session_ctx(fe_all, d, som=som, eom=eom)
         q_open = {s: b["open"] for s in group if (b := today_bar(s, d))}
+        if ctx is not None:
+            ctx["open"] = q_open
         new_risk = 0.0
 
         def book(ref):
@@ -333,6 +337,36 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
         curve.append({"date": d, "equity": round(eq0 + realized + unreal, 2),
                       "exposure": round(exposure / eq0, 4)})
     return {"trades": trades, "curve": curve, "open_at_end": len(opens)}
+
+
+def simulate_overnight(cfg: dict, bars: dict, strategy: str, start: str, end: str) -> dict:
+    """Close-to-open lane: buy each symbol at the close, sell at the next
+    open, every session. Same slippage/fee model as every other lane."""
+    c = cfg[strategy.lower()]
+    syms = [s for s in c["symbols"] if s in bars]
+    eq0 = float(cfg["account_equity"])
+    px = {s: {b["date"]: b for b in bars[s]} for s in syms}
+    cal = [b["date"] for b in bars["SPY"] if start <= b["date"] <= end]
+    realized, trades, curve = 0.0, [], []
+    slot = eq0 * c.get("invested", 0.98) / len(syms)
+    for i, d in enumerate(cal):
+        if i:
+            prev = cal[i - 1]
+            for s in syms:
+                a, b = px[s].get(prev), px[s].get(d)
+                if not a or not b:
+                    continue
+                bps = cfg["slippage_bps"][se.tier_of(s, cfg)]
+                buy, sell = se.sim_buy(a["close"], bps), se.sim_sell(b["open"], bps)
+                qty = int(slot // a["close"])
+                pnl = round((sell - buy) * qty - se.sell_fees(sell, qty, cfg), 2)
+                realized += pnl
+                trades.append({"symbol": s, "entry": prev, "exit": d, "reason": "OPEN",
+                               "held": 1, "qty": qty, "avg_cost": buy, "exit_px": sell,
+                               "pnl": pnl, "added": False})
+        curve.append({"date": d, "equity": round(eq0 + realized, 2),
+                      "exposure": round(c.get("invested", 0.98), 4)})
+    return {"trades": trades, "curve": curve, "open_at_end": 0}
 
 
 def _feat_now(bars, idx, sym, d):
@@ -499,6 +533,10 @@ def verdict(res: dict, gate: dict, eq0: float) -> dict:
         ms, bs = res["metrics"].get("sharpe"), bench.get("sharpe")
         checks.append(("beats buy-and-hold", ms is not None and bs is not None and ms >= bs,
                        f"Sharpe {ms} vs {bs} (same-universe buy-and-hold)"))
+    if res.get("strict"):
+        ms, bs = (res.get("oos_metrics") or {}).get("sharpe"), (res.get("oos_benchmark") or {}).get("sharpe")
+        checks.append(("beats hold in held-out window", ms is not None and bs is not None and ms >= bs,
+                       f"last 30%: Sharpe {ms} vs {bs}"))
     passed = all(ok for _, ok, _ in checks)
     return {"pass": passed, "checks": [{"name": n, "ok": ok, "detail": d} for n, ok, d in checks],
             "label": "PASS — eligible for paper" if passed else "FAIL — stays out of paper"}
@@ -542,6 +580,10 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None
         sim = combine(sims)
         group = sorted({s for cs in comps for s in se.group_of(cs, cfg)})
         pit = False
+    elif strategy in se.OVERNIGHT:
+        pit = False
+        sim = simulate_overnight(cfg, bars, strategy, start, end)
+        group = se.group_of(strategy, cfg)
     else:
         pit = members is not None and strategy not in se.ETF_STRATEGIES
         sim = simulate(cfg, bars, strategy, start, end, members=members if pit else None)
@@ -589,6 +631,13 @@ def run(cfg: dict, bars: dict, strategy: str, start: str, end: str, members=None
             if k in res["stress"] and len(w) > 1:
                 res["stress"][k]["hold_pct"] = round(w[-1] / w[0] - 1, 4)
     gate = dict(GATE_DEFAULTS, **(cfg.get("backtest_gate") or {}))
+    strict = bool((cfg.get(strategy.lower()) or {}).get("strict"))
+    if strict:                 # round 7+: multiple-testing guard (owner 2026-10-01)
+        gate = dict(gate, **(cfg.get("backtest_gate_strict") or {"min_confidence": 0.99}))
+        oos_curve = [x for x in sim["curve"] if x["date"] >= split]
+        res["oos_metrics"] = curve_metrics(oos_curve, oos_curve[0]["equity"] if oos_curve else eq0, rf)
+        res["oos_benchmark"] = benchmark(bars, group, [x["date"] for x in oos_curve], eq0, rf)
+    res["strict"] = strict
     res["gate"] = gate
     res["verdict"] = verdict(res, gate, eq0)
     if strategy == "STACK":                    # a shared account can't exceed its cash
