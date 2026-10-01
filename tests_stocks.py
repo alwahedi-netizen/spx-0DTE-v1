@@ -347,6 +347,44 @@ def test_round7_lanes():
     ok("strict bar: 99% confidence and beating hold in the held-out window are both required")
 
 
+def test_asian_methods():
+    print("Asian methods (Ichimoku / Heikin-Ashi / engulfing / KDJ / MA alignment / Supertrend)")
+    up = mk_bars([100 * 1.004 ** k for k in range(120)], date(2026, 9, 29))
+    f = se.features(up, extra=True)
+    assert f["ichi_ok"] and f["kijun"] < up[-1]["close"]
+    assert f["maal"] and f["st_up"]
+    ok("steady uptrend: above the Ichimoku cloud, MAs stacked, Supertrend up")
+    dn = mk_bars([100 * 0.996 ** k for k in range(120)], date(2026, 9, 29))
+    fd = se.features(dn, extra=True)
+    assert not fd["ichi_ok"] and not fd["st_up"] and fd["kdj_j"] < 20
+    ok("steady downtrend: below the cloud, Supertrend down, KDJ J deeply oversold")
+    b = mk_bars([100.0] * 30, date(2026, 9, 29))
+    for x in b[-12:-2]:
+        x.update(open=100, high=101, low=99, close=100)
+    b[-2].update(open=100, high=100.5, low=97, close=98)      # red day
+    b[-1].update(open=97.5, high=101, low=96, close=100.5)    # engulfs it at a new 10-day low
+    assert se.features(b, extra=True)["engulf"]
+    b[-1].update(low=98.5)
+    assert not se.features(b, extra=True)["engulf"]           # not at the 10-day low
+    ok("bullish engulfing only counts at a 10-day low")
+    flip = mk_bars([100 * 0.99 ** k for k in range(40)] + [67 * 1.03 ** k for k in range(1, 6)],
+                   date(2026, 9, 29))
+    for x in flip:
+        x.update(open=x["close"] / (1.01 if x is flip[-1] else 0.995))
+    ha = se.features(flip[:-5], extra=True)
+    assert ha["ha_bear"]
+    ok("Heikin-Ashi reads a falling market as bearish")
+    cfg = base_cfg()
+    assert se.family("STA") == "ST" and se.group_of("ICHIA", cfg)[0] == "FXI"
+    P = lambda st_: pos(strategy=st_, symbol="SPY")
+    assert se.rule_exit(P("ICHI"), {"kijun": 101.0}, 100.0, "2026-10-06", cfg, held=3) == "KIJUN"
+    assert se.rule_exit(P("STA"), {"st_up": False}, 100.0, "2026-10-06", cfg, held=3) == "ST_FLIP"
+    assert se.rule_exit(P("KDJA"), {"kdj_j": 105.0}, 100.0, "2026-10-06", cfg, held=3) == "RULE"
+    assert se.rule_exit(P("MAAL"), {"sma20": 101.0}, 100.0, "2026-10-06", cfg, held=3) == "MA20"
+    assert se.rule_exit(P("ENG"), {"hi1": 102.0}, 100.0, "2026-10-06", cfg, held=5) == "TIME"
+    ok("exits: Kijun break, Supertrend flip, J > 100, MA20 break, engulf 5-day time stop")
+
+
 def test_sizing_fills_fees():
     print("Sizing / ticks / fills / fees")
     cfg = base_cfg()
@@ -857,15 +895,19 @@ def test_pit_universe():
 def test_real_config():
     print("Shipped config")
     cfg = se.load_config()
+    base = cfg["universe"]["stocks"] + cfg["universe"]["etfs"]
+    assert len(base) == 100 and len(set(base)) == 100
     u = se.universe(cfg)
-    assert len(u) == 100 and len(set(u)) == 100
+    assert len(u) == len(set(u)) and set(se.lane_symbols(cfg)) == {
+        "FXI", "MCHI", "ASHR", "INDA", "EPI", "EWJ", "DXJ"}
     assert set(cfg["gates"]) == set(se.STRATEGIES)
-    ok("stocks_config.yaml: 100 unique symbols, a gate per strategy")
+    ok("stocks_config.yaml: 100 unique base symbols (+ 7 Asia lane ETFs), a gate per strategy")
 
 
 if __name__ == "__main__":
     for t in (test_indicators, test_calendar_and_regime, test_candidates, test_new_candidates, test_rotation_lanes,
               test_market_effect_lanes, test_weighted_lanes, test_round7_lanes,
+              test_asian_methods,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
               test_session_with_crash, test_missed_and_holiday, test_backtest, test_cash_yield_and_stack, test_pit_universe,
               test_real_config):

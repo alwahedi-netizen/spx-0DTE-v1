@@ -45,16 +45,24 @@ TRACK_INTERVAL_S = 120
 STALE_MARKS_DELIST = 5        # consecutive quote-less marks -> DELISTED
 STRATEGIES = ("MOM", "PB90", "RSI2", "MOMR", "BRK55", "HI52", "QBO", "SECROT",
               "LOWVOL", "MOM12", "LVMOM", "RSI2S", "ETFTREND", "TOM", "IBS",
-              "VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM", "GAPFADE", "OVN")
+              "VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM", "GAPFADE", "OVN",
+              "ICHI", "ICHIA", "HA", "HAA", "ENG", "ENGA", "KDJ", "KDJA",
+              "MAAL", "MAALA", "ST", "STA")
 ETF_STRATEGIES = {"RSI2", "SECROT", "ETFTREND", "TOM", "IBS",
-                  "VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM", "GAPFADE", "OVN"}
+                  "VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM", "GAPFADE", "OVN",
+                  "ICHI", "ICHIA", "HA", "HAA", "ENG", "ENGA", "KDJ", "KDJA",
+                  "MAAL", "MAALA", "ST", "STA"}
+# Round 8 (Asian methods): each method on the US index ETFs (X) and on the
+# Asia ETFs (XA) — same rules, FAMILY maps the Asia twin to its method.
+ASIAN = {"ICHI", "HA", "ENG", "KDJ", "MAAL", "ST"}
 # Close-to-open lanes need a close entry (MOC) the paper engine doesn't have
 # yet — backtest-only until one passes.
 OVERNIGHT = {"OVN"}
 # Weighted lanes: every eligible symbol held at a computed weight, sold at
 # the close of the month's last session and re-bought at the next open.
 WEIGHTED = {"VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM"}
-FAMILY = {"MOMR": "MOM", "RSI2S": "RSI2"}   # same mechanics, different filter/universe
+FAMILY = {"MOMR": "MOM", "RSI2S": "RSI2", "ICHIA": "ICHI", "HAA": "HA", "ENGA": "ENG",
+          "KDJA": "KDJ", "MAALA": "MAAL", "STA": "ST"}   # same mechanics, different filter/universe
 # Rotation lanes: hold the top-N by a score, equal-weight, rebalanced monthly.
 ROTATION = {"LOWVOL", "MOM12", "LVMOM", "ETFTREND"}
 
@@ -120,6 +128,30 @@ DEFAULTS = {
             "ibs_max": 0.2, "atr_stop": 3.0, "time_stop_sessions": 5,
             "max_new_per_day": 4, "max_open": 4},
     "stack": {"components": ["TOM", "SECROT", "RSI2", "IBS"]},
+    "ichi": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "atr_stop": 3.0, "max_new_per_day": 4, "max_open": 4},
+    "ichia": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["FXI", "MCHI", "ASHR", "INDA", "EPI", "EWJ", "DXJ"],
+             "atr_stop": 3.0, "max_new_per_day": 7, "max_open": 7},
+    "ha": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "atr_stop": 3.0, "max_new_per_day": 4, "max_open": 4},
+    "haa": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["FXI", "MCHI", "ASHR", "INDA", "EPI", "EWJ", "DXJ"],
+             "atr_stop": 3.0, "max_new_per_day": 7, "max_open": 7},
+    "eng": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "atr_stop": 3.0, "max_new_per_day": 4, "max_open": 4},
+    "enga": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["FXI", "MCHI", "ASHR", "INDA", "EPI", "EWJ", "DXJ"],
+             "atr_stop": 3.0, "max_new_per_day": 7, "max_open": 7},
+    "kdj": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "atr_stop": 3.0, "max_new_per_day": 4, "max_open": 4},
+    "kdja": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["FXI", "MCHI", "ASHR", "INDA", "EPI", "EWJ", "DXJ"],
+             "atr_stop": 3.0, "max_new_per_day": 7, "max_open": 7},
+    "maal": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "atr_stop": 3.0, "max_new_per_day": 4, "max_open": 4},
+    "maala": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["FXI", "MCHI", "ASHR", "INDA", "EPI", "EWJ", "DXJ"],
+             "atr_stop": 3.0, "max_new_per_day": 7, "max_open": 7},
+    "st": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["SPY", "QQQ", "IWM", "DIA"],
+            "atr_stop": 3.0, "max_new_per_day": 4, "max_open": 4},
+    "sta": {"enabled": True, "stage": "backtest", "strict": True, "symbols": ["FXI", "MCHI", "ASHR", "INDA", "EPI", "EWJ", "DXJ"],
+             "atr_stop": 3.0, "max_new_per_day": 7, "max_open": 7},
     "tsmom": {"enabled": True, "stage": "backtest", "strict": True,
               "symbols": ["SPY", "QQQ", "IWM", "DIA", "XLK", "XLF", "XLE", "XLV", "XLI", "XLY",
                           "XLP", "XLU", "XLB", "XLRE", "XLC", "SMH", "GLD", "TLT", "EEM", "EFA"],
@@ -162,7 +194,10 @@ DEFAULTS = {
                  for k in ("VTSPY", "VT4", "RPAR", "RPTREND")},
               "TSMOM": {"trades": 40, "weeks": 26, "tripwire": -5000},
               "GAPFADE": {"trades": 60, "weeks": 26, "tripwire": -2500},
-              "OVN": {"trades": 200, "weeks": 12, "tripwire": -3000}},
+              "OVN": {"trades": 200, "weeks": 12, "tripwire": -3000},
+              **{k: {"trades": 60, "weeks": 26, "tripwire": -2500}
+                 for k in ("ICHI", "ICHIA", "HA", "HAA", "ENG", "ENGA", "KDJ", "KDJA",
+                           "MAAL", "MAALA", "ST", "STA")}},
 }
 
 
@@ -264,7 +299,7 @@ def pct_rank(values, v) -> float:
     return round(100.0 * sum(1 for x in vals if x <= v) / len(vals), 1)
 
 
-def features(bars) -> dict:
+def features(bars, extra: bool = False) -> dict:
     """Everything the strategies read, from bars through the prior close."""
     closes = [b["close"] for b in bars]
     if len(closes) < 30:
@@ -291,6 +326,9 @@ def features(bars) -> dict:
                     if len(closes) >= 11 else None),
         "vol252": _vol(closes, 252),
         "vol21": _vol(closes, 21), "vol63": _vol(closes, 63),
+        "sma5": sma(closes, 5), "sma60": sma(closes, 60),
+        "maal": _ma_aligned(closes), "maal_prev": _ma_aligned(closes[:-1]),
+        **(_asian_features(bars) if extra else {}),
         "hi1": bars[-1]["high"],
         "ibs": ((bars[-1]["close"] - bars[-1]["low"]) / (bars[-1]["high"] - bars[-1]["low"])
                 if bars[-1]["high"] > bars[-1]["low"] else None),
@@ -298,6 +336,73 @@ def features(bars) -> dict:
         "r12_1": ((closes[-22] / closes[-253] - 1) * 100
                   if len(closes) >= 253 and closes[-253] > 0 else None),
     }
+
+
+def _ma_aligned(closes):
+    """均线多头排列: MA5 > MA10 > MA20 > MA60."""
+    m = [sma(closes, n) for n in (5, 10, 20, 60)]
+    return None if None in m else (m[0] > m[1] > m[2] > m[3])
+
+
+def _asian_features(bars) -> dict:
+    """Ichimoku, Heikin-Ashi, engulfing, KDJ(9,3,3) and Supertrend(10,3) —
+    each computed only from bars through the last one (no look-ahead)."""
+    n = len(bars)
+    H = [b["high"] for b in bars]
+    L = [b["low"] for b in bars]
+    C = [b["close"] for b in bars]
+    O = [b["open"] for b in bars]
+    out = {"ichi_ok": None, "kijun": None, "ha_flip_up": None, "ha_bear": None,
+           "engulf": None, "kdj_j": None, "st_flip_up": None, "st_line": None, "st_up": None}
+    mid = lambda i, k: (max(H[i - k + 1:i + 1]) + min(L[i - k + 1:i + 1])) / 2
+    if n >= 80:
+        i = n - 1
+        tenkan, kijun = mid(i, 9), mid(i, 26)
+        j = i - 26                                     # the cloud plotted at i was computed at i-26
+        sa = (mid(j, 9) + mid(j, 26)) / 2
+        sb = mid(j, 52)
+        out["kijun"] = kijun
+        out["ichi_ok"] = C[i] > max(sa, sb) and tenkan > kijun and C[i] > C[i - 26]
+    if n >= 3:
+        hao, hac = (O[0] + C[0]) / 2, (O[0] + H[0] + L[0] + C[0]) / 4
+        bull = []
+        for k in range(1, n):
+            hao = (hao + hac) / 2
+            hac = (O[k] + H[k] + L[k] + C[k]) / 4
+            bull.append(hac > hao)
+        out["ha_bear"] = not bull[-1]
+        out["ha_flip_up"] = bull[-1] and len(bull) >= 3 and not bull[-2] and not bull[-3]
+    if n >= 11:
+        out["engulf"] = (C[-2] < O[-2] and C[-1] > O[-1] and O[-1] <= C[-2]
+                         and C[-1] >= O[-2] and L[-1] <= min(L[-11:-1]))
+    if n >= 10:
+        K = D = 50.0
+        for k in range(8, n):
+            hh, ll = max(H[k - 8:k + 1]), min(L[k - 8:k + 1])
+            rsv = (C[k] - ll) / (hh - ll) * 100 if hh > ll else 50.0
+            K = 2 / 3 * K + rsv / 3
+            D = 2 / 3 * D + K / 3
+        out["kdj_j"] = 3 * K - 2 * D
+    if n >= 12:
+        up_band = dn_band = None
+        trend = []
+        line = None
+        for k in range(10, n):
+            trs = [max(H[x] - L[x], abs(H[x] - C[x - 1]), abs(L[x] - C[x - 1]))
+                   for x in range(k - 9, k + 1)]
+            a = sum(trs) / 10
+            hl2 = (H[k] + L[k]) / 2
+            bu, bl = hl2 + 3 * a, hl2 - 3 * a
+            up_band = bu if up_band is None or bu < up_band or C[k - 1] > up_band else up_band
+            dn_band = bl if dn_band is None or bl > dn_band or C[k - 1] < dn_band else dn_band
+            prev = trend[-1] if trend else True
+            t = (C[k] > up_band) if not prev else not (C[k] < dn_band)
+            trend.append(t)
+            line = dn_band if t else up_band
+        out["st_up"] = trend[-1]
+        out["st_line"] = line
+        out["st_flip_up"] = len(trend) >= 2 and trend[-1] and not trend[-2]
+    return out
 
 
 def _vol(closes, n):
@@ -309,11 +414,11 @@ def _vol(closes, n):
     return (sum((x - m) ** 2 for x in r) / (n - 1)) ** 0.5 * (252 ** 0.5) * 100
 
 
-def universe_features(bars_by_sym: dict, symbols: list) -> dict:
+def universe_features(bars_by_sym: dict, symbols: list, extra: bool = False) -> dict:
     """{sym: features + expl_rank + r1y_rank}, ranks within `symbols`."""
     feats = {}
     for s in symbols:
-        f = features(bars_by_sym.get(s) or [])
+        f = features(bars_by_sym.get(s) or [], extra)
         if f:
             feats[s] = f
     for raw, rank in (("expl_raw", "expl_rank"), ("r252", "r1y_rank"), ("r63", "r63_rank")):
@@ -550,6 +655,29 @@ def gapfade_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
     return [s for s, _ in sorted(out, key=lambda x: (x[1], x[0]))]
 
 
+def asian_candidates_for(method: str):
+    """Entry tests per method; signals use bars through the prior close."""
+    def ok(f):
+        if method == "ICHI":
+            return bool(f.get("ichi_ok"))
+        if method == "HA":
+            return bool(f.get("ha_flip_up")) and f.get("sma200") and f["close"] > f["sma200"]
+        if method == "ENG":
+            return bool(f.get("engulf")) and f.get("sma200") and f["close"] > f["sma200"]
+        if method == "KDJ":
+            return (f.get("kdj_j") is not None and f["kdj_j"] < 0
+                    and f.get("sma60") and f["close"] > f["sma60"])
+        if method == "MAAL":
+            return bool(f.get("maal")) and f.get("maal_prev") is False
+        if method == "ST":
+            return bool(f.get("st_flip_up"))
+        return False
+
+    def cands(feats: dict, c: dict, ctx: dict = None) -> list:
+        return sorted(s for s, f in feats.items() if ok(f))
+    return cands
+
+
 def ovn_candidates(feats: dict, c: dict, ctx: dict = None) -> list:
     return sorted(feats)
 
@@ -570,6 +698,8 @@ CANDIDATES = {"MOM": mom_candidates, "PB90": pb90_candidates, "RSI2": rsi2_candi
               "TOM": tom_candidates, "IBS": ibs_candidates,
               **{k: weighted_candidates_for(k) for k in ("VTSPY", "VT4", "RPAR", "RPTREND", "TSMOM")},
               "GAPFADE": gapfade_candidates, "OVN": ovn_candidates,
+              **{k: asian_candidates_for(k) for k in ("ICHI", "HA", "ENG", "KDJ", "MAAL", "ST")},
+              **{k + "A": asian_candidates_for(k) for k in ("ICHI", "HA", "ENG", "KDJ", "MAAL", "ST")},
               **{k: rotation_candidates_for(k) for k in ("LOWVOL", "MOM12", "LVMOM", "ETFTREND")}}
 
 
@@ -757,6 +887,29 @@ def rule_exit(p: dict, f: dict, last: float, today: str, cfg: dict, held: int = 
         return "REBAL" if (ctx or {}).get("eom") else None
     if strat == "GAPFADE":
         return "EOD"                                    # intraday only: out by the close
+    fam = family(strat)
+    if fam in ASIAN:
+        f = f or {}
+        if fam == "ICHI" and f.get("kijun") and last < f["kijun"]:
+            return "KIJUN"
+        if fam == "HA" and f.get("ha_bear"):
+            return "HA_BEAR"
+        if fam == "ENG":
+            if f.get("hi1") and last > f["hi1"]:
+                return "RULE"
+            if held >= 5:
+                return "TIME"
+        if fam == "KDJ":
+            if f.get("kdj_j") is not None and f["kdj_j"] > 100:
+                return "RULE"
+            if held >= 10:
+                return "TIME"
+        if fam == "MAAL" and f.get("sma20") and last < f["sma20"]:
+            return "MA20"
+        if fam == "ST" and f.get("st_up") is not None and (not f["st_up"]
+                                                         or (f.get("st_line") and last < f["st_line"])):
+            return "ST_FLIP"
+        return None
     if strat in ROTATION:
         c = cfg[strat.lower()]
         ctx = ctx or {}
@@ -899,14 +1052,23 @@ def _event(ts, pid, ev, px=None, qty=None, note=""):
 
 # ── session steps ────────────────────────────────────────────────────────────
 
+def lane_symbols(cfg) -> list:
+    """Symbols lanes trade outside the base universe (e.g. the Asia ETFs)."""
+    base = set(cfg["universe"]["stocks"]) | set(cfg["universe"]["etfs"])
+    return sorted({x for k in STRATEGIES for x in (cfg.get(k.lower()) or {}).get("symbols") or []}
+                  - base)
+
+
 def universe(cfg) -> list:
-    return list(cfg["universe"]["stocks"]) + list(cfg["universe"]["etfs"])
+    return (list(cfg["universe"]["stocks"]) + list(cfg["universe"]["etfs"])
+            + lane_symbols(cfg))
 
 
 def build_features(cfg, bars: dict) -> dict:
     """{'stocks': feats ranked among stocks, 'etfs': feats among ETFs}."""
     return {"stocks": universe_features(bars, cfg["universe"]["stocks"]),
-            "etfs": universe_features(bars, cfg["universe"]["etfs"])}
+            "etfs": universe_features(bars, list(cfg["universe"]["etfs"]) + lane_symbols(cfg),
+                                      extra=True)}
 
 
 def session_of_month(ds: str) -> int:
@@ -981,8 +1143,11 @@ def do_premarket(cfg, ds: str, data, clock) -> tuple:
         vix = data.vix_last()
     except Exception:
         vix = None
-    n = len(universe(cfg))
-    status = "OK" if len(failed) <= n // 2 else "DATA_FAIL"
+    # only the base universe decides a DATA_FAIL day; a missing lane-only
+    # symbol (e.g. an Asia ETF) is noted but never blocks the core lanes
+    base = set(cfg["universe"]["stocks"]) | set(cfg["universe"]["etfs"])
+    n = len(base)
+    status = "OK" if len([s for s in failed if s in base]) <= n // 2 else "DATA_FAIL"
     notes = []
     if failed:
         notes.append(f"no bars: {' '.join(failed[:12])}{' …' if len(failed) > 12 else ''}")

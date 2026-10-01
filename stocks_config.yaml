@@ -283,6 +283,113 @@ ovn:                             # overnight: buy at the close, sell at the next
   symbols: [SPY, QQQ]
   invested: 0.98
 
+# ── round 8 (owner 2026-10-01: "check Chinese, Indian, Japanese strategies").
+# Each method twice: X on the US index ETFs, XA on the Asia ETFs (China
+# FXI/MCHI/ASHR, India INDA/EPI, Japan EWJ/DXJ). Strict bar. Fixed before
+# their first run. Stops: 3x ATR for all.
+#   ICHI  Ichimoku: close > cloud, tenkan > kijun, chikou up; exit < kijun   (Japan)
+#   HA    Heikin-Ashi turns bullish after 2 bearish, > SMA200; exit bearish  (Japan)
+#   ENG   bullish engulfing at a 10-day low, > SMA200; exit > prior high/5d  (Japan, Homma)
+#   KDJ   KDJ(9,3,3) J < 0 while > SMA60; exit J > 100 or 10 sessions        (China)
+#   MAAL  MA5>MA10>MA20>MA60 newly aligned; exit close < MA20                (China)
+#   ST    Supertrend(10,3) flips up; exit when it flips down                  (India)
+ichi:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA]
+  atr_stop: 3.0
+  max_new_per_day: 4
+  max_open: 4
+ichia:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [FXI, MCHI, ASHR, INDA, EPI, EWJ, DXJ]
+  atr_stop: 3.0
+  max_new_per_day: 7
+  max_open: 7
+ha:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA]
+  atr_stop: 3.0
+  max_new_per_day: 4
+  max_open: 4
+haa:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [FXI, MCHI, ASHR, INDA, EPI, EWJ, DXJ]
+  atr_stop: 3.0
+  max_new_per_day: 7
+  max_open: 7
+eng:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA]
+  atr_stop: 3.0
+  max_new_per_day: 4
+  max_open: 4
+enga:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [FXI, MCHI, ASHR, INDA, EPI, EWJ, DXJ]
+  atr_stop: 3.0
+  max_new_per_day: 7
+  max_open: 7
+kdj:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA]
+  atr_stop: 3.0
+  max_new_per_day: 4
+  max_open: 4
+kdja:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [FXI, MCHI, ASHR, INDA, EPI, EWJ, DXJ]
+  atr_stop: 3.0
+  max_new_per_day: 7
+  max_open: 7
+maal:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA]
+  atr_stop: 3.0
+  max_new_per_day: 4
+  max_open: 4
+maala:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [FXI, MCHI, ASHR, INDA, EPI, EWJ, DXJ]
+  atr_stop: 3.0
+  max_new_per_day: 7
+  max_open: 7
+st:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [SPY, QQQ, IWM, DIA]
+  atr_stop: 3.0
+  max_new_per_day: 4
+  max_open: 4
+sta:
+  enabled: true
+  stage: backtest
+  strict: true
+  symbols: [FXI, MCHI, ASHR, INDA, EPI, EWJ, DXJ]
+  atr_stop: 3.0
+  max_new_per_day: 7
+  max_open: 7
+
 backtest_gate_strict:
   min_confidence: 0.99
 
@@ -319,3 +426,15 @@ gates:
   TSMOM: {trades: 40, weeks: 26, tripwire: -5000}
   GAPFADE: {trades: 60, weeks: 26, tripwire: -2500}
   OVN:  {trades: 200, weeks: 12, tripwire: -3000}
+  ICHI: {trades: 60, weeks: 26, tripwire: -2500}
+  ICHIA: {trades: 60, weeks: 26, tripwire: -2500}
+  HA: {trades: 60, weeks: 26, tripwire: -2500}
+  HAA: {trades: 60, weeks: 26, tripwire: -2500}
+  ENG: {trades: 60, weeks: 26, tripwire: -2500}
+  ENGA: {trades: 60, weeks: 26, tripwire: -2500}
+  KDJ: {trades: 60, weeks: 26, tripwire: -2500}
+  KDJA: {trades: 60, weeks: 26, tripwire: -2500}
+  MAAL: {trades: 60, weeks: 26, tripwire: -2500}
+  MAALA: {trades: 60, weeks: 26, tripwire: -2500}
+  ST: {trades: 60, weeks: 26, tripwire: -2500}
+  STA: {trades: 60, weeks: 26, tripwire: -2500}

@@ -375,3 +375,28 @@ round trip pays the sandbox's ETF cost model (2 bps per side).
 TSMOM was hit by whipsaws in 2018–2023 (in-sample PF 1.06).
 
 **Tally: 28 lanes, 0 pass.**
+
+
+## 17. Round 8 (owner: Chinese, Indian, Japanese methods — 2026-10-01)
+
+Six methods, each on the US index ETFs (X) and the Asia ETFs (XA: China
+FXI/MCHI/ASHR, India INDA/EPI, Japan EWJ/DXJ). Strict bar, dividends +
+T-bill cash.
+
+| lane | origin | trades | PF | conf | maxDD | Sharpe vs hold (full / held-out) | fails on |
+|---|---|---|---|---|---|---|---|
+| **KDJA** | China KDJ, Asia ETFs | 224 | 1.36 | 97% | −3.3% | **0.35 vs 0.31 / 0.99 vs 0.68** | 99% confidence only |
+| ST | India Supertrend, US | 145 | 2.04 | 99.9% | −3.1% | 0.54 vs 0.65 / 0.58 vs 0.84 | Sharpe |
+| ICHI | Japan Ichimoku, US | 379 | 1.49 | 98% | −3.9% | 0.34 vs 0.65 / 0.21 vs 0.84 | conf, Sharpe |
+| HA | Japan Heikin-Ashi, US | 627 | 1.29 | 99% | −1.9% | 0.44 vs 0.65 / 0.24 vs 0.84 | PF, Sharpe |
+| MAAL | China MA alignment, US | 230 | 1.37 | 95% | −2.8% | 0.19 vs 0.65 / −0.38 vs 0.84 | conf, OOS, Sharpe |
+| KDJ | China KDJ, US | 108 | 0.85 | 24% | −3.2% | −0.25 | no edge |
+| ENG / ENGA | Japan engulfing | 20 / 11 | — | — | — | — | too few trades |
+| ICHIA, HAA, MAALA, STA | Asia ETFs | 348–879 | 0.94–1.05 | ≤ 67% | | | no edge |
+
+**KDJA is the first lane to pass every Sharpe test:** it beats holding
+the Asia ETFs over the full window and in the held-out last 30%. It
+misses only the round-7 multiple-testing guard (97% vs 99%), and would
+have passed the original 90% bar. Caveats: its benchmark is weak (Asia
+ETFs returned 6.8%/yr with a −35% drawdown), and it was one of 12 tests
+in this round. **Tally: 40 lanes, 0 pass the bar in force.**

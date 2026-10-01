@@ -190,6 +190,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
     idx = {s: {b["date"]: i for i, b in enumerate(v)} for s, v in bars.items()}
     last_day = {s: v[-1]["date"] for s, v in bars.items() if v}
     cand_fn = se.CANDIDATES[strategy]
+    asian = se.family(strategy) in se.ASIAN
     need_ctx = (strategy in ("MOMR", "SECROT", "TOM", "GAPFADE") or strategy in se.ROTATION
                 or strategy in se.WEIGHTED)
     eq0 = float(cfg["account_equity"])
@@ -212,7 +213,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
                 if i is None or i < 30:
                     continue
                 fi[s] = bars[s][max(0, i - WINDOW):i]
-            return se.universe_features(fi, list(fi))
+            return se.universe_features(fi, list(fi), extra=asian)
         if pit:
             group = [s for s in members(d) if s in bars]
         # features from bars strictly before d (what the premarket step sees)
@@ -303,7 +304,7 @@ def simulate(cfg: dict, bars: dict, strategy: str, start: str, end: str,
             elif tgt is not None and b["high"] >= tgt:
                 exit_ = ("TARGET", tgt if fresh else max(b["open"], tgt))
             else:
-                why = se.rule_exit(p, fe.get(p["symbol"]) or _feat_now(bars, idx, p["symbol"], d),
+                why = se.rule_exit(p, fe.get(p["symbol"]) or _feat_now(bars, idx, p["symbol"], d, asian),
                                    b["close"], d, cfg, held=di - p["entry_i"], ctx=ctx)
                 if why:
                     exit_ = (why, b["close"])
@@ -369,9 +370,9 @@ def simulate_overnight(cfg: dict, bars: dict, strategy: str, start: str, end: st
     return {"trades": trades, "curve": curve, "open_at_end": 0}
 
 
-def _feat_now(bars, idx, sym, d):
+def _feat_now(bars, idx, sym, d, extra=False):
     i = idx.get(sym, {}).get(d)
-    return se.features(bars[sym][max(0, i - WINDOW):i]) if i else None
+    return se.features(bars[sym][max(0, i - WINDOW):i], extra) if i else None
 
 
 # ── metrics ──────────────────────────────────────────────────────────────────
@@ -786,7 +787,8 @@ def main(argv=None):
     a = ap.parse_args(argv)
     cfg = se.load_config()
     members = None
-    syms = se.universe(cfg)
+    syms = sorted(set(se.universe(cfg)) | {x for k in se.STRATEGIES
+                                           for x in (cfg.get(k.lower()) or {}).get("symbols") or []})
     if a.pit:
         snaps = load_pit()
         members = members_fn(snaps)
