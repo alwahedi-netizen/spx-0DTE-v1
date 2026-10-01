@@ -295,7 +295,8 @@ ovn:                             # overnight: buy at the close, sell at the next
 #   ST    Supertrend(10,3) flips up; exit when it flips down                  (India)
 ichi:
   enabled: true
-  stage: backtest
+  stage: paper                   # owner 2026-10-01: paper as OBSERVATION —
+  observation: true              # below the backtest bar; must clear in paper
   strict: true
   symbols: [SPY, QQQ, IWM, DIA]
   atr_stop: 3.0
@@ -351,7 +352,8 @@ kdj:
   max_open: 4
 kdja:
   enabled: true
-  stage: backtest
+  stage: paper                   # owner 2026-10-01: paper as OBSERVATION —
+  observation: true              # below the backtest bar; must clear in paper
   strict: true
   symbols: [FXI, MCHI, ASHR, INDA, EPI, EWJ, DXJ]
   atr_stop: 3.0
@@ -375,7 +377,8 @@ maala:
   max_open: 7
 st:
   enabled: true
-  stage: backtest
+  stage: paper                   # owner 2026-10-01: paper as OBSERVATION —
+  observation: true              # below the backtest bar; must clear in paper
   strict: true
   symbols: [SPY, QQQ, IWM, DIA]
   atr_stop: 3.0

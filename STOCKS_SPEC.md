@@ -400,3 +400,19 @@ misses only the round-7 multiple-testing guard (97% vs 99%), and would
 have passed the original 90% bar. Caveats: its benchmark is weak (Asia
 ETFs returned 6.8%/yr with a −35% drawdown), and it was one of 12 tests
 in this round. **Tally: 40 lanes, 0 pass the bar in force.**
+
+
+## 18. Paper (observation) lanes — owner decision 2026-10-01
+
+ICHI, ST and KDJA move to `stage: paper` with `observation: true`.
+None passed the backtest bar in force (strict). The owner chose to
+observe them live because each shows a statistically solid edge (97–99.9%
+confidence) with tiny drawdowns. Pre-registered rules for this paper phase:
+
+- Gate: 60 closed trades or 26 weeks each; review tripwire −$2,500.
+- A path to live money requires the paper record to clear what the
+  backtest missed: ST and ICHI must beat buy-and-hold of their ETFs on
+  Sharpe over the paper period; KDJA must keep its edge (expectancy > 0,
+  PF ≥ 1.3). Otherwise they retire to RETIRED.md with their records.
+- ST and ICHI are both trend signals on the same four ETFs, so their
+  results are correlated and are not two independent confirmations.

@@ -412,6 +412,7 @@ def api_stocks_state():
                  "last_eod": eod[-1] if eod else None},
         "summary": sr.summary(cfg),
         "stages": {k: cfg[k.lower()].get("stage", "backtest") for k in se.STRATEGIES},
+        "observation": [k for k in se.STRATEGIES if cfg[k.lower()].get("observation")],
     })
 
 
@@ -500,6 +501,7 @@ def api_stocks_backtests():
     return jsonify({"latest": latest, "variants": sbt.variants_tried(),
                     "stages": {**{k: cfg[k.lower()].get("stage", "backtest") for k in se.STRATEGIES},
                                **{k: "backtest" for k in sbt.BT_ONLY}},
+                    "observation": [k for k in se.STRATEGIES if cfg[k.lower()].get("observation")],
                     "gate": dict(sbt.GATE_DEFAULTS, **(cfg.get("backtest_gate") or {})),
                     "running": p is not None and p.poll() is None,
                     "started": _bproc["started"], "log": "\n".join(tail)})

@@ -892,6 +892,40 @@ def test_pit_universe():
     ok("run log upgrades an old-format runs.csv in place (hub compatibility)")
 
 
+def test_observation_lanes_session():
+    print("Paper engine runs the observation lanes (ICHI / ST / KDJA)")
+    fresh_store()
+    cfg = base_cfg()
+    for k in ("mom", "pb90", "rsi2"):
+        cfg[k] = dict(cfg[k], stage="backtest")
+    for k in ("ichi", "st", "kdja"):
+        cfg[k] = dict(cfg[k], stage="paper")
+    rnd = random.Random(11)
+    syms = cfg["universe"]["stocks"] + cfg["universe"]["etfs"] + se.lane_symbols(cfg)
+    bars = {}
+    for i, sym in enumerate(syms):
+        px, closes = 40.0 + i, []
+        for _ in range(300):
+            px *= 1 + 0.0004 + rnd.gauss(0, 0.012)
+            closes.append(px)
+        b = mk_bars(closes, date(2026, 10, 2))
+        for x in b:
+            x["open"] = x["close"] * (1 + rnd.gauss(0, 0.004))
+        bars[sym] = b
+    assert set(se.lane_symbols(cfg)) <= set(bars)
+    for day in (5, 6, 7, 8, 9):
+        clock = FakeClock(ET(2026, 10, day, 9, 5))
+        assert se.run_session(cfg, FakeData(bars, clock), clock) == "done"
+    done = {(r["date"], r["strategy"]) for r in st.read("signals") if r["action"] == "DONE"}
+    for d in ("2026-10-05", "2026-10-09"):
+        assert {(d, "ICHI"), (d, "ST"), (d, "KDJA")} <= done, done
+    assert not any(r["strategy"] in ("MOM", "PB90", "RSI2") for r in st.read("signals"))
+    pos_ = st.read("positions")
+    assert all(p["strategy"] in ("ICHI", "ST", "KDJA") for p in pos_)
+    assert all(p["symbol"] in cfg[p["strategy"].lower()]["symbols"] for p in pos_)
+    ok(f"5 fake sessions: only ICHI/ST/KDJA trade, each in its own ETFs ({len(pos_)} campaigns)")
+
+
 def test_real_config():
     print("Shipped config")
     cfg = se.load_config()
@@ -910,7 +944,7 @@ if __name__ == "__main__":
               test_asian_methods,
               test_sizing_fills_fees, test_campaign_math, test_store_rails, test_mom_add,
               test_session_with_crash, test_missed_and_holiday, test_backtest, test_cash_yield_and_stack, test_pit_universe,
-              test_real_config):
+              test_observation_lanes_session, test_real_config):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)

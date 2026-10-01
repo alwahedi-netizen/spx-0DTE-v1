@@ -296,11 +296,14 @@ async function refresh(){
     .filter(Boolean).join(" · ");
   spark(s.summary.equity_curve, b.equity);
 
-  $("gateTable").querySelector("tbody").innerHTML = Object.entries(sm).map(([k, r]) => {
+  $("gateTable").querySelector("tbody").innerHTML = Object.entries(sm)
+      .filter(([k, r]) => (s.stages || {})[k] === "paper" || r.n || r.open).map(([k, r]) => {
     const g = r.gate, pct = Math.min(100, Math.round(100 * g.progress));
     const conf = r.confidence === undefined || r.confidence === null ? "–" : Math.round(100*r.confidence) + "%";
     const stage = (s.stages || {})[k] || "backtest";
+    const obs = (s.observation || []).includes(k);
     const status = stage !== "paper" ? `<span class="mut">stage: ${esc(stage)} — no new paper entries</span>`
+      : obs && !g.tripped && pct < 100 ? `<span class="badge warn" title="Below the backtest bar — must clear in paper what it missed in backtest">paper · observation</span>`
       : g.tripped ? `<span class="badge bad">tripwire — review</span>`
       : pct >= 100 ? `<span class="badge ok">gate reached — verdict due</span>`
       : !g.admissible ? `<span class="mut">&lt;20 closed · inadmissible</span>` : `<span class="mut">papering</span>`;
@@ -382,7 +385,8 @@ async function loadBacktests(){
   if (!Object.keys(j.latest).length){ $("btCards").innerHTML = `<div class="mut">No backtest results yet${j.running ? " — first run in progress" : ""}.</div>`; }
   else $("btCards").innerHTML = strats.map(k => {
     const r = j.latest[k], stage = j.stages[k];
-    const stageB = `<span class="badge ${stage === "paper" ? "ok" : stage === "retired" ? "bad" : ""}">stage: ${esc(stage)}</span>`;
+    const obs = (j.observation || []).includes(k);
+    const stageB = `<span class="badge ${stage === "paper" ? (obs ? "warn" : "ok") : stage === "retired" ? "bad" : ""}">stage: ${esc(stage)}${obs ? " · observation" : ""}</span>`;
     if (!r) return `<div class="bt"><div class="hd"><b>${esc(k)}</b>${stageB}</div><div class="mut">not run yet</div></div>`;
     const s = r.stats, m = r.metrics, u = r.benchmark_universe, sp = r.benchmark_spy, v = r.verdict;
     const years = Object.entries(r.by_year || {}).map(([y, o]) =>
