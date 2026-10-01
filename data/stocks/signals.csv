@@ -1,0 +1,4 @@
+ts,date,slot,strategy,action,symbol,side,rank,expl_rank,r3d,r21,rsi2,sma50,sma200,atr20,ref_close,last,stop_px,target_px,qty,risk_usd,position_id,skip_reason,note
+2026-10-01T10:26:47-04:00,2026-10-01,09:45,ICHI,DONE,,,,,,,,,,,,,,,,,,MISSED,engine offline through the entry window
+2026-10-01T10:26:47-04:00,2026-10-01,09:45,KDJA,DONE,,,,,,,,,,,,,,,,,,MISSED,engine offline through the entry window
+2026-10-01T10:26:47-04:00,2026-10-01,09:45,ST,DONE,,,,,,,,,,,,,,,,,,MISSED,engine offline through the entry window
