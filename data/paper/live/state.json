@@ -1,1 +1,1 @@
-{"day": "2026-10-01", "halted": {}, "paused": {}, "schwab": {"719": {"ts": "2026-10-01T01:36:54-04:00", "missing": [], "unknown": [], "day_pl": -2812.5, "ok": true}, "910": {"ts": "2026-10-01T01:36:55-04:00", "missing": [], "unknown": [], "day_pl": 0, "ok": true}}}
+{"day": "2026-10-01", "halted": {}, "paused": {}, "schwab": {"719": {"ts": "2026-10-01T02:37:05-04:00", "missing": [], "unknown": [], "day_pl": 33.49, "ok": true}, "910": {"ts": "2026-10-01T02:37:05-04:00", "missing": [], "unknown": [], "day_pl": 0, "ok": true}}}
