@@ -9,3 +9,9 @@ paper run 2026-10-02 | budget $5000 | gex negative
 [11:30] METF SELL CALL 7750.0/7780.0 credit 1.88 stop 3.75
 [12:00] MEIC IRON_CONDOR credit 3.67 stop/side 3.67
 [12:00] MNG IRON_CONDOR credit 3.67 stop/side 3.67
+[12:30] METF SELL CALL 7745.0/7775.0 credit 1.62 stop 3.25
+[12:30] MEIC IRON_CONDOR credit 3.22 stop/side 3.22
+[12:30] MNG IRON_CONDOR credit 3.22 stop/side 3.22
+[13:00] MEIC IRON_CONDOR credit 3.97 stop/side 3.97
+[13:00] MNG IRON_CONDOR credit 3.97 stop/side 3.97
+[13:00] FLY IRON_FLY @ 7720 credit 16.20 TP 12.15 SL 20.25
