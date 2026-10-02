@@ -2,3 +2,7 @@ ts,date,slot,strategy,action,symbol,side,rank,expl_rank,r3d,r21,rsi2,sma50,sma20
 2026-10-01T10:26:47-04:00,2026-10-01,09:45,ICHI,DONE,,,,,,,,,,,,,,,,,,MISSED,engine offline through the entry window
 2026-10-01T10:26:47-04:00,2026-10-01,09:45,KDJA,DONE,,,,,,,,,,,,,,,,,,MISSED,engine offline through the entry window
 2026-10-01T10:26:47-04:00,2026-10-01,09:45,ST,DONE,,,,,,,,,,,,,,,,,,MISSED,engine offline through the entry window
+2026-10-02T09:45:00-04:00,2026-10-02,09:45,ICHI,BUY,QQQ,LONG,1,88.9,0.75,4.86,77.96,715.66,667.91,9.09,742.03,752.00,724.74,,10,272.60,2026-10-02-ICHI-QQQ,,
+2026-10-02T09:45:00-04:00,2026-10-02,09:45,ICHI,DONE,,,,,,,,,,,,,,,,,,,"1 candidates, 1 buys, 0 adds"
+2026-10-02T09:45:00-04:00,2026-10-02,09:45,KDJA,DONE,,,,,,,,,,,,,,,,,,NOSIGNAL,"0 candidates, 0 buys, 0 adds"
+2026-10-02T09:45:00-04:00,2026-10-02,09:45,ST,DONE,,,,,,,,,,,,,,,,,,NOSIGNAL,"0 candidates, 0 buys, 0 adds"

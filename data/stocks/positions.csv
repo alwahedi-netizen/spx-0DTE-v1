@@ -1,0 +1,2 @@
+position_id,strategy,symbol,side,tier,signal_ts,entry_ts,qty,entry_px_theo,stop_px_initial,target_px,risk_usd,add_ts,add_qty,add_px_theo,exit_ts,exit_px_theo,exit_reason,pnl_theo,stop_px,peak_px,phase,split_factor,entry_px_actual,add_px_actual,exit_px_actual,pnl_actual,fill_notes
+2026-10-02-ICHI-QQQ,ICHI,QQQ,LONG,etf,2026-10-02T09:45:00-04:00,2026-10-02T09:45:00-04:00,10,752.0000,724.74,,272.60,,,,,,,,724.74,752.00,1,1,752.1600,,,,simulated
