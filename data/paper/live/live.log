@@ -5672,3 +5672,7 @@
 [2026-10-02T16:07:10-04:00] 2026-10-02-MEIC-14:00-PUT settled at intrinsic +0.00 pnl +178
 [2026-10-02T16:07:10-04:00] cancel 1008162687147: HTTP 400
 [2026-10-02T16:07:10-04:00] 2026-10-02-MEIC-14:00-CALL settled at intrinsic +0.00 pnl +153
+[2026-10-03T20:25:54-04:00] schwab audit …719: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
+[2026-10-03T20:25:55-04:00] schwab audit …910: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/1D9F603788777667377D3FCBED414E510D13B74A6A525C2AE1E26FC26A7B273A?fields=positions
+[2026-10-03T20:35:56-04:00] schwab audit …719: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
+[2026-10-03T20:35:56-04:00] schwab audit …910: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/1D9F603788777667377D3FCBED414E510D13B74A6A525C2AE1E26FC26A7B273A?fields=positions
