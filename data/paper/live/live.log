@@ -5680,3 +5680,6 @@
 [2026-10-03T20:45:58-04:00] schwab audit …910: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/1D9F603788777667377D3FCBED414E510D13B74A6A525C2AE1E26FC26A7B273A?fields=positions
 [2026-10-03T20:55:59-04:00] schwab audit …719: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/9243454752FF7A9222225FC96965292E4009F109774DD4E0BA2FA5E318884C14?fields=positions
 [2026-10-03T20:56:00-04:00] schwab audit …910: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/1D9F603788777667377D3FCBED414E510D13B74A6A525C2AE1E26FC26A7B273A?fields=positions
+[2026-10-05T10:30:17-04:00] DRY-RUN …910 place NET_DEBIT 7.00
+[2026-10-05T10:30:17-04:00] 2026-10-05-ORB-CALL OPEN submitted -7.00 (order dry-1791210617417)
+[2026-10-05T10:30:47-04:00] 2026-10-05-ORB-CALL FILLED @ -7.00 (limit -7.00)

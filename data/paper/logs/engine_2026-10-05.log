@@ -2,3 +2,6 @@ waiting 286s for 09:00 ET pre-market step
 paper run 2026-10-05 | budget $5000 | gex positive
 [10:00] METF SELL PUT 7695.0/7665.0 credit 1.65 stop 3.30
 [10:15] PBW SKIP/CREDIT (-4.63)
+[10:30] ORB BUY CALL 7760.0/7790.0 debit 6.88 stop 3.44
+[10:30] band 7735-7775 em 17.7 skew 0.903
+[10:45] METF SELL PUT 7720.0/7690.0 credit 1.55 stop 3.10
