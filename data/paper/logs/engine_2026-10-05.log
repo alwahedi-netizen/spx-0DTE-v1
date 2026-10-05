@@ -5,3 +5,6 @@ paper run 2026-10-05 | budget $5000 | gex positive
 [10:30] ORB BUY CALL 7760.0/7790.0 debit 6.88 stop 3.44
 [10:30] band 7735-7775 em 17.7 skew 0.903
 [10:45] METF SELL PUT 7720.0/7690.0 credit 1.55 stop 3.10
+[11:30] METF SELL PUT 7735.0/7705.0 credit 1.88 stop 3.75
+[12:00] MEIC IRON_CONDOR credit 3.90 stop/side 3.90
+[12:00] MNG SKIP/REGIME gex=positive
