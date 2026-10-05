@@ -16,3 +16,9 @@ paper run 2026-10-05 | budget $5000 | gex positive
 [13:00] MEIC IRON_CONDOR credit 4.00 stop/side 4.00
 [13:00] MNG SKIP/REGIME gex=positive
 [13:00] FLY IRON_FLY @ 7770 credit 12.05 TP 9.04 SL 15.06
+[13:30] METF SELL PUT 7765.0/7735.0 credit 2.40 stop 4.80
+[13:30] MEIC IRON_CONDOR credit 4.35 stop/side 4.35
+[13:30] MNG SKIP/REGIME gex=positive
+[14:00] MEIC IRON_CONDOR credit 3.75 stop/side 3.75
+[14:00] MNG SKIP/REGIME gex=positive
+[14:15] METF SELL PUT 7770.0/7740.0 credit 1.95 stop 3.90
