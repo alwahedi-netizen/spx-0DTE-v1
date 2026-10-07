@@ -1,3 +1,4 @@
 position_id,strategy,symbol,side,tier,signal_ts,entry_ts,qty,entry_px_theo,stop_px_initial,target_px,risk_usd,add_ts,add_qty,add_px_theo,exit_ts,exit_px_theo,exit_reason,pnl_theo,stop_px,peak_px,phase,split_factor,entry_px_actual,add_px_actual,exit_px_actual,pnl_actual,fill_notes
 2026-10-02-ICHI-QQQ,ICHI,QQQ,LONG,etf,2026-10-02T09:45:00-04:00,2026-10-02T09:45:00-04:00,10,752.0000,724.74,,272.60,,,,,,,,724.74,760.10,1,1,752.1600,,,,simulated
 2026-10-05-ICHI-SPY,ICHI,SPY,LONG,etf,2026-10-05T09:45:00-04:00,2026-10-05T09:45:00-04:00,10,770.6300,750.35,,202.80,,,,,,,,750.35,779.45,1,1,770.7900,,,,simulated
+2026-10-07-ST-SPY,ST,SPY,LONG,etf,2026-10-07T09:45:00-04:00,2026-10-07T09:45:00-04:00,10,774.6890,753.72,,209.69,,,,,,,,753.72,774.69,1,1,774.8500,,,,simulated
