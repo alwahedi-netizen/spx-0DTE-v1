@@ -5876,3 +5876,41 @@
 [2026-10-07T14:30:19-04:00] 2026-10-07-MEIC-14:30-CALL OPEN submitted +1.60 (order 1008212779838)
 [2026-10-07T14:30:50-04:00] 2026-10-07-MEIC-14:30-PUT open REJECTED (The order is not an opening transaction. It will decrease or close an existing o)
 [2026-10-07T14:30:51-04:00] 2026-10-07-MEIC-14:30-CALL FILLED @ +1.60 (limit 1.60)
+[2026-10-07T15:48:50-04:00] 2026-10-07-MEIC-12:30-CALL CLOSE (TP) submitted @ +0.10
+[2026-10-07T15:48:50-04:00] 2026-10-07-MEIC-13:30-CALL CLOSE (TP) submitted @ +0.10
+[2026-10-07T15:51:34-04:00] 2026-10-07-MEIC-12:00-PUT CLOSE (TP) submitted @ +0.10
+[2026-10-07T15:52:40-04:00] 2026-10-07-MEIC-12:30-PUT CLOSE (TP) submitted @ +0.10
+[2026-10-07T15:52:41-04:00] 2026-10-07-MEIC-13:00-PUT CLOSE (TP) submitted @ +0.10
+[2026-10-07T15:53:13-04:00] 2026-10-07-MEIC-12:30-CALL CLOSE (TP) submitted @ +0.30
+[2026-10-07T15:53:16-04:00] 2026-10-07-MEIC-13:30-CALL CLOSE (TP) submitted @ +0.30
+[2026-10-07T15:56:04-04:00] 2026-10-07-MEIC-12:00-PUT CLOSE (TP) submitted @ +0.30
+[2026-10-07T15:56:08-04:00] 2026-10-07-MEIC-13:30-PUT CLOSE (TP) submitted @ +0.10
+[2026-10-07T15:56:09-04:00] 2026-10-07-MEIC-14:00-PUT CLOSE (TP) submitted @ +0.10
+[2026-10-07T15:56:41-04:00] 2026-10-07-MEIC-12:30-PUT CLOSE (TP) submitted @ +0.30
+[2026-10-07T15:56:43-04:00] 2026-10-07-MEIC-13:00-PUT CLOSE (TP) submitted @ +0.30
+[2026-10-07T15:57:17-04:00] 2026-10-07-MEIC-12:30-CALL too late to close — leaving to settlement
+[2026-10-07T15:57:19-04:00] 2026-10-07-MEIC-13:30-CALL too late to close — leaving to settlement
+[2026-10-07T15:59:02-04:00] 2026-10-07-MEIC-14:00-CALL too late to close — leaving to settlement
+[2026-10-07T15:59:02-04:00] 2026-10-07-MEIC-14:30-CALL too late to close — leaving to settlement
+[2026-10-07T16:00:08-04:00] 2026-10-07-MEIC-12:00-PUT too late to close — leaving to settlement
+[2026-10-07T16:00:10-04:00] 2026-10-07-MEIC-13:30-PUT too late to close — leaving to settlement
+[2026-10-07T16:00:11-04:00] 2026-10-07-MEIC-14:00-PUT close REJECTED (This option contract has either changed, no longer trades or has expired.) — retry 1/3
+[2026-10-07T16:00:12-04:00] 2026-10-07-MEIC-14:00-PUT too late to close — leaving to settlement
+[2026-10-07T16:00:43-04:00] 2026-10-07-MEIC-12:30-PUT too late to close — leaving to settlement
+[2026-10-07T16:00:44-04:00] 2026-10-07-MEIC-13:00-PUT too late to close — leaving to settlement
+[2026-10-07T16:07:04-04:00] cancel 1008216150559: HTTP 400
+[2026-10-07T16:07:04-04:00] 2026-10-07-MEIC-12:00-PUT settled at intrinsic +0.00 pnl +143
+[2026-10-07T16:07:05-04:00] cancel 1008216150589: HTTP 400
+[2026-10-07T16:07:05-04:00] 2026-10-07-MEIC-12:30-PUT settled at intrinsic +0.00 pnl +198
+[2026-10-07T16:07:05-04:00] cancel 1008216150423: HTTP 400
+[2026-10-07T16:07:05-04:00] 2026-10-07-MEIC-12:30-CALL settled at intrinsic +0.00 pnl +153
+[2026-10-07T16:07:06-04:00] cancel 1008216150596: HTTP 400
+[2026-10-07T16:07:06-04:00] 2026-10-07-MEIC-13:00-PUT settled at intrinsic +0.00 pnl +198
+[2026-10-07T16:07:06-04:00] cancel 1008216150563: HTTP 400
+[2026-10-07T16:07:06-04:00] 2026-10-07-MEIC-13:30-PUT settled at intrinsic +0.00 pnl +148
+[2026-10-07T16:07:06-04:00] cancel 1008216150427: HTTP 400
+[2026-10-07T16:07:06-04:00] 2026-10-07-MEIC-13:30-CALL settled at intrinsic +0.00 pnl +168
+[2026-10-07T16:07:07-04:00] cancel 1008216150565: HTTP 400
+[2026-10-07T16:07:07-04:00] 2026-10-07-MEIC-14:00-PUT settled at intrinsic +0.00 pnl +213
+[2026-10-07T16:07:07-04:00] 2026-10-07-MEIC-14:00-CALL settled at intrinsic +0.00 pnl +208
+[2026-10-07T16:07:07-04:00] 2026-10-07-MEIC-14:30-CALL settled at intrinsic +0.00 pnl +158
