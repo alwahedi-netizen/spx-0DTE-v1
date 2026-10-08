@@ -31,6 +31,19 @@ command -v nginx >/dev/null || { echo "nginx not found"; exit 1; }
 curl -fsS -o /dev/null http://127.0.0.1:5260/gate/login \
   || { echo "gate not answering on 127.0.0.1:5260 — run setup_sahmi_login.sh first"; exit 1; }
 
+# The hub's sahmi.conf may already carry a gated shine block (a later
+# sahmi-nginx setup added one). A second vhost would only produce
+# "conflicting server name ... ignored" — and lose, since sahmi.conf
+# sorts first. Nothing to do in that case (2026-10-08, live hub).
+if grep -q "server_name shine" /etc/nginx/sites-enabled/sahmi.conf 2>/dev/null; then
+  grep -A30 "server_name shine" /etc/nginx/sites-enabled/sahmi.conf \
+      | grep -q "auth_request" \
+    && { echo "shine.sahmi.ae is already gated inside sahmi.conf — nothing to do."; exit 0; }
+  echo "sahmi.conf serves shine WITHOUT auth_request — it would shadow this"
+  echo "script's vhost. Remove that block first, then rerun."
+  exit 1
+fi
+
 AVAIL=/etc/nginx/sites-available/shine.sahmi.ae
 ENABLED=/etc/nginx/sites-enabled/shine.sahmi.ae
 
