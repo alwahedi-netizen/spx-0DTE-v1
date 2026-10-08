@@ -42,3 +42,5 @@ paper run 2026-10-08 | budget $5000 | gex positive
   2026-10-08-MEIC-14:00-CALL STOPPED @ 3.98 pnl -223
 [14:30] MEIC IRON_CONDOR credit 4.30 stop/side 4.30
 [14:30] MNG SKIP/REGIME gex=positive
+  2026-10-08-ORB-PUT STOPPED @ -3.43 pnl -352
+  2026-10-08-MEIC-12:30-CALL TP @ 0.03 pnl +172
