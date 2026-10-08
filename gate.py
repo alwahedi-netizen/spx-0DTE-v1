@@ -275,7 +275,7 @@ PAGE = """<!doctype html><html lang="en"><head>
   <input id="p" name="password" type="password" autocomplete="current-password" required>
   {totp}
   <button type="submit">Enter desk &rarr;</button>
-  <footer>Encrypted &amp; access-controlled &middot; one sign-in covers trader &amp; paper</footer>
+  <footer>Encrypted &amp; access-controlled &middot; one sign-in covers trader &middot; paper &middot; shine</footer>
 </form></body></html>"""
 
 TOTP_FIELD = """<label for="c">Authenticator code</label>
@@ -424,9 +424,10 @@ def _cli_enroll():
     print("2) BACKUP CODES — each works once, store them safely:")
     for c in codes:
         print(f"      {c[:5]}-{c[5:]}")
-    print("\n3) Same authenticator entry for shine.sahmi.ae (optional):")
-    print(f"      sudo systemctl edit shine   ->  [Service] Environment=SHINE_TOTP_SECRET={secret}")
-    print("      sudo systemctl restart shine\n")
+    print("\n3) shine.sahmi.ae — if not done yet, put it behind this same login (one-time):")
+    print("      sudo bash /opt/logicon/spx-paper-trader/deploy/setup_shine_gate.sh")
+    print("   (standalone alternative: SHINE_TOTP_SECRET="
+          f"{secret} in shine's env)\n")
     print("Lost phone + backup codes:  gate.py --disable-totp\n")
 
 
