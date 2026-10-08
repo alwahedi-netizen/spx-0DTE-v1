@@ -704,13 +704,13 @@ def _reconcile_settlement(get_br, ledger, ds, hm):
         if (not day or day > ds or (day == ds and hm < "16:07")
                 or r["status"] not in ("OPEN", "CLOSING", "STUCK")):
             continue
-        brow = pe.band_row_for(day)
-        if not brow or not (brow.get("spx_close") or "").strip():
+        close = pe.spx_close_for(day)   # band 16:05 tick, else next session's prior_close
+        if close is None:
             continue
         if r.get("close_order_id") and day == ds:
             get_br(r["position_id"]).cancel(r["close_order_id"])
         v = pe.settle_value(r["side"], float(r["short_strike"]),
-                            float(r["long_strike"]), float(brow["spx_close"]))
+                            float(r["long_strike"]), close)
         pnl = net_pnl(float(r["credit_fill"] or 0), v, int(r["qty"]), 2)
         r.update(status="EXPIRED", close_fill=f"{v:.2f}", pnl_live=f"{pnl:.2f}",
                  exit_reason=r.get("exit_reason") or "EXPIRED",
