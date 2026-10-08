@@ -12,3 +12,23 @@ paper run 2026-10-08 | budget $5000 | gex positive
 [12:00] MNG SKIP/REGIME gex=positive
   2026-10-08-MEIC-12:00-CALL STOPPED @ 8.60 pnl -702
 paper run 2026-10-08 | budget $5000 | gex positive
+[12:30] METF SELL PUT 7765.0/7735.0 credit 1.95 stop 3.90
+[12:30] MEIC IRON_CONDOR credit 3.70 stop/side 3.70
+[12:30] MNG SKIP/REGIME gex=positive
+  2026-10-08-METF-12:30-PUT STOPPED @ 6.83 pnl -488
+  2026-10-08-MEIC-12:30-PUT STOPPED @ 6.83 pnl -488
+  2026-10-08-METF-11:30-PUT STOPPED @ 3.75 pnl -198
+  2026-10-08-MEIC-12:00-PUT STOPPED @ 3.75 pnl -215
+  2026-10-08-METF-10:00-PUT STOPPED @ 3.65 pnl -193
+paper run 2026-10-08 | budget $5000 | gex positive
+[13:00] MEIC IRON_CONDOR credit 3.40 stop/side 3.40
+[13:00] ORB BUY PUT 7755.0/7725.0 debit 6.95 stop 3.48
+[13:00] MNG SKIP/REGIME gex=positive
+[13:00] FLY IRON_FLY @ 7760 credit 18.25 TP 13.69 SL 22.81
+  2026-10-08-MEIC-13:00-PUT STOPPED @ 3.68 pnl -180
+paper run 2026-10-08 | budget $5000 | gex positive
+journal errata applied: 4 fixes
+paper run 2026-10-08 | budget $5000 | gex positive
+paper run 2026-10-08 | budget $5000 | gex positive
+  2026-10-08-FLY-PUT STOPPED @ 20.40 pnl -1073
+  2026-10-08-FLY-CALL STOPPED @ 2.62 pnl +594
