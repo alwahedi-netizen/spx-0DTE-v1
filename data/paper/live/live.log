@@ -5915,3 +5915,5 @@
 [2026-10-07T16:07:07-04:00] 2026-10-07-MEIC-14:00-CALL settled at intrinsic +0.00 pnl +208
 [2026-10-07T16:07:07-04:00] 2026-10-07-MEIC-14:30-CALL settled at intrinsic +0.00 pnl +158
 [2026-10-07T16:08:16-04:00] FLY DISARMED
+[2026-10-07T21:32:06-04:00] schwab audit …719: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/accountNumbers
+[2026-10-07T21:32:07-04:00] schwab audit …910: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/1D9F603788777667377D3FCBED414E510D13B74A6A525C2AE1E26FC26A7B273A?fields=positions
