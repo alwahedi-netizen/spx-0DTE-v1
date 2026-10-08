@@ -5918,3 +5918,9 @@
 [2026-10-07T21:32:06-04:00] schwab audit …719: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/accountNumbers
 [2026-10-07T21:32:07-04:00] schwab audit …910: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/1D9F603788777667377D3FCBED414E510D13B74A6A525C2AE1E26FC26A7B273A?fields=positions
 [2026-10-08T10:18:15-04:00] FLY ARMED on …910 (dry-run)
+[2026-10-08T12:00:16-04:00] 2026-10-08-MEIC-12:00-PUT OPEN submitted +1.55 (order 1008225283324)
+[2026-10-08T12:00:17-04:00] 2026-10-08-MEIC-12:00-CALL OPEN submitted +1.50 (order 1008225283326)
+[2026-10-08T12:00:48-04:00] 2026-10-08-MEIC-12:00-PUT FILLED @ +1.55 (limit 1.55)
+[2026-10-08T12:00:48-04:00] 2026-10-08-MEIC-12:00-CALL FILLED @ +1.55 (limit 1.50)
+[2026-10-08T12:17:42-04:00] 2026-10-08-MEIC-12:00-CALL CLOSE (STOPPED) submitted @ +8.70
+[2026-10-08T12:18:12-04:00] 2026-10-08-MEIC-12:00-CALL CLOSED @ +8.70 pnl -720

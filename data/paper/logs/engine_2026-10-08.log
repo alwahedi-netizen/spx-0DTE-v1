@@ -6,3 +6,9 @@ paper run 2026-10-08 | budget $5000 | gex positive
 [10:30] band 7770-7810 em 17.3 skew 0.817
 [10:45] METF SELL PUT 7760.0/7730.0 credit 1.70 stop 3.40
   2026-10-08-METF-10:45-PUT STOPPED @ 3.53 pnl -183
+[11:30] METF SELL PUT 7750.0/7720.0 credit 1.77 stop 3.55
+[11:30] ORB SKIP/TRIGGER (inside range)
+[12:00] MEIC IRON_CONDOR credit 3.17 stop/side 3.17
+[12:00] MNG SKIP/REGIME gex=positive
+  2026-10-08-MEIC-12:00-CALL STOPPED @ 8.60 pnl -702
+paper run 2026-10-08 | budget $5000 | gex positive
