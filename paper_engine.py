@@ -62,7 +62,11 @@ DEFAULTS = {
     "daily_risk_pct": 0.05,
     "skip_dates": [],
     "metf": {
-        "enabled": True,
+        "enabled": False,         # RETIRED 2026-10-08 after its full gate:
+                                  # 143 verticals / 27 sessions, -$1,293,
+                                  # PF 0.92, max drawdown -$5,912 — never
+                                  # proved an edge and carried the worst
+                                  # drawdown in the lab. See RETIRED.md.
         "slots": ["10:00", "10:45", "11:30", "12:30", "13:30", "14:15"],
         "ema_fast": 20, "ema_slow": 40, "ema_bar": "1min",
         "width": 30, "target_credit": 1.50, "min_credit": 1.25,
