@@ -452,6 +452,25 @@ def test_mng_pbw():
     assert pe.pbw_strikes({}, 7700.0, 0.20, 25, 30) is None
     ok("PBW returns None when no viable strikes (-> SKIP/DATA row)")
 
+    # v2 geometry (2026-10-08): on a realistic 0DTE curve — delta collapses
+    # geometrically OTM — the v1 structure (0.20-delta, +25/-30) prices
+    # NEGATIVE (why v1 logged SKIP/CREDIT every single session and never
+    # traded), while v2 (0.30-delta, +10/-40) prices a genuine credit.
+    assert (cfg["pbw"]["short_delta"], cfg["pbw"]["width_up"],
+            cfg["pbw"]["width_down"]) == (0.30, 10, 40)
+    def c2(k):
+        otm = max(0.0, 7700 - k)
+        px = 27.0 * 0.45 * (0.98 ** otm)
+        return {"bid": round(px - 0.05, 2), "ask": round(px + 0.05, 2),
+                "delta": -max(0.015, round(0.50 * (0.98 ** otm), 3))}
+    cmap2 = {float(k): c2(k) for k in range(7540, 7705, 5)}
+    v1 = pe.pbw_strikes(cmap2, 7700.0, 0.20, 25, 30)
+    v2 = pe.pbw_strikes(cmap2, 7700.0, cfg["pbw"]["short_delta"],
+                        cfg["pbw"]["width_up"], cfg["pbw"]["width_down"])
+    assert v1 is not None and v1["credit"] < cfg["pbw"]["min_credit"]
+    assert v2 is not None and v2["credit"] >= cfg["pbw"]["min_credit"]
+    ok("PBW v2 geometry prices a real credit where v1 priced a debit")
+
     # risk accounting: the credit row carries the STRUCTURE max loss
     credit = 0.55
     max_loss = 30 - 25 - credit          # width_down - width_up - credit
@@ -459,6 +478,32 @@ def test_mng_pbw():
     assert abs(r - max_loss * 100) < 1e-6
     assert pe.stop_risk(-3.0, -999.0, 1) == 0.0     # debit row: no stop risk
     ok("PBW risk budget = bounded structure loss; unreachable stops cost 0")
+
+
+# ── settlement close fallback (2026-10-08) ───────────────────────────────────
+def test_settle_fallback():
+    print("settlement close fallback")
+    days = [{"date": "2026-09-29", "prior_close": "7683.69"},
+            {"date": "2026-09-30", "prior_close": "7670.84"}]
+    assert pe._next_session_prior_close("2026-09-29", days) == 7670.84
+    assert pe._next_session_prior_close("2026-09-30", days) is None
+    # beyond a 3-day gap the next session's prior_close may belong to a
+    # DIFFERENT day — refuse rather than book a wrong settlement
+    far = [{"date": "2026-09-25", "prior_close": "7650.00"},
+           {"date": "2026-09-30", "prior_close": "7670.84"}]
+    assert pe._next_session_prior_close("2026-09-25", far) is None
+    # Fri -> Mon (3 calendar days) is the normal weekend hop — accepted
+    wk = [{"date": "2026-10-02", "prior_close": "7700.00"},
+          {"date": "2026-10-05", "prior_close": "7712.34"}]
+    assert pe._next_session_prior_close("2026-10-02", wk) == 7712.34
+    assert pe._next_session_prior_close("2026-10-02", []) is None
+    ok("missing 16:05 close falls back to next session's prior_close (<=3d)")
+
+    # errata table self-check: pnl_theo = credit * 100 for an OTM expiry
+    for pid, (_bad, pnl_t, pnl_a) in pe._ERRATA_20260929.items():
+        assert pid.startswith("2026-09-29-MEIC") and float(pnl_t) > 0
+        assert float(pnl_a) == float(pnl_t) - 5.0   # SIM fill slip 0.05/side
+    ok("2026-09-29 errata rows are the expired-worthless truth")
 
 
 # ── shared .env fallback for token refresh ───────────────────────────────────
@@ -583,7 +628,8 @@ def test_store():
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
-              test_flyr, test_live_meic, test_mng_pbw, test_env_fallback, test_store):
+              test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback,
+              test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
     sys.exit(0)

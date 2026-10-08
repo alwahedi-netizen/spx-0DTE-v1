@@ -104,9 +104,16 @@ DEFAULTS = {
     # (width_down - width_up - credit). No stops, no TP: rides to cash
     # settlement (per-side stop_levels are set unreachable; the credit row's
     # carries the structure's true max loss so the risk budget stays honest).
+    # v2 geometry (2026-10-08): v1 (0.20-delta, +25/-30) could NEVER clear
+    # min_credit on 0DTE — delta collapses so fast OTM that the 25-wide
+    # upper spread always cost more than the 30-wide lower one earned
+    # (every session logged SKIP/CREDIT at about -5). v2 moves the shorts
+    # to ~0.30 delta with a tight 10-wide upper wing and a 40-wide lower
+    # one, which prices as a genuine credit. v1 took ZERO trades, so the
+    # experiment's record starts clean here.
     "pbw": {
         "enabled": True, "entry_time": "10:15",
-        "short_delta": 0.20, "width_up": 25, "width_down": 30,
+        "short_delta": 0.30, "width_up": 10, "width_down": 40,
         "min_credit": 0.30, "contracts": 1,
     },
     # ORB — Opening Range Breakout, directional DEBIT vertical (long gamma:
@@ -556,6 +563,85 @@ def pending_orb_slots(cfg: dict, d: str) -> list:
 def band_row_for(d: str):
     rows = st.rows_for_date("band", d)
     return rows[0] if rows else None
+
+
+def _next_session_prior_close(d: str, day_rows: list):
+    """Pure helper: the earliest day.csv row AFTER d whose prior_close is
+    set — that prior_close IS d's settlement close, recorded the following
+    morning. Refused beyond a 3-calendar-day gap (Fri->Mon is 3): if the
+    next recorded session is further out, its prior_close may belong to a
+    different day and silence beats a wrong settlement print."""
+    from datetime import date as _date
+    cands = sorted(r["date"] for r in day_rows
+                   if (r.get("date") or "") > d
+                   and (r.get("prior_close") or "").strip())
+    if not cands:
+        return None
+    nd = cands[0]
+    try:
+        if (_date.fromisoformat(nd) - _date.fromisoformat(d)).days > 3:
+            return None
+    except ValueError:
+        return None
+    row = next(r for r in day_rows if r.get("date") == nd
+               and (r.get("prior_close") or "").strip())
+    return float(row["prior_close"])
+
+
+def spx_close_for(d: str):
+    """Settlement close for day d: the band row's 16:05 measurement when it
+    landed, else the next session's prior_close. A missed 16:05 tick must
+    never leave cash-settled positions unbookable forever — 2026-09-29 did
+    exactly that (deploy churn skipped the close; six live sides sat OPEN
+    and the paper tracker 'stopped' three expired calls at next-morning
+    gap marks)."""
+    brow = band_row_for(d)
+    if brow and (brow.get("spx_close") or "").strip():
+        return float(brow["spx_close"])
+    return _next_session_prior_close(d, st.read("day"))
+
+
+# One-time errata (found 2026-10-08): the 2026-09-29 16:05 settlement never
+# ran (band/late retirement deploy churn), so next morning's tracker booked
+# the three expired MEIC calls as STOPPED at Sep-30 gap-up marks and the
+# band row never got its close. Truth: SPX settled 7670.84 on 09-29 (the
+# 09-30 day row's prior_close) — every 09-29 side expired worthless.
+_ERRATA_20260929 = {
+    # position_id: (corrupt pnl_theo it still shows, true pnl_theo, true pnl_actual)
+    "2026-09-29-MEIC-12:00-CALL": ("-960.00", "155.00", "150.00"),
+    "2026-09-29-MEIC-12:30-CALL": ("-1115.00", "170.00", "165.00"),
+    "2026-09-29-MEIC-13:00-CALL": ("-1445.00", "180.00", "175.00"),
+}
+
+
+def heal_journal() -> int:
+    """Apply recorded errata to the journal. Idempotent — each fix only
+    fires while the corrupted value is still in place. Returns fixes made."""
+    fixed = 0
+    rows = {r["position_id"]: r for r in st.read("positions")}
+    for pid, (bad, pnl_t, pnl_a) in _ERRATA_20260929.items():
+        r = rows.get(pid)
+        if not r or (r.get("pnl_theo") or "").strip() != bad:
+            continue
+        st.update_position(pid, {
+            "exit_ts": "2026-09-29T16:05:00-04:00",
+            "exit_value_theo": "0.00", "exit_reason": "EXPIRED",
+            "pnl_theo": pnl_t}, allow=st.EXIT_COLS)
+        st.update_position(pid, {
+            "exit_value_actual": "0.00", "pnl_actual": pnl_a,
+            "fill_notes": "SIM fill | errata 2026-10-08: expired OTM, "
+                          "not stopped"}, allow=st.ACTUAL_COLS)
+        fixed += 1
+    brow = band_row_for("2026-09-29")
+    if brow and not (brow.get("spx_close") or "").strip():
+        close = _next_session_prior_close("2026-09-29", st.read("day"))
+        if close is not None:
+            st.update_band("2026-09-29", {
+                "spx_close": _fmt(close),
+                "contained": int(float(brow["lower"]) <= close
+                                 <= float(brow["upper"]))})
+            fixed += 1
+    return fixed
 
 
 def _fmt(x, nd=2):
@@ -1122,6 +1208,13 @@ def cmd_run(cfg: dict):
     if d.weekday() >= 5:
         print(f"{ds} is a weekend — nothing to do.")
         return
+
+    try:
+        healed = heal_journal()
+        if healed:
+            print(f"journal errata applied: {healed} fixes", flush=True)
+    except Exception as e:           # errata must never block the day loop
+        print(f"journal heal failed: {e}", flush=True)
 
     day_rows = st.rows_for_date("day", ds)
     if not day_rows:
