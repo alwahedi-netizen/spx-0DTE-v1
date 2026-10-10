@@ -506,6 +506,21 @@ def test_settle_fallback():
     ok("2026-09-29 errata rows are the expired-worthless truth")
 
 
+# ── shipped config must agree with the registry (2026-10-10) ────────────────
+def test_config_file():
+    print("paper_config.yaml agrees with the registry")
+    # load_config() with no path reads the REAL shipped yaml — this is the
+    # merged config the hub actually trades. A stale override here silently
+    # shadowed both the METF retirement and the PBW v2 re-spec for a day.
+    cfg = pe.load_config()
+    assert cfg["metf"]["enabled"] is False          # retired 2026-10-08
+    assert cfg["late"]["enabled"] is False          # retired 2026-09-29
+    assert cfg["band"]["trade_enabled"] is False    # retired 2026-09-29
+    assert (cfg["pbw"]["short_delta"], cfg["pbw"]["width_up"],
+            cfg["pbw"]["width_down"]) == (0.30, 10, 40)   # v2 geometry
+    ok("shipped config carries the retirements and PBW v2 — no shadowing")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -628,7 +643,7 @@ def test_store():
 if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
-              test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback,
+              test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback, test_config_file,
               test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")

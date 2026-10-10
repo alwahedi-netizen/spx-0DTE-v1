@@ -9,7 +9,10 @@ skip_dates: []                  # FOMC minutes, CPI — YYYY-MM-DD (FOMC decisio
                                 # are added automatically from trade_builder.FOMC_2026)
 
 metf:
-  enabled: true
+  enabled: false                  # RETIRED 2026-10-08 (owner). This file kept it
+                                  # alive one extra session (2026-10-09) by
+                                  # shadowing the DEFAULTS — final record in
+                                  # RETIRED.md includes that day.
   slots: ["10:00", "10:45", "11:30", "12:30", "13:30", "14:15"]
   ema_fast: 20
   ema_slow: 40
@@ -99,8 +102,8 @@ mng:                              # MEIC mechanics, NEGATIVE-GEX days only —
 pbw:                              # put broken-wing butterfly, 10:15, held to
   enabled: true                   # settlement; zero upside risk, small left tail
   entry_time: "10:15"
-  short_delta: 0.20
-  width_up: 25
-  width_down: 30
-  min_credit: 0.30
+  short_delta: 0.30               # v2 geometry 2026-10-10: v1 (0.20, +25/-30)
+  width_up: 10                    # could never price a credit on 0DTE and this
+  width_down: 40                  # file was shadowing the v2 DEFAULTS — every
+  min_credit: 0.30                # session logged SKIP/CREDIT ~-5. Zero v1 trades.
   contracts: 1

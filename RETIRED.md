@@ -42,11 +42,13 @@ trade history of every retired strategy remains in `data/paper/*.csv`
   future last-hour idea must NOT be a narrow condor.
 
 ## METF — EMA-trend credit verticals (6 slots, 10:00–14:15)
-- **Live in lab:** 2026-08-31 → 2026-10-08 (retired by owner instruction,
-  full gate served — the longest-running strategy in the lab)
-- **Final record:** 143 verticals / 27 sessions, **−$1,293**, PF 0.92,
-  win rate 59%, max drawdown **−$5,912** (worst in the lab),
-  best day +$1,123 / worst day −$2,655.
+- **Live in lab:** 2026-08-31 → 2026-10-09 (retired by owner instruction
+  2026-10-08; `paper_config.yaml` shadowed the retirement flag for one
+  extra session — 2026-10-09, +$1,145, its best day — before the config
+  was brought in line. The record below includes that day.)
+- **Final record:** 154 verticals / 28 sessions, **−$726**, PF 0.96,
+  win rate 60%, max drawdown **−$5,912** (worst in the lab),
+  best day +$1,145 / worst day −$2,655.
 - **Why it died:** the 20/40-EMA trend filter never earned its keep —
   59% of verticals won but the losers ran ~1.5× the winners, so 27
   sessions of grinding produced a PF stuck below 1.00 the whole time.
@@ -66,5 +68,8 @@ trade history of every retired strategy remains in `data/paper/*.csv`
 *Registry created 2026-09-29. Successors added the same day: MNG (MEIC
 mechanics gated to negative-GEX days) and PBW (10:15 put broken-wing
 butterfly held to settlement; re-specced to v2 geometry 2026-10-08 after
-v1 priced zero trades). METF retired 2026-10-08. ORB scheduled for the
-same review at its 6-week gate on 2026-10-10.*
+v1 priced zero trades — live from 2026-10-12 once the config shadow was
+cleared). METF retired 2026-10-08 (effective 2026-10-10). ORB's 6-week
+gate review ran 2026-10-10: +$126 / PF 1.02 over 22 sessions — misses the
+pre-registered retire condition on a technicality (one +$967 lottery day),
+verdict with the owner.*
