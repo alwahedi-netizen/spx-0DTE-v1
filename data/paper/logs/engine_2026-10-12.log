@@ -24,3 +24,36 @@ paper run 2026-10-12 | budget $5000 | gex positive
   2026-10-12-FLYR1-PUT STOPPED @ 7.33 pnl -420
   2026-10-12-FLYR1-CALL STOPPED @ 0.70 pnl +222
   2026-10-12-MEIC-13:30-PUT STOPPED @ 3.67 pnl -169
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+settle failed (retrying next cycle): Schwab auth failed: token refresh failed: HTTP 400
+settle failed (retrying next cycle): Schwab auth failed: token refresh failed: HTTP 400
+containment failed (retrying next cycle): Schwab auth failed: token refresh failed: HTTP 400
+settle failed (retrying next cycle): Schwab auth failed: token refresh failed: HTTP 400
+containment failed (retrying next cycle): Schwab auth failed: token refresh failed: HTTP 400
