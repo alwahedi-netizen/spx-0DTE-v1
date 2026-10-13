@@ -218,3 +218,6 @@ tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
   2026-10-13-MEIC-13:00-CALL STOPPED @ 5.50 pnl -297
 [14:30] MEIC IRON_CONDOR credit 4.42 stop/side 4.42
 [14:30] MNG SKIP/REGIME gex=unknown
+  2026-10-13-MEIC-14:30-PUT STOPPED @ 4.73 pnl -185
+  2026-10-12-MEIC-13:00-CALL STOPPED @ 4.08 pnl -208
+  2026-10-12-MEIC-13:30-CALL STOPPED @ 4.08 pnl -248
