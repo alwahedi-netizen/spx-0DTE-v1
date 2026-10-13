@@ -193,3 +193,14 @@ tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
 tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
 tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
 tracking cycle skipped: Schwab auth failed: token refresh failed: HTTP 400
+  2026-10-12-MEIC-14:00-CALL STOPPED @ 5.12 pnl -220
+  2026-10-12-MEIC-14:30-CALL STOPPED @ 5.12 pnl -388
+  2026-10-12-MEIC-14:30-PUT STOPPED @ 3.87 pnl -132
+[13:00] MEIC IRON_CONDOR credit 4.58 stop/side 4.58
+[13:00] ORB BUY PUT 7795.0/7765.0 debit 3.32 stop 1.66
+[13:00] MNG SKIP/REGIME gex=unknown
+[13:00] FLY IRON_FLY @ 7800 credit 10.10 TP 7.58 SL 12.63
+  2026-10-12-MEIC-12:30-PUT STOPPED @ 5.17 pnl -318
+  2026-10-12-MEIC-14:00-PUT STOPPED @ 5.17 pnl -388
+[13:30] MEIC IRON_CONDOR credit 4.22 stop/side 4.22
+[13:30] MNG SKIP/REGIME gex=unknown
