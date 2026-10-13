@@ -1,0 +1,6 @@
+waiting 296s for 09:00 ET pre-market step
+2026-10-13 13:00:01 | INFO     | Access token expired, refreshing...
+2026-10-13 13:00:01 | INFO     | Refreshing access token...
+2026-10-13 13:00:02 | ERROR    | Token refresh failed: 400
+2026-10-13 13:00:02 | ERROR    | Response: {"error":"unsupported_token_type","error_description":"400 Bad Request: \"{\"error_description\":\"Refresh token is invalid, expired or revoked\",\"error\":\"invalid_grant\"}\""}
+paper run 2026-10-13 | budget $5000 | gex unknown
