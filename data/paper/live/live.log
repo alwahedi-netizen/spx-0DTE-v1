@@ -6729,3 +6729,14 @@
 [2026-10-13T15:59:21-04:00] 2026-10-13-MEIC-14:30-CALL too late to close — leaving to settlement
 [2026-10-13T15:59:52-04:00] 2026-10-13-MEIC-13:00-PUT too late to close — leaving to settlement
 [2026-10-13T15:59:53-04:00] 2026-10-13-MEIC-13:30-PUT too late to close — leaving to settlement
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-12:00-CALL settled at intrinsic +0.00 pnl +233
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-12:30-CALL settled at intrinsic +0.00 pnl +238
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-13:00-PUT settled at intrinsic +0.00 pnl +183
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-13:00-CALL settled at intrinsic +0.00 pnl +198
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-13:30-CALL settled at intrinsic +0.00 pnl +153
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-14:00-PUT settled at intrinsic +0.00 pnl +148
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-14:30-PUT settled at intrinsic +0.00 pnl +248
+[2026-10-14T09:02:57-04:00] 2026-10-12-MEIC-14:30-CALL settled at intrinsic +0.45 pnl +83
+[2026-10-14T09:02:57-04:00] 2026-10-13-MEIC-13:00-PUT settled at intrinsic +0.00 pnl +198
+[2026-10-14T09:02:57-04:00] 2026-10-13-MEIC-13:30-PUT settled at intrinsic +0.00 pnl +173
+[2026-10-14T09:02:57-04:00] 2026-10-13-MEIC-14:30-CALL settled at intrinsic +0.00 pnl +153
