@@ -3,3 +3,8 @@ paper run 2026-10-14 | budget $5000 | gex positive
 [10:15] PBW BWB 7700/7740x2/7750 credit 1.83 maxloss 28.17
 [10:30] ORB BUY PUT 7750.0/7720.0 debit 6.90 stop 3.45
 [10:30] band 7735-7775 em 19.5 skew 1.010
+[12:00] MEIC IRON_CONDOR credit 3.90 stop/side 3.90
+[12:00] MNG SKIP/REGIME gex=positive
+  2026-10-14-MEIC-12:00-PUT STOPPED @ 4.18 pnl -233
+[12:30] MEIC IRON_CONDOR credit 3.35 stop/side 3.35
+[12:30] MNG SKIP/REGIME gex=positive
