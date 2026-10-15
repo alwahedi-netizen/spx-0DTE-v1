@@ -1,0 +1,3 @@
+id,lane,sym,entry_day,entry_px,exit_day,exit_px,qty,pnl,pnl_pct,note
+1,TR30,ATOM-USD,2026-10-09,2.040299892425537,,,0.0,,,SKIPPED — fully invested
+2,TR30,DOT-USD,2026-10-10,1.260200023651123,,,0.0,,,SKIPPED — fully invested
