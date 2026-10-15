@@ -26,7 +26,9 @@
     .labnav a:hover { color:#fff; }
     .labnav a.on { color:#fff; border-bottom-color:#c9b98f; }
     .labnav a small { font-size:10px; color:#7d8594; margin-left:5px; letter-spacing:.04em; }
-    .labnav a.on small { color:#c9b98f; }`;
+    .labnav a.on small { color:#c9b98f; }
+    .labnav .back { margin-left:auto; color:#c9b98f; border-bottom:none; }
+    .labnav .back:hover { color:#fff; }`;
   const st = document.createElement("style");
   st.textContent = css;
   document.head.appendChild(st);
@@ -36,6 +38,9 @@
   nav.innerHTML = `<div class="in"><span class="brand">Logicon Paper Lab</span>` +
     SECTIONS.map(s => `<a href="${s.path}" class="${s.path === here ? "on" : ""}"` +
       `${s.path === here ? ' aria-current="page"' : ""}>${s.label}` +
-      `${s.tag ? `<small>${s.tag}</small>` : ""}</a>`).join("") + `</div>`;
+      `${s.tag ? `<small>${s.tag}</small>` : ""}</a>`).join("") +
+    // one estate, one login (the gate cookie covers .sahmi.ae) — jump back
+    // to the live platform without retyping the address (owner 2026-10-15)
+    `<a class="back" href="https://trader.sahmi.ae/">Trader desk &rarr;</a></div>`;
   document.body.insertBefore(nav, document.body.firstChild);
 })();
