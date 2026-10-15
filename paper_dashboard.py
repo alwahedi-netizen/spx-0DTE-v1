@@ -42,6 +42,17 @@ except Exception as _e:        # pragma: no cover — deploy gate tests both
     se = sr = sst = sbt = None
     print(f"stocks sandbox disabled: {_e!r}", flush=True)
 
+# Crypto / FX / Commodities labs (moved from the trader 2026-10-15) — same
+# isolation: an import failure here leaves options + stocks untouched.
+try:
+    import cmd_lab
+    import crypto_lab
+    import fx_lab
+    import labs_runner
+except Exception as _e:        # pragma: no cover — tests_labs.py gates it
+    cmd_lab = crypto_lab = fx_lab = labs_runner = None
+    print(f"crypto/fx/commodities labs disabled: {_e!r}", flush=True)
+
 BASE_DIR = Path(__file__).resolve().parent
 HOST = os.environ.get("PAPER_HOST", "127.0.0.1")
 PORT = int(os.environ.get("PAPER_PORT", "5250"))
@@ -156,6 +167,27 @@ def _stocks_supervisor():
         time.sleep(20)
 
 
+# ── crypto / FX / commodities labs scheduler (in-process, idempotent jobs) ───
+
+def _labs_scheduler():
+    done = set()
+    while True:
+        try:
+            now = pe.now_et()
+            log_dir = labs_runner.OUT_DIR / "logs"
+
+            def log(msg, now=now, log_dir=log_dir):
+                os.makedirs(log_dir, exist_ok=True)
+                line = f"{now:%H:%M:%S} {msg}"
+                print(line, flush=True)
+                with open(log_dir / f"runner_{now:%Y-%m-%d}.log", "a", encoding="utf-8") as f:
+                    f.write(line + "\n")
+            labs_runner.run_due(now, done, log=log)
+        except Exception as e:
+            print(f"labs scheduler: {e}", flush=True)
+        time.sleep(30)
+
+
 # ── pages / API ──────────────────────────────────────────────────────────────
 # Sections mirror the trader's desks: Overview · Stocks & ETFs · Options ·
 # Crypto · FX · Commodities. /suggested stays as-is (iframed by the platform).
@@ -176,10 +208,18 @@ def stocks_page():
 
 
 @app.get("/crypto")
+def crypto_page():
+    return send_from_directory(app.static_folder, "cryptolab.html")
+
+
 @app.get("/fx")
+def fx_page():
+    return send_from_directory(app.static_folder, "fxlab.html")
+
+
 @app.get("/commodities")
-def planned_page():
-    return send_from_directory(app.static_folder, "planned.html")
+def commodities_page():
+    return send_from_directory(app.static_folder, "cmdlab.html")
 
 
 @app.get("/api/state")
@@ -515,6 +555,115 @@ def api_stocks_backtest_run():
     return jsonify({"started": _start_backtest()})
 
 
+# ── crypto / FX / commodities lab API (same paths the trader used) ──────────
+
+def _labs_guard():
+    if labs_runner is None:
+        return jsonify({"ok": False, "msg": "labs unavailable (import failed)"}), 503
+    return None
+
+
+def _lab_api(fn):
+    bad = _labs_guard()
+    if bad:
+        return bad
+    try:
+        r = fn()
+    except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)[:200]}), 500
+    if request.method == "POST":
+        try:
+            labs_runner.export()
+        except Exception:
+            pass
+    return jsonify(r)
+
+
+@app.get("/api/cryptolab/status")
+def api_cryptolab_status():
+    return _lab_api(lambda: crypto_lab.status())
+
+
+@app.post("/api/cryptolab/start")
+def api_cryptolab_start():
+    return _lab_api(lambda: crypto_lab.start())
+
+
+@app.post("/api/cryptolab/run")
+def api_cryptolab_run():
+    return _lab_api(lambda: crypto_lab.daily())
+
+
+@app.get("/api/cmdlab/status")
+def api_cmdlab_status():
+    return _lab_api(lambda: cmd_lab.status())
+
+
+@app.post("/api/cmdlab/start")
+def api_cmdlab_start():
+    return _lab_api(lambda: cmd_lab.start())
+
+
+@app.post("/api/cmdlab/run")
+def api_cmdlab_run():
+    return _lab_api(lambda: cmd_lab.daily())
+
+
+@app.get("/api/fxlab/status")
+def api_fxlab_status():
+    return _lab_api(lambda: fx_lab.status())
+
+
+@app.post("/api/fxlab/rates")
+def api_fxlab_rates():
+    body = request.get_json(force=True, silent=True) or {}
+
+    def _set():
+        n = fx_lab.set_rates(body)
+        return {"ok": n > 0, "n": n}
+    return _lab_api(_set)
+
+
+@app.post("/api/fxlab/start")
+def api_fxlab_start():
+    return _lab_api(lambda: fx_lab.start())
+
+
+@app.post("/api/fxlab/rebalance")
+def api_fxlab_rebalance():
+    return _lab_api(lambda: fx_lab.rebalance())
+
+
+def _lab_headline(mod, prefix):
+    """Cheap overview numbers straight from the journal (no price fetch)."""
+    import sqlite3
+    if not mod.DB.exists():
+        return {"started": False}
+    with sqlite3.connect(mod.DB) as c:
+        c.row_factory = sqlite3.Row
+        try:
+            st = [dict(r) for r in c.execute(f"SELECT * FROM {prefix}_state")]
+        except sqlite3.OperationalError:
+            return {"started": False}
+        if not st:
+            return {"started": False}
+        nav = {r["lane"]: r["nav"] for r in c.execute(
+            f"SELECT lane, nav FROM {prefix}_nav WHERE day = "
+            f"(SELECT MAX(day) FROM {prefix}_nav)")}
+        day = c.execute(f"SELECT MAX(day) FROM {prefix}_nav").fetchone()[0]
+        if prefix == "fxlab":
+            n_open = c.execute("SELECT COUNT(*) FROM fxlab_pos").fetchone()[0] + \
+                c.execute("SELECT COUNT(*) FROM fxlab_trpos").fetchone()[0]
+            closed = None
+        else:
+            n_open = c.execute(f"SELECT COUNT(*) FROM {prefix}_pos").fetchone()[0]
+            closed = c.execute(f"SELECT COUNT(*) FROM {prefix}_trades "
+                               f"WHERE exit_day IS NOT NULL").fetchone()[0]
+    return {"started": True, "lanes": nav, "as_of": day, "open": n_open,
+            "closed": closed, "start_nav": mod.START_NAV,
+            "since": min((r.get("started") or "") for r in st)[:10]}
+
+
 @app.get("/api/lab/overview")
 def api_lab_overview():
     """One call for the Overview page: each section's headline numbers."""
@@ -526,6 +675,14 @@ def api_lab_overview():
                                             "open": v["open"], "unrealized": v["unrealized"]}
                                         for k, v in s["strategies"].items()},
                          "weeks_running": s["weeks_running"]}
+    if labs_runner is not None:
+        for key, mod, prefix in (("crypto", crypto_lab, "cryptolab"),
+                                 ("fx", fx_lab, "fxlab"),
+                                 ("commodities", cmd_lab, "cmdlab")):
+            try:
+                out[key] = _lab_headline(mod, prefix)
+            except Exception as e:
+                out[key] = {"error": str(e)[:120]}
     return jsonify(out)
 
 
@@ -534,6 +691,8 @@ def main():
     threading.Thread(target=_stocks_supervisor, daemon=True).start()
     threading.Thread(target=_first_backtest, daemon=True).start()
     threading.Thread(target=_live_loop, daemon=True).start()
+    if labs_runner is not None:
+        threading.Thread(target=_labs_scheduler, daemon=True).start()
     print(f"SPX Paper Trader dashboard: http://{HOST}:{PORT}/", flush=True)
     app.run(host=HOST, port=PORT, debug=False, threaded=True)
 

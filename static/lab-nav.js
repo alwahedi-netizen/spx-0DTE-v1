@@ -7,9 +7,9 @@
     { path: "/",            label: "Overview" },
     { path: "/stocks",      label: "Stocks & ETFs", tag: "paper" },
     { path: "/options",     label: "Options",       tag: "live pilot" },
-    { path: "/crypto",      label: "Crypto",        tag: "planned" },
-    { path: "/fx",          label: "FX",            tag: "planned" },
-    { path: "/commodities", label: "Commodities",   tag: "planned" },
+    { path: "/crypto",      label: "Crypto",        tag: "paper" },
+    { path: "/fx",          label: "FX",            tag: "paper" },
+    { path: "/commodities", label: "Commodities",   tag: "paper" },
   ];
   const here = location.pathname.replace(/\/+$/, "") || "/";
   const css = `

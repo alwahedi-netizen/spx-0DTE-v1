@@ -61,8 +61,10 @@ else
 # Gate the deploy on the offline regression suite: a push that breaks the
 # rules engine must never reach the live journal.
 # tests_stocks.py gates the stocks sandbox the same way (STOCKS_SPEC.md §8).
+# tests_labs.py gates the crypto / FX / commodities labs (moved in 2026-10-15).
 if ! (cd "$CLONE" && python3 tests_paper.py >/tmp/paper-tests.log 2>&1 \
-      && python3 tests_stocks.py >>/tmp/paper-tests.log 2>&1); then
+      && python3 tests_stocks.py >>/tmp/paper-tests.log 2>&1 \
+      && python3 tests_labs.py >>/tmp/paper-tests.log 2>&1); then
   log "TESTS FAILED — deploy blocked. tail /tmp/paper-tests.log:"
   tail -5 /tmp/paper-tests.log
   exit 0
@@ -100,7 +102,11 @@ if [ -d "$APP_DIR/data/paper" ] || [ -d "$APP_DIR/data/stocks" ]; then
     rsync -a "$APP_DIR/data/paper/" "$CLONE/data/paper/"   # incl. engine logs (small, invaluable for remote diagnosis)
     if [ -d "$APP_DIR/data/stocks" ]; then                 # stocks journal; bars cache stays on the hub
       mkdir -p "$CLONE/data/stocks"
-      rsync -a --exclude 'cache' --exclude 'history' "$APP_DIR/data/stocks/" "$CLONE/data/stocks/"
+      rsync -a --exclude 'cache' --exclude 'history' --exclude 'history_tr' "$APP_DIR/data/stocks/" "$CLONE/data/stocks/"
+    fi
+    if [ -d "$APP_DIR/data/labs" ]; then                   # crypto/fx/commodities: CSV export only, never the SQLite
+      mkdir -p "$CLONE/data/labs"
+      rsync -a --exclude '*.sqlite' --exclude '*.sqlite-*' "$APP_DIR/data/labs/" "$CLONE/data/labs/"
     fi
     if [ -n "$(git -C "$CLONE" status --porcelain -- data)" ]; then
       git -C "$CLONE" add data

@@ -137,7 +137,9 @@ mirroring the trader's desks:
 | `/` | Overview: every sandbox's headline numbers + phase | — |
 | `/stocks` | **Stocks & ETFs**: MOM / PB90 / RSI2 (spec: `STOCKS_SPEC.md`) | paper |
 | `/options` | Options: the SPX 0DTE lab above (was `/`) | live pilot |
-| `/crypto`, `/fx`, `/commodities` | planned: what changes per asset class | planned |
+| `/crypto` | **Crypto Lab**: H5 / H10 (5★) · TR30 — 16 coins, 7 days a week | paper |
+| `/fx` | **FX Lab**: CARRY · CARRY-V · TSMOM · TR30 — G10 | paper (starts on owner's rate confirmation) |
+| `/commodities` | **Commodities Lab**: H21 / H63 (5★) · TR30 — 17 commodity ETFs | paper |
 
 `/suggested` is unchanged (the platform iframes it).
 
@@ -148,3 +150,14 @@ the shared grant, Yahoo fallback), `stocks_report.py` (scorecard + gates),
 `tests_paper.py`). The dashboard supervises `stocks_engine.py run` as its own
 process, 09:10–16:25 ET on NYSE trading days. Paper only — no stocks order path
 exists.
+
+Crypto / FX / Commodities labs (`crypto_lab.py`, `fx_lab.py`, `cmd_lab.py`)
+were built in the trader (combo-trader-tv) on 2026-10-02..06 and moved here
+on 2026-10-15 with their rules **verbatim and frozen** — only the journal
+moved, to `data/labs/labs.sqlite` (git-ignored; every table is exported to
+`data/labs/*.csv`, which the hourly snapshot commits). `labs_runner.py`
+replaces the trader's scheduler hooks (crypto 17:20 ET daily, commodities
+17:15 and FX NAV 17:10 ET weekdays, FX rebalance 07:15 ET first weekday) and
+does the one-time import from the trader's journal:
+`python3 labs_runner.py import /opt/logicon/combo-beta/logicon_journal.sqlite`.
+`tests_labs.py` joins the deploy gate. Yahoo marks only, paper only.

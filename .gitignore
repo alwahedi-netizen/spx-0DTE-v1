@@ -12,3 +12,9 @@ __pycache__/
 data/stocks/cache/
 # backtest price history cache (re-downloaded; results in data/stocks/backtests ARE committed)
 data/stocks/history/
+data/stocks/history_tr/
+
+# crypto / FX / commodities labs: the SQLite journal stays on the hub;
+# labs_runner exports every table to data/labs/*.csv, and THOSE are committed.
+data/labs/*.sqlite
+data/labs/*.sqlite-*

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logicon — FX Lab</title>
+<link rel="stylesheet" href="/static/labdesk.css">
+<style>
+  .eyebrow{font-family:var(--f-label);font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--green-deep);margin:0 0 .15rem}
+  h1{margin:0;font-family:var(--f-disp);font-weight:500;font-size:clamp(1.35rem,4vw,1.8rem);color:var(--ink)}
+  .sub{color:var(--ink-mut);font-size:.92rem;max-width:80ch;margin:.3rem 0 1rem}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem;margin-bottom:1rem}
+  .tile{background:var(--surface);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--shadow);padding:.9rem 1rem}
+  .tile .v{font-family:var(--f-disp);font-weight:300;font-size:1.7rem;color:var(--ink)}
+  .tile .l{font-family:var(--f-label);font-weight:600;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mut);margin-top:.4rem}
+  .tile .m{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-faint)}
+  .pos{color:#4f7a3f}.neg{color:#b23b2e}
+  table{border-collapse:collapse;width:100%}
+  th{font-family:var(--f-label);font-weight:600;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);text-align:left;padding:.5rem .55rem;border-bottom:1px solid var(--bd)}
+  td{font-family:var(--f-mono);font-size:12px;color:var(--ink);padding:.5rem .55rem;border-bottom:1px solid var(--div)}
+  .chipbtn{background:var(--raised);border:1px solid var(--bd-strong);border-radius:999px;padding:.4em 1.1em;font-family:var(--f-label);font-weight:600;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-mut);cursor:pointer}
+  .chipbtn:hover{border-color:var(--green);color:var(--green-deep)}
+  .cta{background:var(--cta);color:#fff;border:0}
+  .cta:hover{background:var(--cta-h);color:#fff}
+  .rates input{width:64px;background:var(--raised);border:1px solid var(--bd-strong);border-radius:8px;padding:.3em .45em;font-family:var(--f-mono);font-size:12px;color:var(--ink)}
+  .warn{color:#b23b2e;font-family:var(--f-mono);font-size:11.5px}
+  .oknote{color:#4f7a3f;font-family:var(--f-mono);font-size:11.5px}
+  .mono{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-mut)}
+</style>
+</head>
+<body>
+<script src="/static/lab-nav.js"></script>
+<main class="dk">
+  <div>
+    <p class="eyebrow">Paper falsification test · rules frozen · verdict at 12 months</p>
+    <h1>FX Lab</h1>
+    <p class="sub">Four frozen rule-sets on $10,000 of virtual money each:
+      <b>CARRY</b> (long the 3 highest-rate G10 currencies, short the 3 lowest, inverse-vol legs),
+      <b>CARRY-V</b> (same, but a leg fighting its own 12-month trend sits the month in cash),
+      <b>TSMOM</b> (each G10 currency long/short by the sign of its 12-1 month return, gross 2×) and
+      <b>TR30</b> (the owner lane, daily: buy a currency within 1% of its 30-bar high vs USD,
+      exit 15% below the peak since entry — trailing, no time limit).
+      Monthly rebalance in the Paper Lab (TR30 runs daily), 4–8bp costs, Yahoo marks. A lane survives the
+      verdict only if net&nbsp;&gt;&nbsp;0 and Sharpe&nbsp;&gt;&nbsp;0.5. Nothing routes to a broker.</p>
+  </div>
+
+  <section class="dk-sec" id="startSec" style="display:none">
+    <h2>Before the clock starts</h2>
+    <p class="mono" id="startMsg">Confirm the G10 policy rates below (seeded values are unverified), save them once, then press Start.</p>
+    <button class="chipbtn cta" id="startBtn" onclick="startLab()">Start the lab — first rebalance now</button>
+  </section>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section class="dk-sec">
+    <h2>Policy rates <span class="mono">(data, not code — update when a central bank moves)</span></h2>
+    <div class="rates" id="rates"></div>
+    <div style="margin-top:.6rem;display:flex;gap:.7rem;align-items:center">
+      <button class="chipbtn" onclick="saveRates()">Save rates</button>
+      <span id="ratesMsg" class="mono"></span>
+    </div>
+  </section>
+
+  <section class="dk-sec">
+    <h2>Open legs</h2>
+    <div id="positions" class="mono">—</div>
+  </section>
+
+  <section class="dk-sec">
+    <h2>Order log <span class="mono">(latest 60)</span></h2>
+    <div id="orders" class="mono">—</div>
+    <div style="margin-top:.7rem">
+      <button class="chipbtn" onclick="manualRebalance()">Rebalance now (monthly guard)</button>
+      <span id="rbMsg" class="mono"></span>
+    </div>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let ST=null;
+function fmt(n,d=2){return n==null?'—':(+n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+async function refresh(){
+  const j=await (await fetch('/api/fxlab/status',{cache:'no-store'})).json();
+  ST=j;
+  $('startSec').style.display=j.started?'none':'';
+  const L=j.lanes||{};
+  $('tiles').innerHTML=Object.keys(L).map(k=>{
+    const d=L[k], r=d.ret_pct;
+    return `<div class="tile"><div class="v ${r>0?'pos':r<0?'neg':''}">${d.nav==null?'—':'$'+fmt(d.nav,0)}</div>
+      <div class="l">${k}</div>
+      <div class="m">${r==null?'not started':(r>=0?'+':'')+fmt(r)+'% since start · rebal ${""}'.replace('${""}',(d.last_rebalance||'—').slice(0,10))}</div></div>`;
+  }).join('');
+  const R=j.rates||{};
+  $('rates').innerHTML=Object.keys(R).map(c=>
+    `<span style="display:inline-flex;gap:.3rem;align-items:center;margin:0 .9rem .5rem 0">
+      <b class="mono" style="color:var(--ink)">${c}</b>
+      <input id="rate_${c}" value="${R[c].rate}" ${R[c].verified?'':'style="border-color:#b23b2e"'}>
+      <span class="mono">%</span></span>`).join('')
+    +(j.rates_verified?'<div class="oknote">✓ rates confirmed by owner</div>'
+                      :'<div class="warn">⚠ seeded values — verify each one, then Save (Start is blocked until then)</div>');
+  const pos=j.positions||[];
+  $('positions').innerHTML=pos.length?`<table><thead><tr><th>Lane</th><th>CCY</th><th>Side</th>
+    <th style="text-align:right">Notional</th><th style="text-align:right">Entry</th>
+    <th style="text-align:right">Last</th><th style="text-align:right">P&L</th></tr></thead><tbody>`+
+    pos.map(p=>`<tr><td>${p.lane}</td><td><b>${p.ccy}</b></td><td>${p.notional>=0?'LONG':'SHORT'}</td>
+      <td style="text-align:right">$${fmt(Math.abs(p.notional),0)}</td>
+      <td style="text-align:right">${fmt(p.entry_px,4)}</td>
+      <td style="text-align:right">${fmt(p.last_px,4)}</td>
+      <td style="text-align:right" class="${(p.pnl??0)>=0?'pos':'neg'}">${p.pnl==null?'—':'$'+fmt(p.pnl)}</td></tr>`).join('')+'</tbody></table>'
+    :'no open legs';
+  const od=j.orders||[];
+  $('orders').innerHTML=od.length?`<table><thead><tr><th>When</th><th>Lane</th><th>CCY</th><th>Action</th>
+    <th style="text-align:right">Notional</th><th style="text-align:right">Px</th><th>Note</th></tr></thead><tbody>`+
+    od.map(o=>`<tr><td>${(o.ts||'').slice(0,16).replace('T',' ')}</td><td>${o.lane}</td><td>${o.ccy}</td>
+      <td>${o.action}</td><td style="text-align:right">${o.notional?'$'+fmt(o.notional,0):''}</td>
+      <td style="text-align:right">${o.px?fmt(o.px,4):''}</td><td style="font-size:10px;color:var(--ink-faint)">${o.note||''}</td></tr>`).join('')+'</tbody></table>'
+    :'none yet';
+}
+async function saveRates(){
+  const body={};
+  Object.keys(ST.rates||{}).forEach(c=>{const v=parseFloat($('rate_'+c).value);if(!isNaN(v))body[c]=v;});
+  const j=await (await fetch('/api/fxlab/rates',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})).json();
+  $('ratesMsg').textContent=j.ok?`✓ saved ${j.n} rates`:(j.msg||'error');
+  refresh();
+}
+async function startLab(){
+  if(!confirm('Start the FX Lab? Rules freeze now; first rebalance runs immediately; verdict in 12 months.'))return;
+  $('startBtn').disabled=true;
+  const j=await (await fetch('/api/fxlab/start',{method:'POST'})).json();
+  $('startMsg').textContent=j.ok?'started ✓':(j.msg||'error');
+  $('startBtn').disabled=false;
+  refresh();
+}
+async function manualRebalance(){
+  const j=await (await fetch('/api/fxlab/rebalance',{method:'POST'})).json();
+  $('rbMsg').textContent=j.ok?(j.msg||'rebalanced ✓'):(j.msg||'error');
+  refresh();
+}
+refresh();
+</script>
+</body>
+</html>

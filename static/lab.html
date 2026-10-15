@@ -106,21 +106,24 @@
       <div class="phase-l"><span>spec</span><span>paper</span><span>gates</span><span>live</span></div>
     </a>
     <a class="desk" href="/crypto">
-      <div class="top"><h2>Crypto</h2><span class="badge">planned</span></div>
-      <p>24/7 market: no session, no close. Needs its own data source (Schwab has no spot crypto).</p>
-      <div class="phase" data-p="0"><span></span><span></span><span></span><span></span></div>
+      <div class="top"><h2>Crypto</h2><span class="badge warn" id="cryB">paper</span></div>
+      <p>16 coins, 7 days a week · H5 / H10 (5★ signal, sell after 5 / 10 days) · TR30 (30-day breakout, 15% trailing stop) — $10k each, verdict at 12 months</p>
+      <div id="cry"><div class="kv"><span>Loading…</span></div></div>
+      <div class="phase" data-p="2"><span></span><span></span><span></span><span></span></div>
       <div class="phase-l"><span>spec</span><span>paper</span><span>gates</span><span>live</span></div>
     </a>
     <a class="desk" href="/fx">
-      <div class="top"><h2>FX</h2><span class="badge">planned</span></div>
-      <p>24/5 market: carry and trend on the majors. Sized in pips, with the swap in P&amp;L.</p>
-      <div class="phase" data-p="0"><span></span><span></span><span></span><span></span></div>
+      <div class="top"><h2>FX</h2><span class="badge warn" id="fxB">paper</span></div>
+      <p>G10 currencies · CARRY · CARRY-V (carry + trend veto) · TSMOM (12-1 trend) · TR30 — $10k each, verdict at 12 months</p>
+      <div id="fx"><div class="kv"><span>Loading…</span></div></div>
+      <div class="phase" data-p="2"><span></span><span></span><span></span><span></span></div>
       <div class="phase-l"><span>spec</span><span>paper</span><span>gates</span><span>live</span></div>
     </a>
     <a class="desk" href="/commodities">
-      <div class="top"><h2>Commodities</h2><span class="badge">planned</span></div>
-      <p>Futures trend following (/CL /GC /NG …): contract rolls, multipliers and margin.</p>
-      <div class="phase" data-p="0"><span></span><span></span><span></span><span></span></div>
+      <div class="top"><h2>Commodities</h2><span class="badge warn" id="cmdB">paper</span></div>
+      <p>17 commodity ETFs · H21 / H63 (5★ signal, sell after 21 / 63 days) · TR30 (30-day breakout, 15% trailing stop) — $10k each, verdict at 12 months</p>
+      <div id="cmd"><div class="kv"><span>Loading…</span></div></div>
+      <div class="phase" data-p="2"><span></span><span></span><span></span><span></span></div>
       <div class="phase-l"><span>spec</span><span>paper</span><span>gates</span><span>live</span></div>
     </a>
   </div>
@@ -148,6 +151,20 @@ async function load(){
     `<div class="kv"><span>Paper P&amp;L, all time (closed)</span><b>${money(all.TOTAL)}</b></div>` +
     `<div class="kv"><span>Live armed</span><b>${armed.length ? armed.join(", ") : "none"}</b></div>` +
     `<div class="kv"><span>Live realized today</span><b>${money(live.realized)}</b></div>`;
+  for (const [key, el] of [["crypto", "cry"], ["fx", "fx"], ["commodities", "cmd"]]) {
+    const L = j[key];
+    if (!L || L.error) { $(el).innerHTML = `<div class="kv"><span class="neg">lab unavailable</span></div>`; continue; }
+    if (!L.started) {
+      $(el).innerHTML = `<div class="kv"><span>Not started</span><b class="mut">${key === "fx" ? "confirm rates, press Start" : "awaiting import"}</b></div>`;
+      $(el + "B").textContent = "not started"; $(el + "B").className = "badge";
+      continue;
+    }
+    const lanes = Object.entries(L.lanes || {});
+    $(el).innerHTML = lanes.map(([k, nav]) =>
+        `<div class="kv"><span>${k}</span><b>${money(nav - L.start_nav)}</b></div>`).join("") +
+      `<div class="kv"><span>Open${L.closed == null ? "" : " · closed"}</span><b>${L.open}${L.closed == null ? "" : " · " + L.closed}</b></div>` +
+      `<div class="kv"><span class="mut">since ${L.since} · marked ${L.as_of || "–"}</span><b></b></div>`;
+  }
   const s = j.stocks;
   if (!s){ $("stk").innerHTML = `<div class="kv"><span class="neg">stocks sandbox unavailable</span></div>`; return; }
   const st = Object.values(s.strategies);
