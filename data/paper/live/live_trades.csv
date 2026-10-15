@@ -202,3 +202,5 @@ position_id,side,short_strike,long_strike,expiry,qty,status,order_id,credit_limi
 2026-10-14-MEIC-14:00-CALL,CALL,7725.0,7755.0,2026-10-14,1,SKIPPED,1008297680537,1.70,,,,,,,2026-10-14T14:00:11-04:00,,open REJECTED: The order is not an opening transaction. It will decrease or close an existing o
 2026-10-14-MEIC-14:30-PUT,PUT,7690.0,7660.0,2026-10-14,1,EXPIRED,1008298581196,1.85,2.30,TP,1008300967553,0.10,0.00,227.64,2026-10-14T14:30:33-04:00,2026-10-14T16:07:08-04:00,"rung0|rejx0 | too late to close, will cash-settle | cash settle"
 2026-10-14-MEIC-14:30-CALL,CALL,7725.0,7755.0,2026-10-14,1,SKIPPED,1008298581198,1.70,,,,,,,2026-10-14T14:30:34-04:00,,open REJECTED: The order is not an opening transaction. It will decrease or close an existing o
+2026-10-15-MEIC-12:00-PUT,PUT,7700.0,7670.0,2026-10-15,1,OPEN,1008311723899,1.90,2.00,,,,,,2026-10-15T12:00:33-04:00,,
+2026-10-15-MEIC-12:00-CALL,CALL,7760.0,7790.0,2026-10-15,1,OPEN,1008311723901,1.90,1.90,,,,,,2026-10-15T12:00:33-04:00,,
