@@ -521,6 +521,36 @@ def test_config_file():
     ok("shipped config carries the retirements and PBW v2 — no shadowing")
 
 
+# ── MEP / MPM / OCB (2026-10-15 additions, born from the journal) ───────────
+def test_new_systems():
+    print("MEP / MPM / OCB")
+    cfg = pe.load_config()
+    for k in ("mep", "mpm", "ocb"):
+        assert cfg[k]["enabled"], k
+    assert cfg["mep"]["sides"] == ["PUT"] and cfg["mpm"]["sides"] == ["PUT"]
+    assert cfg["mep"]["slots"] == cfg["meic"]["slots"]       # clean A/B
+    assert cfg["mpm"]["slots"] == ["10:00", "10:30", "11:00"]
+    assert cfg["mep"]["stop_mult"] == 2.0 == cfg["mpm"]["stop_mult"]
+    assert cfg["ocb"]["sides"] == ["CALL"]
+    assert cfg["ocb"]["check_slots"] == cfg["orb"]["check_slots"]
+    # MEIC itself is untouched: no sides filter, stop_mult defaults to 1.0
+    assert "sides" not in cfg["meic"] and "stop_mult" not in cfg["meic"]
+    ok("MEP mirrors MEIC's put half; MPM is the morning ladder; OCB = ORB calls")
+
+    # single-side stop matches the condor's management: 2 x own credit
+    # reproduces the per-side stop MEIC sets at the condor's TOTAL credit
+    assert abs(1.55 * 2.0 - (1.55 + 1.55)) < 1e-9
+    r = pe.stop_risk(1.55, 1.55 * 2.0, 1)
+    assert abs(r - 155.0) < 1e-6
+    ok("stop_mult 2.0 reproduces MEIC's effective per-side stop distance")
+
+    # OCB day-consumption semantics: a SIDE skip ends the day like a trade
+    assert pe.orb_traded("2099-01-01", "OCB") is False
+    assert pe.pending_orb_slots(cfg, "2099-01-01", "OCB") == cfg["ocb"]["check_slots"]
+    assert pe.pending_condor_slots(cfg, "2099-01-01", "MEP") == cfg["mep"]["slots"]
+    ok("pending helpers resolve the new strategies; empty day = full schedule")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -644,6 +674,7 @@ if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
               test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback, test_config_file,
+              test_new_systems,
               test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")

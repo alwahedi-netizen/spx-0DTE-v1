@@ -130,6 +130,45 @@ DEFAULTS = {
         "range_end": "10:00", "check_slots": ["10:30", "11:30", "13:00"],
         "width": 30, "stop_loss_frac": 0.50, "contracts": 1,
     },
+    # ── 2026-10-15 additions, born from the lab's own journal ────────────
+    # MEP — MEIC's PUT half alone. Evidence: 140 MEIC put sides +$3,490 /
+    # PF 1.28 vs the 140 call sides -$1,147 / PF 0.93 — the call half has
+    # been pure drag all period. Same slots, credits and TP as MEIC;
+    # stop = stop_mult x own credit (2.0 reproduces MEIC's per-side stop,
+    # which equals the condor's TOTAL credit) so the management is
+    # identical and the A/B against MEIC is clean. HYPOTHESIS: the put
+    # edge stands alone. Pre-registered caveat: this is short left-tail
+    # risk measured in a grind-up tape — a down regime is exactly what
+    # the test must survive before any live talk.
+    "mep": {
+        "enabled": True,
+        "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
+        "sides": ["PUT"], "wing_width": 30,
+        "side_credit": 1.50, "min_side_credit": 1.25, "stop_mult": 2.0,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
+    # MPM — Morning Put ladder. The outside-well idea (tastylive 0DTE
+    # studies: early-session short premium beats later entries at the
+    # same win rate) expressed in the lab's proven put-spread structure.
+    # Same management as MEP, morning slots. HYPOTHESIS: the morning
+    # window pays at least as well as the afternoon for put spreads.
+    "mpm": {
+        "enabled": True,
+        "slots": ["10:00", "10:30", "11:00"],
+        "sides": ["PUT"], "wing_width": 30,
+        "side_credit": 1.50, "min_side_credit": 1.25, "stop_mult": 2.0,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
+    # OCB — ORB, upside breakouts only. Evidence: ORB call breakouts
+    # +$3,678 / PF 2.45 (11 trades) vs put breakouts -$1,686 / PF 0.63
+    # (14). A first breakout DOWN consumes the day (SKIP/SIDE), so OCB's
+    # record equals exactly the call subset of ORB — clean attribution.
+    "ocb": {
+        "enabled": True,
+        "range_end": "10:00", "check_slots": ["10:30", "11:30", "13:00"],
+        "sides": ["CALL"], "width": 30, "stop_loss_frac": 0.50,
+        "contracts": 1,
+    },
     # FLY — 13:00 ATM iron butterfly ("pin" trade): sells the straddle with
     # wings, managed as ONE structure: TP at tp_frac of credit, stop at
     # sl_frac loss (whole-fly value vs whole-fly credit).
@@ -553,15 +592,19 @@ def flyr_due(cfg: dict, d: str) -> bool:
                               fl.get("reload_until", "14:45"))
 
 
-def orb_traded(d: str) -> bool:
-    return any(r.get("action") == "BUY_VERTICAL" for r in st.signals_for(d, "ORB"))
+def orb_traded(d: str, strat: str = "ORB") -> bool:
+    """The day is consumed by a trade, or (OCB) by a first breakout in a
+    direction the strategy doesn't take (SKIP/SIDE)."""
+    return any(r.get("action") == "BUY_VERTICAL"
+               or r.get("skip_reason") == "SIDE"
+               for r in st.signals_for(d, strat))
 
 
-def pending_orb_slots(cfg: dict, d: str) -> list:
-    if orb_traded(d):
+def pending_orb_slots(cfg: dict, d: str, strat: str = "ORB") -> list:
+    if orb_traded(d, strat):
         return []
-    done = {r.get("slot") for r in st.signals_for(d, "ORB")}
-    return [x for x in cfg["orb"]["check_slots"] if x not in done]
+    done = {r.get("slot") for r in st.signals_for(d, strat)}
+    return [x for x in cfg[strat.lower()]["check_slots"] if x not in done]
 
 
 def band_row_for(d: str):
@@ -878,14 +921,20 @@ def do_band_entry(cfg: dict, day_row: dict, brow: dict, chain: dict, expiry: str
 def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
                  strat: str = "MEIC"):
     """Symmetric iron condor by per-side credit target; stop per side = the
-    condor's total credit ("breakeven" management). Used by MEIC and LATE."""
+    condor's total credit ("breakeven" management). Used by MEIC, MNG and
+    LATE. A strategy whose config lists `sides` trades only those (MEP/MPM
+    sell the PUT spread alone); `stop_mult` then scales its own credit to
+    the stop so single-side management matches the condor's (2.0 x one
+    side's credit == the condor's total-credit stop)."""
     m = cfg[strat.lower()]
     d = day_row["date"]
     spot = spot_of(chain)
-    base = dict(slot=slot, strategy=strat, structure="IRON_CONDOR",
+    wanted = tuple(s.upper() for s in m.get("sides", ("PUT", "CALL")))
+    structure = "IRON_CONDOR" if len(wanted) == 2 else f"{wanted[0]}_SPREAD"
+    base = dict(slot=slot, strategy=strat, structure=structure,
                 spot=_fmt(spot), width=m["wing_width"])
     sides = []
-    for side in ("PUT", "CALL"):
+    for side in wanted:
         cmap = contract_map(chain, expiry, side.lower())
         pick, skip = walk_strikes(cmap, side, spot, m["wing_width"],
                                   m["side_credit"], m["min_side_credit"])
@@ -897,7 +946,7 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
         sides.append(dict(side=side, **pick))
 
     total = sum(x["credit"] for x in sides)
-    stop_level = total
+    stop_level = total * float(m.get("stop_mult", 1.0))
     new_risk = sum(stop_risk(x["credit"], stop_level, m["contracts"]) for x in sides)
     budget = float(day_row.get("risk_budget") or 0)
     if not risk_ok(open_stop_risk(), new_risk, budget):
@@ -907,11 +956,15 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
         return
 
     ts = iso(now_et())
-    p0, p1 = sides
+    p0 = sides[0]
+    p1 = sides[1] if len(sides) > 1 else None
     st.append("signals", _signal_row(
-        cfg, day_row, ts=ts, action="SELL_CONDOR", side="BOTH",
+        cfg, day_row, ts=ts,
+        action="SELL_CONDOR" if p1 else "SELL_VERTICAL",
+        side="BOTH" if p1 else p0["side"],
         short_strike=p0["short_strike"], long_strike=p0["long_strike"],
-        short_strike_2=p1["short_strike"], long_strike_2=p1["long_strike"],
+        short_strike_2=p1["short_strike"] if p1 else "",
+        long_strike_2=p1["long_strike"] if p1 else "",
         credit_theo=_fmt(total), short_delta=_fmt(p0["short_delta"], 3),
         short_mid=_fmt(p0["short_mid"]), long_mid=_fmt(p0["long_mid"]),
         stop_level=_fmt(stop_level), **base))
@@ -927,30 +980,41 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
             st.update_position(pid, {
                 "credit_actual": _fmt(sim_entry_credit(x["credit"], e["entry_slippage"])),
                 "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
-    print(f"[{slot}] {strat} IRON_CONDOR credit {total:.2f} stop/side {stop_level:.2f}",
+    print(f"[{slot}] {strat} {structure} credit {total:.2f} stop/side {stop_level:.2f}",
           flush=True)
 
 
 def do_orb_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
-                or_high: float, or_low: float):
+                or_high: float, or_low: float, strat: str = "ORB"):
     """ORB: first close beyond the 09:30-10:00 range (checked at fixed slots)
     buys a debit vertical in the breakout direction; stop at
-    stop_loss_frac of the debit; hold to expiry. Once per day."""
-    o = cfg["orb"]
+    stop_loss_frac of the debit; hold to expiry. Once per day. A strategy
+    whose config lists `sides` (OCB: CALL only) trades only breakouts in
+    those directions — the first breakout the other way CONSUMES the day
+    (SKIP/SIDE), so its record is exactly that subset of ORB's."""
+    o = cfg[strat.lower()]
     d = day_row["date"]
     spot = spot_of(chain)
     direction = orb_signal(spot, or_high, or_low)
-    base = dict(slot=slot, strategy="ORB", spot=_fmt(spot), width=o["width"],
+    base = dict(slot=slot, strategy=strat, spot=_fmt(spot), width=o["width"],
                 band_lower=_fmt(or_low), band_upper=_fmt(or_high))
     if direction is None:
         st.append("signals", _signal_row(cfg, day_row, action="SKIP",
                                          skip_reason="TRIGGER", **base))
-        print(f"[{slot}] ORB SKIP/TRIGGER (inside range)", flush=True)
+        print(f"[{slot}] {strat} SKIP/TRIGGER (inside range)", flush=True)
+        return
+    allowed = tuple(s.upper() for s in o.get("sides", ("PUT", "CALL")))
+    if direction not in allowed:
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="SIDE", side=direction,
+                                         **base))
+        print(f"[{slot}] {strat} SKIP/SIDE ({direction} breakout — day done)",
+              flush=True)
         return
     cmap = contract_map(chain, expiry, direction.lower())
     pick = pick_debit_vertical(cmap, direction, spot, o["width"])
     if pick is None:
-        _skip_row(cfg, day_row, "ORB", slot, "DATA", "no debit vertical quotes")
+        _skip_row(cfg, day_row, strat, slot, "DATA", "no debit vertical quotes")
         return
     debit = pick["debit"]
     credit = -debit                                   # sign convention
@@ -960,7 +1024,7 @@ def do_orb_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
     if not risk_ok(open_stop_risk(), new_risk, budget):
         st.append("signals", _signal_row(cfg, day_row, action="SKIP",
                                          skip_reason="RISK", side=direction, **base))
-        print(f"[{slot}] ORB SKIP/RISK", flush=True)
+        print(f"[{slot}] {strat} SKIP/RISK", flush=True)
         return
 
     ts = iso(now_et())
@@ -970,9 +1034,9 @@ def do_orb_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
         short_strike=pick["sell"], long_strike=pick["buy"],
         credit_theo=_fmt(credit), short_mid=_fmt(pick["sell_mid"]),
         long_mid=_fmt(pick["buy_mid"]), stop_level=_fmt(stop_level), **base))
-    pid = f"{d}-ORB-{direction}"
+    pid = f"{d}-{strat}-{direction}"
     st.append("positions", {
-        "position_id": pid, "signal_ts": ts, "strategy": "ORB",
+        "position_id": pid, "signal_ts": ts, "strategy": strat,
         "side": direction, "contracts": o["contracts"],
         "short_strike": pick["sell"], "long_strike": pick["buy"],
         "credit_theo": _fmt(credit), "stop_level": _fmt(stop_level)})
@@ -981,7 +1045,7 @@ def do_orb_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
         st.update_position(pid, {
             "credit_actual": _fmt(sim_entry_credit(credit, e["entry_slippage"])),
             "fill_notes": "SIM fill"}, allow=st.ACTUAL_COLS)
-    print(f"[{slot}] ORB BUY {direction} {pick['buy']}/{pick['sell']} "
+    print(f"[{slot}] {strat} BUY {direction} {pick['buy']}/{pick['sell']} "
           f"debit {debit:.2f} stop {abs(stop_level):.2f}", flush=True)
 
 
@@ -1142,6 +1206,8 @@ def do_tracking(cfg: dict, chain: dict, expiry: str):
     tps = {"BAND": cfg["band"]["take_profit_short"],
            "MEIC": cfg.get("meic", {}).get("take_profit_short", 0.05),
            "MNG": cfg.get("mng", {}).get("take_profit_short", 0.05),
+           "MEP": cfg.get("mep", {}).get("take_profit_short", 0.05),
+           "MPM": cfg.get("mpm", {}).get("take_profit_short", 0.05),
            "LATE": cfg.get("late", {}).get("take_profit_short", 0.05)}
     priced = []                              # (position, value, short_mid)
     for p in st.open_positions():
@@ -1299,6 +1365,24 @@ def cmd_run(cfg: dict):
                 except pd_.PaperDataError as e:
                     _skip_row(cfg, day_row, "ORB", slot, "DATA", str(e))
 
+        # ── OCB check slots (ORB, upside breakouts only) ──
+        if cfg.get("ocb", {}).get("enabled"):
+            for slot in pending_orb_slots(cfg, ds, "OCB"):
+                t = at(slot, d)
+                if now < t:
+                    continue
+                if now - t > grace:
+                    _skip_row(cfg, day_row, "OCB", slot, "DATA",
+                              "slot missed (engine offline)")
+                    continue
+                try:
+                    chain, expiry = get_chain()
+                    orh, orl = pd_.opening_range()
+                    do_orb_slot(cfg, day_row, slot, chain, expiry, orh, orl,
+                                strat="OCB")
+                except pd_.PaperDataError as e:
+                    _skip_row(cfg, day_row, "OCB", slot, "DATA", str(e))
+
         # ── MNG condors (MEIC mechanics, negative-GEX days only) ──
         if cfg.get("mng", {}).get("enabled"):
             for slot in pending_condor_slots(cfg, ds, "MNG"):
@@ -1318,6 +1402,24 @@ def cmd_run(cfg: dict):
                     do_meic_slot(cfg, day_row, slot, chain, expiry, strat="MNG")
                 except pd_.PaperDataError as e:
                     _skip_row(cfg, day_row, "MNG", slot, "DATA", str(e))
+
+        # ── MEP / MPM put-spread ladders (2026-10-15: put-side edge test) ──
+        for pstrat in ("MEP", "MPM"):
+            if not cfg.get(pstrat.lower(), {}).get("enabled"):
+                continue
+            for slot in pending_condor_slots(cfg, ds, pstrat):
+                t = at(slot, d)
+                if now < t:
+                    continue
+                if now - t > grace:
+                    _skip_row(cfg, day_row, pstrat, slot, "DATA",
+                              "slot missed (engine offline)")
+                    continue
+                try:
+                    chain, expiry = get_chain()
+                    do_meic_slot(cfg, day_row, slot, chain, expiry, strat=pstrat)
+                except pd_.PaperDataError as e:
+                    _skip_row(cfg, day_row, pstrat, slot, "DATA", str(e))
 
         # ── PBW morning broken-wing butterfly ──
         if cfg.get("pbw", {}).get("enabled") and pbw_pending(ds):
@@ -1441,6 +1543,12 @@ def cmd_run(cfg: dict):
             pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "LATE")]
         if cfg.get("mng", {}).get("enabled"):
             pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "MNG")]
+        for pstrat in ("MEP", "MPM"):
+            if cfg.get(pstrat.lower(), {}).get("enabled"):
+                pending += [at(s, d)
+                            for s in pending_condor_slots(cfg, ds, pstrat)]
+        if cfg.get("ocb", {}).get("enabled"):
+            pending += [at(s, d) for s in pending_orb_slots(cfg, ds, "OCB")]
         if cfg.get("pbw", {}).get("enabled") and pbw_pending(ds):
             pending.append(at(cfg["pbw"]["entry_time"], d))
         if cfg.get("fly", {}).get("enabled") and fly_pending(ds):
