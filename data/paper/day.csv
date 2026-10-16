@@ -33,3 +33,4 @@ date,status,vix,vix_chg_5d,prior_close,atr20,gex_sign,risk_budget,notes
 2026-10-13,OK,,,,,unknown,5000.00,vix: Schwab auth failed: token refresh failed: HTTP 400; spx daily: Schwab auth failed: token refresh failed: HTTP 400
 2026-10-14,OK,15.83,0.82,7805.45,66.36,positive,5000.00,
 2026-10-15,OK,17.46,2.38,7718.94,66.02,negative,5000.00,
+2026-10-16,OK,15.94,0.53,7744.06,65.49,negative,5000.00,
