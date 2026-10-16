@@ -1,2 +1,5 @@
 id,lane,sym,entry_day,entry_px,exit_day,exit_px,qty,pnl,pnl_pct,note
 1,TR30,PDBC,2026-10-13,19.979999542236328,,,0.0,,,SKIPPED — fully invested
+2,TR30,USO,2026-10-16,161.75999450683594,,,0.0,,,SKIPPED — fully invested
+3,TR30,GSG,2026-10-16,37.11000061035156,,,0.0,,,SKIPPED — fully invested
+4,TR30,PDBC,2026-10-16,20.110000610351562,,,0.0,,,SKIPPED — fully invested
