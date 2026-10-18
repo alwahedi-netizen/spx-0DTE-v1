@@ -1,3 +1,5 @@
 id,lane,sym,entry_day,entry_px,exit_day,exit_px,qty,pnl,pnl_pct,note
 1,TR30,ATOM-USD,2026-10-09,2.040299892425537,,,0.0,,,SKIPPED — fully invested
 2,TR30,DOT-USD,2026-10-10,1.260200023651123,,,0.0,,,SKIPPED — fully invested
+3,TR30,AVAX-USD,2026-10-06,11.437999725341797,2026-10-18,9.430999755859375,216.8643,-436.27,-17.55,trail exit · peak 11.44 · held 12 bars
+4,TR30,SOL-USD,2026-10-04,121.54000091552734,2026-10-18,101.52999877929688,20.5591,-412.43,-16.46,trail exit · peak 121.54 · held 14 bars
