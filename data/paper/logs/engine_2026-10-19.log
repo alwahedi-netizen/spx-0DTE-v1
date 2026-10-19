@@ -41,3 +41,19 @@ paper run 2026-10-19 | budget $5000 | gex unknown
   2026-10-19-MEIC-12:00-CALL TP @ 0.03 pnl +160
   2026-10-19-MPM-10:30-PUT TP @ 0.03 pnl +166
   2026-10-19-MPM-11:00-PUT TP @ 0.03 pnl +170
+  2026-10-19-MEIC-13:00-PUT TP @ 0.00 pnl +175
+  2026-10-19-MEP-13:00-PUT TP @ 0.00 pnl +175
+  2026-10-19-MEIC-12:30-CALL TP @ 0.00 pnl +205
+  2026-10-19-MEIC-12:30-PUT TP @ 0.00 pnl +180
+  2026-10-19-MEP-12:30-PUT TP @ 0.00 pnl +180
+  2026-10-19-MEIC-13:30-PUT TP @ 0.00 pnl +155
+  2026-10-19-MEP-13:30-PUT TP @ 0.00 pnl +155
+  2026-10-19-MEIC-13:00-CALL TP @ 0.00 pnl +195
+  2026-10-19-MEIC-13:30-CALL TP @ 0.00 pnl +175
+  2026-10-19-MEIC-14:00-CALL TP @ 0.00 pnl +193
+  2026-10-19-MEIC-14:30-PUT TP @ 0.00 pnl +165
+  2026-10-19-MEP-14:30-PUT TP @ 0.00 pnl +165
+[16:05] contained=1 close 7690.73 band 7685-7735
+paper run: day complete.
+paper run 2026-10-19 | budget $5000 | gex unknown
+paper run: day complete.
