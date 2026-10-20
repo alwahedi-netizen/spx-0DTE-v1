@@ -1,1 +1,1 @@
-{"day": "2026-10-20", "halted": {"ORB": true}, "paused": {}, "schwab": {"719": {"ts": "2026-10-20T18:11:16-04:00", "missing": [], "unknown": ["SPXW  261020C07730000", "SPXW  261020C07740000", "SPXW  261020P07690000", "SPXW  261020C07750000"], "day_pl": 817.5, "ok": false}}}
+{"day": "2026-10-20", "halted": {"ORB": true}, "paused": {}, "schwab": {"719": {"ts": "2026-10-20T19:11:21-04:00", "missing": [], "unknown": ["SPXW  261020C07730000", "SPXW  261020C07740000", "SPXW  261020P07690000", "SPXW  261020C07750000"], "day_pl": 817.5, "ok": false}}}
