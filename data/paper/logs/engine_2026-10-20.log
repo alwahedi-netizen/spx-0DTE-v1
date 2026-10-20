@@ -7,3 +7,10 @@ paper run 2026-10-20 | budget $5000 | gex negative
 [10:30] MPM PUT_SPREAD credit 1.75 stop/side 3.50
 [10:30] band 7715-7770 em 25.0 skew 1.012
 [11:00] MPM PUT_SPREAD credit 1.57 stop/side 3.15
+  2026-10-20-ORB-CALL STOPPED @ -2.68 pnl -688
+  2026-10-20-OCB-CALL STOPPED @ -2.68 pnl -688
+  2026-10-20-MPM-10:30-PUT STOPPED @ 5.50 pnl -375
+  2026-10-20-MPM-11:00-PUT STOPPED @ 6.35 pnl -478
+[12:00] MEIC IRON_CONDOR credit 3.20 stop/side 3.20
+[12:00] MNG IRON_CONDOR credit 3.20 stop/side 3.20
+[12:00] MEP PUT_SPREAD credit 1.55 stop/side 3.10

@@ -1,1 +1,1 @@
-{"day": "2026-10-20", "halted": {}, "paused": {}, "schwab": {"719": {"ts": "2026-10-20T11:08:47-04:00", "missing": [], "unknown": [], "day_pl": 0, "ok": true}}}
+{"day": "2026-10-20", "halted": {"ORB": true}, "paused": {}, "schwab": {"719": {"ts": "2026-10-20T12:09:28-04:00", "missing": [], "unknown": [], "day_pl": 5.0, "ok": true}}}
