@@ -1,2 +1,4 @@
 stocks session 2026-10-21 | OK | SPY ABOVE | breadth50 53.8
 quotes: schwab failed (GET /quotes: HTTP 504) — yahoo fallback
+marked 2026-10-21: open 3 realized 55.55 unrealized 83.06
+done
