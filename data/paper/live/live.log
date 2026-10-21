@@ -7084,3 +7084,4 @@
 [2026-10-21T13:30:43-04:00] 2026-10-21-MEIC-13:30-PUT FILLED @ +1.70 (limit 1.70)
 [2026-10-21T13:34:24-04:00] 2026-10-21-MEIC-13:30-CALL repriced to +1.85
 [2026-10-21T13:38:35-04:00] 2026-10-21-MEIC-13:30-CALL unfilled after reprice — skipped
+[2026-10-21T14:18:22-04:00] schwab audit …719: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/accountNumbers

@@ -23,3 +23,10 @@ paper run 2026-10-21 | budget $5000 | gex negative
 [13:30] MEIC IRON_CONDOR credit 3.75 stop/side 3.75
 [13:30] MNG SKIP/RISK
 [13:30] MEP SKIP/RISK
+[14:00] MEIC SKIP/RISK
+[14:00] MNG SKIP/RISK
+[14:00] MEP SKIP/RISK
+tracking cycle skipped: GET /chains: HTTP 503
+[14:30] MEIC SKIP/RISK
+[14:30] MNG SKIP/RISK
+[14:30] MEP SKIP/RISK
