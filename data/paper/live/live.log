@@ -7085,3 +7085,7 @@
 [2026-10-21T13:34:24-04:00] 2026-10-21-MEIC-13:30-CALL repriced to +1.85
 [2026-10-21T13:38:35-04:00] 2026-10-21-MEIC-13:30-CALL unfilled after reprice — skipped
 [2026-10-21T14:18:22-04:00] schwab audit …719: 503 Server Error: Service Unavailable for url: https://api.schwabapi.com/trader/v1/accounts/accountNumbers
+[2026-10-21T14:51:53-04:00] 2026-10-21-MEIC-13:30-PUT CLOSE (STOPPED) submitted @ +4.70
+[2026-10-21T14:52:24-04:00] 2026-10-21-MEIC-13:30-PUT CLOSED @ +4.70 pnl -305
+[2026-10-21T15:03:14-04:00] 2026-10-21-MEIC-12:00-PUT CLOSE (STOPPED) submitted @ +4.40
+[2026-10-21T15:04:17-04:00] 2026-10-21-MEIC-12:00-PUT CLOSED @ +4.40 pnl -295
