@@ -36,3 +36,4 @@ date,status,vix,vix_chg_5d,prior_close,atr20,gex_sign,risk_budget,notes
 2026-10-16,OK,15.94,0.53,7744.06,65.49,negative,5000.00,
 2026-10-19,OK,18.54,3.70,7659.44,69.41,unknown,5000.00,
 2026-10-20,OK,18.72,3.51,7690.73,66.56,negative,5000.00,
+2026-10-21,OK,17.11,1.84,7712.57,69.28,negative,5000.00,
