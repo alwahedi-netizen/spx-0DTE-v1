@@ -1,1 +1,3 @@
 17:10:24 labs fx-nav: {'CARRY': 10090.83, 'CARRY-V': 10025.96, 'TSMOM': 9917.24, 'TR30': 10003.8}
+17:15:26 labs cmd-daily: {'H21': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'H63': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'TR30': {'nav': 10162.42, 'opened': 0, 'closed': 0, 'signals': ['US
+17:20:29 labs crypto-daily: {'H5': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'H10': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'TR30': {'nav': 8826.42, 'opened': 0, 'closed': 0, 'signals': []}}
