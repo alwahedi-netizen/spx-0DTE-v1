@@ -12,3 +12,16 @@ paper run 2026-10-22 | budget $5000 | gex negative
 [12:00] MNG IRON_CONDOR credit 3.45 stop/side 3.45
 [12:00] MEP PUT_SPREAD credit 1.60 stop/side 3.20
   2026-10-22-ORB-PUT STOPPED @ -4.83 pnl -487
+[12:30] MEIC IRON_CONDOR credit 3.40 stop/side 3.40
+[12:30] MNG IRON_CONDOR credit 3.40 stop/side 3.40
+[12:30] MEP PUT_SPREAD credit 1.80 stop/side 3.60
+  2026-10-22-MEIC-12:30-PUT STOPPED @ 3.77 pnl -198
+  2026-10-22-MNG-12:30-PUT STOPPED @ 3.77 pnl -198
+  2026-10-22-MEP-12:30-PUT STOPPED @ 3.77 pnl -198
+  2026-10-22-MEP-12:00-PUT STOPPED @ 3.42 pnl -182
+  2026-10-22-MEIC-12:00-PUT STOPPED @ 3.88 pnl -228
+  2026-10-22-MNG-12:00-PUT STOPPED @ 3.88 pnl -228
+[13:00] MEIC IRON_CONDOR credit 3.75 stop/side 3.75
+[13:00] MNG IRON_CONDOR credit 3.75 stop/side 3.75
+[13:00] MEP PUT_SPREAD credit 1.78 stop/side 3.55
+[13:00] FLY SKIP/RISK
