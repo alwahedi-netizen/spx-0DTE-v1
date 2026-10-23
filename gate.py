@@ -21,6 +21,14 @@ Second factor (TOTP, RFC 6238 — stdlib only):
   - Lost the phone AND the backup codes:
         sudo python3 /opt/logicon/spx-paper-trader/gate.py --disable-totp
 
+"Sign in with Google" (optional, OIDC auth-code flow — stdlib only):
+  - One-time: create a Web-application OAuth client in
+    console.cloud.google.com (redirect URI https://trader.sahmi.ae/gate/google/cb),
+    then on the hub:  sudo python3 /opt/logicon/spx-paper-trader/gate.py --setup-google
+  - Only the allow-listed emails get in; Google's own 2FA is the second
+    factor. The password+authenticator form stays as the fallback.
+    Remove with --disable-google.
+
 Credentials live in gate_credentials.json (PBKDF2-SHA256 password, TOTP
 secret, hashed backup codes — written by the setup script / --enroll); the
 cookie-signing secret in gate_secret (both chmod 600, never in git). Runs
@@ -36,6 +44,8 @@ import secrets
 import struct
 import sys
 import time
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 from flask import Flask, Response, make_response, redirect, request
@@ -239,6 +249,128 @@ def _safe_next() -> str:
     return nxt
 
 
+# ── "Sign in with Google" (OIDC auth-code flow, stdlib only) ────────────────
+# Configured with `gate.py --setup-google` (client id/secret + allowed email
+# addresses, stored in the cred file). Google's own 2FA then serves as the
+# second factor; the password+authenticator form stays as the fallback.
+# The id_token arrives straight from Google's token endpoint over TLS, so
+# (OIDC Core §3.1.3.7) the JWT signature needs no local re-verification —
+# aud, exp, nonce and the email allowlist are checked instead.
+GOOGLE_AUTH = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN = "https://oauth2.googleapis.com/token"
+STATE_TTL = 600                      # a sign-in attempt lives 10 minutes
+ALLOWED_HOSTS = ("trader", "paper", "shine")
+
+
+def _google_cfg():
+    g = _load_cred().get("google") or {}
+    return g if g.get("client_id") and g.get("client_secret") else None
+
+
+def _redirect_uri() -> str:
+    # one registered callback for the whole estate; the state carries which
+    # host the sign-in started on and the user is sent back there after
+    return f"https://trader{COOKIE_DOMAIN}/gate/google/cb"
+
+
+def _pack_state(host: str, nxt: str) -> str:
+    payload = f"{int(time.time())}|{host}|{nxt}|{secrets.token_urlsafe(8)}"
+    b = base64.urlsafe_b64encode(payload.encode()).decode().rstrip("=")
+    return b + "." + _sign(payload)
+
+
+def _unpack_state(state: str):
+    try:
+        b, sig = state.rsplit(".", 1)
+        payload = base64.urlsafe_b64decode((b + "=" * (-len(b) % 4)).encode()).decode()
+        if not hmac.compare_digest(sig, _sign(payload)):
+            return None
+        ts, host, nxt, _nonce = payload.split("|", 3)
+        if time.time() - int(ts) > STATE_TTL or host not in ALLOWED_HOSTS:
+            return None
+        if not nxt.startswith("/") or nxt.startswith("//"):
+            nxt = "/"
+        return host, nxt
+    except Exception:
+        return None
+
+
+def _state_nonce(state: str) -> str:
+    return hashlib.sha256(state.encode()).hexdigest()[:32]
+
+
+def _exchange_code(code: str, g: dict) -> dict:
+    """POST the auth code to Google's token endpoint (split out for tests)."""
+    data = urllib.parse.urlencode({
+        "code": code, "client_id": g["client_id"],
+        "client_secret": g["client_secret"],
+        "redirect_uri": _redirect_uri(),
+        "grant_type": "authorization_code"}).encode()
+    req = urllib.request.Request(
+        GOOGLE_TOKEN, data=data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return json.loads(r.read())
+
+
+def _idtoken_claims(id_token: str) -> dict:
+    try:
+        part = id_token.split(".")[1]
+        return json.loads(base64.urlsafe_b64decode(part + "=" * (-len(part) % 4)))
+    except Exception:
+        return {}
+
+
+@app.get("/gate/google")
+def google_start():
+    g = _google_cfg()
+    if not g:
+        return Response("Google sign-in not configured — run gate.py --setup-google", 404)
+    host = (request.headers.get("Host", "").split(":")[0].split(".")[0] or "trader")
+    if host not in ALLOWED_HOSTS:
+        host = "trader"
+    state = _pack_state(host, _safe_next())
+    q = urllib.parse.urlencode({
+        "client_id": g["client_id"], "redirect_uri": _redirect_uri(),
+        "response_type": "code", "scope": "openid email",
+        "state": state, "nonce": _state_nonce(state),
+        "prompt": "select_account"})
+    return redirect(GOOGLE_AUTH + "?" + q)
+
+
+@app.get("/gate/google/cb")
+def google_cb():
+    g = _google_cfg()
+    if not g:
+        return Response("Google sign-in not configured", 404)
+    raw_state = request.args.get("state", "")
+    st = _unpack_state(raw_state)
+    if not st:
+        return Response("sign-in attempt expired — start again from the login page", 403)
+    host, nxt = st
+    code = request.args.get("code", "")
+    if not code:                      # user cancelled on Google's screen
+        return redirect("/gate/login")
+    try:
+        tok = _exchange_code(code, g)
+    except Exception:
+        return Response("Google token exchange failed — try again", 502)
+    claims = _idtoken_claims(tok.get("id_token", ""))
+    allowed = [e.strip().lower() for e in (g.get("emails") or [])]
+    ok = (claims.get("aud") == g["client_id"]
+          and claims.get("nonce") == _state_nonce(raw_state)
+          and float(claims.get("exp") or 0) > time.time()
+          and claims.get("email_verified") in (True, "true")
+          and (claims.get("email") or "").lower() in allowed)
+    if not ok:
+        return Response("this Google account is not allowed on the desk", 403)
+    resp = redirect(f"https://{host}{COOKIE_DOMAIN}{nxt}")
+    resp.set_cookie(COOKIE_NAME, _make_token(claims["email"].split("@")[0]),
+                    max_age=SESSION_DAYS * 86400, domain=COOKIE_DOMAIN,
+                    secure=True, httponly=True, samesite="Lax")
+    return resp
+
+
 PAGE = """<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Logicon — Sign in</title><style>
@@ -275,6 +407,7 @@ PAGE = """<!doctype html><html lang="en"><head>
   <input id="p" name="password" type="password" autocomplete="current-password" required>
   {totp}
   <button type="submit">Enter desk &rarr;</button>
+  {google}
   <footer>Encrypted &amp; access-controlled &middot; one sign-in covers trader &middot; paper &middot; shine</footer>
 </form></body></html>"""
 
@@ -282,11 +415,21 @@ TOTP_FIELD = """<label for="c">Authenticator code</label>
   <input id="c" name="code" inputmode="numeric" autocomplete="one-time-code"
          placeholder="6-digit code (or a backup code)" required>"""
 
+GOOGLE_BTN = """<div style="display:flex;align-items:center;gap:10px;margin:18px 0 0">
+    <span style="flex:1;height:1px;background:#e5e1d8"></span>
+    <span style="font-size:11px;color:#9aa0a8">or</span>
+    <span style="flex:1;height:1px;background:#e5e1d8"></span></div>
+  <a href="/gate/google?next={nxt}" style="display:block;text-align:center;margin-top:14px;
+     padding:10px;border:1px solid #ddd8cc;border-radius:8px;color:#1e232b;
+     text-decoration:none;font-weight:600;background:#fbfaf7">
+     <svg width="15" height="15" viewBox="0 0 48 48" style="vertical-align:-2px;margin-right:7px"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.4 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.1 5.3-4.6 7l7.6 5.9c4.4-4.1 6.7-10.1 6.7-17.4z"/><path fill="#FBBC05" d="M10.5 28.6a14.5 14.5 0 0 1 0-9.2l-7.9-6.2a24 24 0 0 0 0 21.6z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.4-5.7l-7.6-5.9c-2.1 1.4-4.8 2.3-7.8 2.3-6.3 0-11.6-3.9-13.5-9.5l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg>Sign in with Google</a>"""
+
 
 def _page(error: str = ""):
     err = f'<div class="err">{error}</div>' if error else ""
     totp = TOTP_FIELD if _load_cred().get("totp") else ""
-    html = PAGE.format(error=err, nxt=_safe_next(), totp=totp,
+    google = GOOGLE_BTN.format(nxt=urllib.parse.quote(_safe_next())) if _google_cfg() else ""
+    html = PAGE.format(error=err, nxt=_safe_next(), totp=totp, google=google,
                        host=request.headers.get("Host", "sahmi.ae"))
     resp = make_response(html, 401 if error else 200)
     resp.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -442,11 +585,42 @@ def _cli_disable():
     print("TOTP disabled — password-only sign-in restored; all sessions signed out.")
 
 
+def _cli_setup_google():
+    cred = _load_cred()
+    if not cred.get("user"):
+        raise SystemExit(f"no credentials at {CRED_FILE} — run deploy/setup_sahmi_login.sh first")
+    print("\nGoogle sign-in setup — paste the OAuth client from console.cloud.google.com")
+    print("(APIs & Services -> Credentials -> OAuth client ID -> Web application;")
+    print(f" authorized redirect URI EXACTLY:  {_redirect_uri()})\n")
+    cid = input("  client id: ").strip()
+    csec = input("  client secret: ").strip()
+    emails = input("  allowed Google emails (comma-separated): ").strip()
+    if not (cid and csec and emails):
+        raise SystemExit("all three values are required — nothing changed")
+    cred["google"] = {"client_id": cid, "client_secret": csec,
+                      "emails": [e.strip() for e in emails.split(",") if e.strip()]}
+    _save_cred(cred)
+    print("\nSaved — the sign-in page now shows 'Sign in with Google'.")
+    print("Only the listed emails get in; Google's own 2FA is the second factor.")
+    print("Undo with:  gate.py --disable-google\n")
+
+
+def _cli_disable_google():
+    cred = _load_cred()
+    cred.pop("google", None)
+    _save_cred(cred)
+    print("Google sign-in disabled — password+authenticator only.")
+
+
 if __name__ == "__main__":
     if "--enroll" in sys.argv:
         _cli_enroll()
     elif "--disable-totp" in sys.argv:
         _cli_disable()
+    elif "--setup-google" in sys.argv:
+        _cli_setup_google()
+    elif "--disable-google" in sys.argv:
+        _cli_disable_google()
     else:
         if not CRED_FILE.exists():
             raise SystemExit(f"no credentials at {CRED_FILE} — run deploy/setup_sahmi_login.sh")
