@@ -40,3 +40,17 @@ paper run 2026-10-23 | budget $5000 | gex unknown
   2026-10-23-MPM-10:30-PUT TP @ 0.03 pnl +160
   2026-10-23-MEIC-12:00-CALL TP @ 0.00 pnl +185
   2026-10-23-MPM-10:00-PUT TP @ 0.00 pnl +155
+  2026-10-23-MEIC-12:30-CALL TP @ 0.00 pnl +178
+  2026-10-23-MEIC-13:00-CALL TP @ 0.00 pnl +150
+  2026-10-23-MEIC-13:30-CALL TP @ 0.00 pnl +153
+  2026-10-23-MPM-11:00-PUT TP @ 0.00 pnl +165
+  2026-10-23-MEIC-13:30-PUT TP @ 0.00 pnl +160
+  2026-10-23-MEP-13:30-PUT TP @ 0.00 pnl +160
+  2026-10-23-MEIC-12:30-PUT TP @ 0.00 pnl +177
+  2026-10-23-MEP-12:30-PUT TP @ 0.00 pnl +177
+  2026-10-23-PBW-WIDE EXPIRED @ 0.00 pnl +662
+  2026-10-23-PBW-UP EXPIRED @ 0.00 pnl -310
+[16:05] contained=1 close 7623.68 band 7590-7655
+paper run: day complete.
+paper run 2026-10-23 | budget $5000 | gex unknown
+paper run: day complete.
