@@ -74,3 +74,7 @@ ts,date,slot,strategy,action,symbol,side,rank,expl_rank,r3d,r21,rsi2,sma50,sma20
 2026-10-22T09:45:00-04:00,2026-10-22,09:45,ICHI,DONE,,,,,,,,,,,,,,,,,,,"1 candidates, 0 buys, 0 adds"
 2026-10-22T09:45:00-04:00,2026-10-22,09:45,KDJA,DONE,,,,,,,,,,,,,,,,,,NOSIGNAL,"0 candidates, 0 buys, 0 adds"
 2026-10-22T09:45:00-04:00,2026-10-22,09:45,ST,DONE,,,,,,,,,,,,,,,,,,NOSIGNAL,"0 candidates, 0 buys, 0 adds"
+2026-10-23T09:45:00-04:00,2026-10-23,09:45,ICHI,BUY,SPY,LONG,1,74.1,-0.33,-0.50,24.30,768.17,726.65,7.16,763.96,760.54,739.05,,10,214.90,2026-10-23-ICHI-SPY,,
+2026-10-23T09:45:00-04:00,2026-10-23,09:45,ICHI,DONE,,,,,,,,,,,,,,,,,,,"1 candidates, 1 buys, 0 adds"
+2026-10-23T09:45:00-04:00,2026-10-23,09:45,KDJA,DONE,,,,,,,,,,,,,,,,,,NOSIGNAL,"0 candidates, 0 buys, 0 adds"
+2026-10-23T09:45:00-04:00,2026-10-23,09:45,ST,DONE,,,,,,,,,,,,,,,,,,NOSIGNAL,"0 candidates, 0 buys, 0 adds"
