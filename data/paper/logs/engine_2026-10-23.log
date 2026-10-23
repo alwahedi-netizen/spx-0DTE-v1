@@ -15,3 +15,13 @@ paper run 2026-10-23 | budget $5000 | gex unknown
 [12:30] MEIC IRON_CONDOR credit 3.55 stop/side 3.55
 [12:30] MNG SKIP/REGIME gex=unknown
 [12:30] MEP PUT_SPREAD credit 1.77 stop/side 3.55
+[13:00] MEIC IRON_CONDOR credit 3.08 stop/side 3.08
+[13:00] MNG SKIP/REGIME gex=unknown
+[13:00] MEP PUT_SPREAD credit 1.57 stop/side 3.15
+[13:00] FLY IRON_FLY @ 7640 credit 19.20 TP 14.40 SL 24.00
+  2026-10-23-MEIC-12:00-PUT STOPPED @ 4.00 pnl -245
+  2026-10-23-MEIC-13:00-PUT STOPPED @ 3.48 pnl -190
+  2026-10-23-MEP-13:00-PUT STOPPED @ 3.48 pnl -190
+[13:30] MEIC IRON_CONDOR credit 3.12 stop/side 3.12
+[13:30] MNG SKIP/REGIME gex=unknown
+[13:30] MEP PUT_SPREAD credit 1.60 stop/side 3.20
