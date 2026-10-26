@@ -38,3 +38,12 @@ paper run 2026-10-26 | budget $5000 | gex negative
   2026-10-26-MNG-12:00-CALL TP @ 0.00 pnl +160
   2026-10-26-MEIC-13:00-CALL TP @ 0.00 pnl +165
   2026-10-26-MNG-13:00-CALL TP @ 0.00 pnl +165
+  2026-10-26-MEIC-13:00-PUT TP @ 0.00 pnl +205
+  2026-10-26-MNG-13:00-PUT TP @ 0.00 pnl +205
+  2026-10-26-MEP-13:00-PUT TP @ 0.00 pnl +205
+  2026-10-26-PBW-WIDE EXPIRED @ 0.00 pnl +533
+  2026-10-26-PBW-UP EXPIRED @ 0.00 pnl -285
+[16:05] contained=1 close 7676.77 band 7650-7695
+paper run: day complete.
+paper run 2026-10-26 | budget $5000 | gex negative
+paper run: day complete.
