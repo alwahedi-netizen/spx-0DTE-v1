@@ -18,3 +18,4 @@ date,status,spy_close,spy_sma200,spy_sma10m,spy_regime,vix,breadth50,bars_source
 2026-10-22,OK,773.09,726.29,720.88,ABOVE,18.11,58.8,schwab:107,
 2026-10-23,OK,763.96,726.65,720.88,ABOVE,20.22,58.8,schwab:107,
 2026-10-26,OK,759.97,727.01,720.88,ABOVE,19.05,55.0,schwab:107,
+2026-10-27,OK,765.37,727.39,720.88,ABOVE,17.88,60.0,schwab:107,
