@@ -1,1 +1,1 @@
-{"day": "2026-10-27", "halted": {}, "paused": {}, "schwab": {"719": {"ts": "2026-10-27T15:16:51-04:00", "missing": [], "unknown": [], "day_pl": 367.5, "ok": true}}}
+{"day": "2026-10-27", "halted": {}, "paused": {}, "schwab": {"719": {"ts": "2026-10-27T16:18:36-04:00", "missing": [], "unknown": ["SPXW  261027C07750000", "SPXW  261027P07705000"], "day_pl": 330.0, "ok": false}}}
