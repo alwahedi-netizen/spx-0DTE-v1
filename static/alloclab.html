@@ -35,10 +35,16 @@
       adjusted), 5bp per trade, daily pass 16:30 ET. Backtest 1986–2026 (simulated 3× funds): beat the S&amp;P 500 in 74% of 20-year
       and 69.7% of 10-year windows; worst year 2022 −64% vs −18%. <b>No stop-loss</b> — a −60% year is inside the tested envelope.
       Phase-3 review after 6 months: real return within 3%/yr of the backtest model → eligible for a small live allocation (owner's call).</p>
+    <p class="sub">Added the same day (owner "go", post-hoc picks from a 10-variant re-check of earlier lanes — paper settles that doubt):
+      <b>VMSPX15</b> — vol-managed S&amp;P at 1.5×: each month SPY = 1.5 × min(1, 15% ÷ 21-day volatility); backtest 1986+ +12.9%/yr vs +10.9%,
+      beat the S&amp;P in 80% of 10-yr and 100% of 20-yr windows, worst year −32%.
+      <b>RP2X</b> — risk parity at 2×: each month SPY / TLT / GLD weighted by 1 ÷ 63-day volatility, summing to 200%; backtest 2001+
+      +14.3%/yr vs +9.4%, Sharpe 0.78 vs 0.47, worst year −33% (failed the 10-yr check: lost the latest decade).
+      Leverage is borrowed cash at T-bill + 1%/yr; spare cash earns T-bills.</p>
   </div>
   <div class="tiles" id="tiles"></div>
   <section class="dk-sec">
-    <h2>NAV — HFEA vs SPY</h2>
+    <h2>NAV — every lane vs SPY</h2>
     <div id="chart" class="mono">waiting for the first daily pass</div>
   </section>
   <section class="dk-sec">
@@ -62,11 +68,11 @@ function chart(hist){
   const all = hist.map(h => h.nav), lo = Math.min(...all), hi = Math.max(...all), W = 1000, H = 180, P = 8;
   const x = d => P + (W - 2 * P) * days.indexOf(d) / (days.length - 1);
   const y = v => H - P - (H - 2 * P) * (v - lo) / ((hi - lo) || 1);
-  const col = {HFEA: "#2b5d8a", SPY: "#a8700a"};
+  const col = {HFEA: "#2b5d8a", SPY: "#a8700a", VMSPX15: "#1a7f4b", RP2X: "#8a3fa0"};
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` + Object.entries(lanes).map(([k, v]) =>
     `<polyline fill="none" stroke="${col[k] || "#555"}" stroke-width="2" vector-effect="non-scaling-stroke"
       points="${v.map(h => x(h.day) + "," + y(h.nav)).join(" ")}"/>`).join("") + `</svg>
-    <div class="mono"><span style="color:#2b5d8a">■ HFEA</span> &nbsp; <span style="color:#a8700a">■ SPY</span> · ${days[0]} → ${days[days.length - 1]}</div>`;
+    <div class="mono">${Object.keys(lanes).map(k => `<span style="color:${col[k] || "#555"}">■ ${k}</span>`).join(" &nbsp; ")} · ${days[0]} → ${days[days.length - 1]}</div>`;
 }
 async function refresh(){
   const j = await (await fetch("/api/alloclab/status", {cache: "no-store"})).json();
@@ -74,18 +80,16 @@ async function refresh(){
   $("tiles").innerHTML = Object.entries(L).map(([k, d]) => {
     const r = d.ret_pct;
     return `<div class="tile"><div class="v ${r > 0 ? "pos" : r < 0 ? "neg" : ""}">${d.nav == null ? "—" : "$" + fmt(d.nav, 0)}</div>
-      <div class="l">${k === "HFEA" ? "HFEA — 55% UPRO / 45% TMF" : "SPY — yardstick"}</div>
+      <div class="l">${{HFEA: "HFEA — 55% UPRO / 45% TMF", SPY: "SPY — yardstick", VMSPX15: "VMSPX15 — vol-managed S&P 1.5×", RP2X: "RP2X — risk parity 2×"}[k] || k}</div>
       <div class="m">${r == null ? "starts at the next 16:30 ET pass" : (r >= 0 ? "+" : "") + fmt(r) + "% · since " + (d.started || "").slice(0, 10)}</div></div>`;
-  }).join("") + (L.HFEA && L.SPY && L.HFEA.nav != null ?
-    `<div class="tile"><div class="v ${L.HFEA.nav >= L.SPY.nav ? "pos" : "neg"}">${L.HFEA.nav >= L.SPY.nav ? "+" : "−"}$${fmt(Math.abs(L.HFEA.nav - L.SPY.nav), 0)}</div>
-      <div class="l">HFEA vs SPY</div><div class="m">last rebalance ${L.HFEA.last_rebal || "—"}</div></div>` : "");
+  }).join("");
   $("chart").innerHTML = chart(j.nav_history || []);
   const pos = (j.positions || []).filter(p => p.qty > 0);
   $("positions").innerHTML = pos.length ? `<table><thead><tr><th>Lane</th><th>ETF</th><th class="n">Shares</th><th class="n">Last</th>
     <th class="n">Value</th><th class="n">Weight</th><th class="n">Target</th></tr></thead><tbody>` +
     pos.map(p => { const d = L[p.lane] || {}; return `<tr><td>${p.lane}</td><td><b>${p.sym}</b></td><td class="n">${fmt(p.qty, 3)}</td>
       <td class="n">$${fmt(p.last_px)}</td><td class="n">$${fmt(p.qty * p.last_px, 0)}</td>
-      <td class="n">${fmt(100 * ((d.weights || {})[p.sym] || 0), 1)}%</td><td class="n">${fmt(100 * ((d.target || {})[p.sym] || 0), 0)}%</td></tr>`; }).join("") +
+      <td class="n">${fmt(100 * ((d.weights || {})[p.sym] || 0), 1)}%</td><td class="n">${fmt(100 * ((d.target || {})[p.sym] || 0), 1)}%</td></tr>`; }).join("") +
     "</tbody></table>" : "none yet — the lanes open on the first 16:30 ET pass";
   const o = j.orders || [];
   $("orders").innerHTML = o.length ? `<table><thead><tr><th>Day</th><th>Lane</th><th>ETF</th><th class="n">Shares</th><th class="n">Price</th>

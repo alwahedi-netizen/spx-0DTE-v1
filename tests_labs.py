@@ -173,13 +173,32 @@ assert fx_lab.start()["ok"] is False
 assert fx_lab.snapshot_nav()["ok"] is False
 ok("start blocked until rates are confirmed; NAV job is a no-op before start")
 
-# ── 5b. allocations lab (Hedgefundie paper, owner go 2026-10-28) ────────────
+# ── 5b. allocations lab (owner go 2026-10-28) ───────────────────────────────
 print("allocations lab")
-assert alloc_lab.LANES == {"HFEA": {"UPRO": 0.55, "TMF": 0.45}, "SPY": {"SPY": 1.0}}
-assert alloc_lab.COST == 0.0005 and alloc_lab.START_NAV == 10_000.0
-ok("frozen: HFEA 55/45 UPRO/TMF quarterly, SPY yardstick, 5bp, $10k each")
+assert alloc_lab.STATIC == {"HFEA": {"UPRO": 0.55, "TMF": 0.45}, "SPY": {"SPY": 1.0}}
+assert alloc_lab.LANES == ["HFEA", "SPY", "VMSPX15", "RP2X"]
+assert alloc_lab.REBALANCE == {"HFEA": "quarter", "SPY": None, "VMSPX15": "month", "RP2X": "month"}
+assert (alloc_lab.VM_LEVER, alloc_lab.VM_TARGET_VOL, alloc_lab.VM_WIN) == (1.5, 0.15, 21)
+assert (alloc_lab.RP_GROSS, alloc_lab.RP_WIN, alloc_lab.DYNAMIC["RP2X"]) == (2.0, 63, ("SPY", "TLT", "GLD"))
+assert alloc_lab.COST == 0.0005 and alloc_lab.START_NAV == 10_000.0 and alloc_lab.BORROW_SPREAD == 0.01
+ok("frozen: HFEA 55/45 quarterly, SPY yardstick, VMSPX15 1.5x vol-managed, RP2X 2x risk parity, 5bp")
 alloc_lab.DB = tmpdb()
-APX = {"UPRO": [100.0], "TMF": [50.0], "SPY": [400.0]}
+
+
+def series(last, amp, n=80):
+    s, v = [], 1.0
+    for k in range(n):
+        v *= (1 + amp) if k % 2 else (1 - amp)
+        s.append(v)
+    return [x * last / s[-1] for x in s]
+
+
+APX = {}
+def setpx(**kw):
+    for sym, (last, amp) in kw.items():
+        APX[sym] = series(last, amp)
+setpx(UPRO=(100.0, .03), TMF=(50.0, .02), SPY=(400.0, .01), TLT=(90.0, .008), GLD=(200.0, .009))
+APX["^IRX"] = [4.0] * 5
 alloc_lab._chart = lambda s, rng="5d": APX[s]
 ACLK = {"now": None}
 alloc_lab._now = lambda: ACLK["now"]
@@ -187,25 +206,48 @@ def aday(s):
     ACLK["now"] = datetime.fromisoformat(s + "T16:45:00").replace(tzinfo=alloc_lab.ET)
 aday("2026-10-29")
 r = alloc_lab.daily()
-assert r["ok"] and set(r["lanes"]) == {"HFEA", "SPY"}
+assert r["ok"] and set(r["lanes"]) == {"HFEA", "SPY", "VMSPX15", "RP2X"}
 s = alloc_lab.status()["lanes"]
 assert abs(s["HFEA"]["weights"]["UPRO"] - 0.55) < 1e-3 and abs(s["HFEA"]["weights"]["TMF"] - 0.45) < 1e-3
 assert abs(s["HFEA"]["nav"] - (10_000 - 10_000 * 0.0005)) < 0.02
-ok("first pass starts both lanes at target weights, charging 5bp")
+ok("first pass starts every lane; HFEA at 55/45 after 5bp")
+v = alloc_lab._vol(APX["SPY"][-22:])
+assert abs(s["VMSPX15"]["target"]["SPY"] - 1.5 * min(1, 0.15 / v)) < 1e-3
+assert abs(s["VMSPX15"]["weights"]["SPY"] - s["VMSPX15"]["target"]["SPY"]) < 2e-3
+iv = {k: 1 / alloc_lab._vol(APX[k][-64:]) for k in ("SPY", "TLT", "GLD")}
+for k in iv:
+    assert abs(s["RP2X"]["target"][k] - 2 * iv[k] / sum(iv.values())) < 1e-3
+assert abs(sum(s["RP2X"]["target"].values()) - 2.0) < 1e-3 and s["RP2X"]["cash"] < -9000
+ok("VMSPX15 = 1.5 x min(1, 15%/21d vol); RP2X = 2x inverse 63d vol; leverage shows as borrowed cash")
 assert "already ran" in alloc_lab.daily()["msg"]
 ok("one pass per ET date")
-APX.update(UPRO=[130.0], TMF=[40.0], SPY=[420.0])
-aday("2026-10-30")
+cash0 = s["RP2X"]["cash"]
+setpx(UPRO=(130.0, .03), TMF=(40.0, .02), SPY=(420.0, .01), TLT=(85.0, .008), GLD=(210.0, .009))
+aday("2026-11-02")                                               # Monday, new MONTH, same quarter
 alloc_lab.daily()
 s = alloc_lab.status()["lanes"]
-assert s["HFEA"]["weights"]["UPRO"] > 0.6                      # drifts inside the quarter
+assert s["HFEA"]["weights"]["UPRO"] > 0.6                      # quarterly lane drifts
+assert s["VMSPX15"]["last_rebal"] == "2026-11" and s["RP2X"]["last_rebal"] == "2026-11"
 with sqlite3.connect(alloc_lab.DB) as c:
-    n_orders = c.execute("SELECT COUNT(*) FROM alloclab_orders").fetchone()[0]
-assert n_orders == 3
-ok("weights drift inside a quarter with no trades")
-aday("2026-10-31")                                               # Saturday
+    n_hfea = c.execute("SELECT COUNT(*) FROM alloclab_orders WHERE lane='HFEA'").fetchone()[0]
+    n_rp = c.execute("SELECT COUNT(*) FROM alloclab_orders WHERE lane='RP2X'").fetchone()[0]
+assert n_hfea == 2 and n_rp == 6
+ok("a new month rebalances the monthly lanes; HFEA drifts until the quarter turns")
+aday("2026-11-03")
+alloc_lab.daily()
+with sqlite3.connect(alloc_lab.DB) as c:
+    c1 = c.execute("SELECT cash FROM alloclab_state WHERE lane='RP2X'").fetchone()[0]
+assert c1 < 0
+before = c1
+aday("2026-11-04")
+alloc_lab.daily()
+with sqlite3.connect(alloc_lab.DB) as c:
+    after = c.execute("SELECT cash FROM alloclab_state WHERE lane='RP2X'").fetchone()[0]
+assert abs(after - before * (1 + 0.05) ** (1 / 365)) < 0.01
+ok("borrowed cash pays T-bill + 1%/yr per calendar day")
+aday("2026-11-07")                                               # Saturday
 assert "weekend" in alloc_lab.daily()["msg"]
-aday("2027-01-04")                                               # first run of Q1
+aday("2027-01-04")                                               # first pass of Q1
 alloc_lab.daily()
 s = alloc_lab.status()["lanes"]
 assert abs(s["HFEA"]["weights"]["UPRO"] - 0.55) < 1e-3 and s["HFEA"]["last_rebal"] == "2027-Q1"
@@ -215,12 +257,23 @@ with sqlite3.connect(alloc_lab.DB) as c:
     spy_orders = c.execute("SELECT COUNT(*) FROM alloclab_orders WHERE lane='SPY'").fetchone()[0]
 assert notes.count("rebalance 2027-Q1") == 2 and spy_orders == 1
 ok("new quarter rebalances HFEA back to 55/45; SPY is never rebalanced")
-nav_before = s["HFEA"]["nav"]
 alloc_lab._chart = lambda s, rng="5d": (_ for _ in ()).throw(OSError("down"))
 aday("2027-01-05")
 r = alloc_lab.daily()
 assert not r["ok"] and alloc_lab.status()["lanes"]["HFEA"]["last_run"] == "2027-01-04"
 ok("a missing price skips the pass (no half-marked day) and retries next window")
+
+# a lab started before a lane existed: only the new lane runs that day
+alloc_lab.DB = tmpdb()
+alloc_lab._chart = lambda s, rng="5d": APX[s]
+aday("2027-02-01")
+with alloc_lab._db() as c:
+    for ln in ("HFEA", "SPY"):
+        c.execute("INSERT INTO alloclab_state (lane,cash,started,last_run,last_rebal) VALUES (?,?,?,?,?)",
+                  (ln, 10_000.0, "x", "2027-02-01", "2027-Q1"))
+r = alloc_lab.daily()
+assert set(r["lanes"]) == {"VMSPX15", "RP2X"}
+ok("lanes added later start on the same day without re-running the old ones")
 
 # ── 6. one-time import from the trader's journal + CSV export ────────────────
 print("import + export")
