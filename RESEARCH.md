@@ -77,9 +77,13 @@ any realistic history, so they are judged on the owner's question instead:
 Use `research_bt.evaluate_allocation(...)` with the longest history available
 (mutual-fund proxies such as VFINX / VUSTX are fine when the ETF is young —
 say which). Verdict:
-- **10-year check:** beats the benchmark in ≥70% of rolling 10-year windows
+- **10-year check:** beats the benchmark in ≥60% of rolling 10-year windows
   (monthly steps), the median window beats it, and the latest window beats it.
-- **20-year check** (only if 10-year passes): the same rules on 20-year windows.
+- **20-year check** (only if 10-year passes, the primary horizon): beats it in
+  ≥70% of rolling 20-year windows, median and latest window beat it.
+- *Rule history:* first set at 70%/70% on 2026-10-28; the owner revised the
+  10-year bar to 60% the same day, after Hedgefundie scored 69.7% — recorded
+  so readers know HFEA passed under a rule revised after its result.
 - **PASS** = both pass. **PROMISING** = 10-year passes but history is too short
   for 20-year windows. **FAIL** = otherwise.
 - Always report the worst calendar year: whether that loss is survivable is

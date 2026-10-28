@@ -140,6 +140,7 @@ mirroring the trader's desks:
 | `/crypto` | **Crypto Lab**: H5 / H10 (5★) · TR30 — 16 coins, 7 days a week | paper |
 | `/fx` | **FX Lab**: CARRY · CARRY-V · TSMOM · TR30 — G10 | paper (starts on owner's rate confirmation) |
 | `/commodities` | **Commodities Lab**: H21 / H63 (5★) · TR30 — 17 commodity ETFs | paper |
+| `/allocations` | **Allocations Lab**: HFEA 55/45 UPRO/TMF quarterly vs SPY (`alloc_lab.py`) | paper |
 | `/research` | **Research**: weekly strategy scan, idea ledger + backtest verdicts (`RESEARCH.md`) | weekly |
 
 `/suggested` is unchanged (the platform iframes it).

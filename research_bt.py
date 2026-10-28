@@ -255,7 +255,10 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
 # what the owner cares about: does it beat the benchmark over long holding
 # periods? Rolling 10-year windows first; if those pass, 20-year windows.
 
-ALLOC_WIN_SHARE = 0.70      # beat the benchmark in >= 70% of rolling windows
+# Revised 2026-10-28 by the owner after HFEA's first result (69.7% of 10-year
+# windows vs a 70% bar): 20 years is the primary horizon for an allocation,
+# 10 years is a "mostly beats it" sanity check. Applies to every idea from now.
+ALLOC_WIN_SHARE = {10: 0.60, 20: 0.70}
 ALLOC_MIN_WINDOWS = 12      # a horizon needs >= 12 monthly window starts
 
 
@@ -279,7 +282,7 @@ def horizon_check(rets, bret, dates, years):
     share = sum(1 for _, a, b in w if a > b) / len(w)
     s_last, a_last, b_last = w[-1]
     worst = min(w, key=lambda x: x[1])
-    ok = share >= ALLOC_WIN_SHARE and ex[len(ex) // 2] > 0 and a_last > b_last
+    ok = share >= ALLOC_WIN_SHARE[years] and ex[len(ex) // 2] > 0 and a_last > b_last
     return {"years": years, "windows": len(w), "share_beating": round(share, 3),
             "median_excess_cagr": round(ex[len(ex) // 2], 4),
             "worst_window_excess_cagr": round(ex[0], 4),
@@ -304,8 +307,9 @@ def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
     """Allocation-track verdict: PASS when rolling 10-year AND 20-year windows
     both pass; PROMISING when 10-year passes but 20-year history is too short;
     FAIL otherwise. A window horizon passes when the idea beats the benchmark
-    in >= 70% of windows, the median window beats it, and the latest window
-    beats it. The worst calendar year is reported for the owner to judge."""
+    in enough windows, the median window beats it, and the latest window
+    beats it. Window share bars: 60% for 10 years, 70% for 20 years
+    (ALLOC_WIN_SHARE). The worst calendar year is reported for the owner."""
     syms = sorted(set(symbols) | {bench})
     dates, px = prices(syms, start, fetch)
     rf = tbill(dates, fetch)

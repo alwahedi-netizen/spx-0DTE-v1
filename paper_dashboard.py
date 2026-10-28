@@ -45,12 +45,13 @@ except Exception as _e:        # pragma: no cover — deploy gate tests both
 # Crypto / FX / Commodities labs (moved from the trader 2026-10-15) — same
 # isolation: an import failure here leaves options + stocks untouched.
 try:
+    import alloc_lab
     import cmd_lab
     import crypto_lab
     import fx_lab
     import labs_runner
 except Exception as _e:        # pragma: no cover — tests_labs.py gates it
-    cmd_lab = crypto_lab = fx_lab = labs_runner = None
+    alloc_lab = cmd_lab = crypto_lab = fx_lab = labs_runner = None
     print(f"crypto/fx/commodities labs disabled: {_e!r}", flush=True)
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -220,6 +221,11 @@ def fx_page():
 @app.get("/commodities")
 def commodities_page():
     return send_from_directory(app.static_folder, "cmdlab.html")
+
+
+@app.get("/allocations")
+def allocations_page():
+    return send_from_directory(app.static_folder, "alloclab.html")
 
 
 @app.get("/api/state")
@@ -634,6 +640,16 @@ def api_fxlab_rebalance():
     return _lab_api(lambda: fx_lab.rebalance())
 
 
+@app.get("/api/alloclab/status")
+def api_alloclab_status():
+    return _lab_api(lambda: alloc_lab.status())
+
+
+@app.post("/api/alloclab/run")
+def api_alloclab_run():
+    return _lab_api(lambda: alloc_lab.daily())
+
+
 def _lab_headline(mod, prefix):
     """Cheap overview numbers straight from the journal (no price fetch)."""
     import sqlite3
@@ -651,7 +667,10 @@ def _lab_headline(mod, prefix):
             f"SELECT lane, nav FROM {prefix}_nav WHERE day = "
             f"(SELECT MAX(day) FROM {prefix}_nav)")}
         day = c.execute(f"SELECT MAX(day) FROM {prefix}_nav").fetchone()[0]
-        if prefix == "fxlab":
+        if prefix == "alloclab":
+            n_open = c.execute("SELECT COUNT(*) FROM alloclab_pos WHERE qty > 0").fetchone()[0]
+            closed = None
+        elif prefix == "fxlab":
             n_open = c.execute("SELECT COUNT(*) FROM fxlab_pos").fetchone()[0] + \
                 c.execute("SELECT COUNT(*) FROM fxlab_trpos").fetchone()[0]
             closed = None
@@ -707,7 +726,8 @@ def api_lab_overview():
     if labs_runner is not None:
         for key, mod, prefix in (("crypto", crypto_lab, "cryptolab"),
                                  ("fx", fx_lab, "fxlab"),
-                                 ("commodities", cmd_lab, "cmdlab")):
+                                 ("commodities", cmd_lab, "cmdlab"),
+                                 ("allocations", alloc_lab, "alloclab")):
             try:
                 out[key] = _lab_headline(mod, prefix)
             except Exception as e:

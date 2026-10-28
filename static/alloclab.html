@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logicon — Allocations Lab</title>
+<link rel="stylesheet" href="/static/labdesk.css">
+<style>
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--green-deep);margin:0 0 .15rem}
+  h1{margin:0;font-size:22px}
+  .sub{color:var(--ink-mut);font-size:13.5px;max-width:85ch;margin:.3rem 0 1rem}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px}
+  .tile{background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:12px 14px}
+  .tile .v{font-size:24px;font-variant-numeric:tabular-nums}
+  .tile .l{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mut);margin-top:4px}
+  .tile .m{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+  .pos{color:#1a7f4b}.neg{color:#b3372f}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-mut);padding:6px 8px;border-bottom:1px solid var(--bd)}
+  td{padding:6px 8px;border-bottom:1px solid var(--div);font-family:var(--f-mono);font-size:12px}
+  td.n,th.n{text-align:right}
+  .mono{font-family:var(--f-mono);font-size:12px;color:var(--ink-mut)}
+  button{background:#fff;border:1px solid var(--bd-strong);border-radius:999px;padding:4px 14px;font-size:12px;cursor:pointer}
+  svg{width:100%;height:180px;display:block}
+</style>
+</head>
+<body>
+<script src="/static/lab-nav.js"></script>
+<main class="dk">
+  <div>
+    <p class="eyebrow">Phase 2 paper · rules frozen · from the weekly research scan</p>
+    <h1>Allocations Lab</h1>
+    <p class="sub"><b>HFEA</b> ("Hedgefundie"): 55% UPRO (3× S&amp;P 500) + 45% TMF (3× long Treasuries), rebalanced to 55/45 on the
+      first pass of each quarter. <b>SPY</b> is the yardstick: same $10,000, never rebalanced. Fills and marks at the close (Yahoo
+      adjusted), 5bp per trade, daily pass 16:30 ET. Backtest 1986–2026 (simulated 3× funds): beat the S&amp;P 500 in 74% of 20-year
+      and 69.7% of 10-year windows; worst year 2022 −64% vs −18%. <b>No stop-loss</b> — a −60% year is inside the tested envelope.
+      Phase-3 review after 6 months: real return within 3%/yr of the backtest model → eligible for a small live allocation (owner's call).</p>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <section class="dk-sec">
+    <h2>NAV — HFEA vs SPY</h2>
+    <div id="chart" class="mono">waiting for the first daily pass</div>
+  </section>
+  <section class="dk-sec">
+    <h2>Holdings</h2>
+    <div id="positions" class="mono">—</div>
+  </section>
+  <section class="dk-sec">
+    <h2>Orders</h2>
+    <div id="orders" class="mono">—</div>
+    <div style="margin-top:.7rem"><button onclick="runNow()">Run today&rsquo;s pass now</button> <span id="msg" class="mono"></span></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (n, d = 2) => n == null ? "—" : (+n).toLocaleString("en-US", {minimumFractionDigits: d, maximumFractionDigits: d});
+function chart(hist){
+  const lanes = {};
+  hist.forEach(h => (lanes[h.lane] = lanes[h.lane] || []).push(h));
+  const days = [...new Set(hist.map(h => h.day))].sort();
+  if (days.length < 2) return '<span class="mono">needs two daily marks (' + days.length + ' so far)</span>';
+  const all = hist.map(h => h.nav), lo = Math.min(...all), hi = Math.max(...all), W = 1000, H = 180, P = 8;
+  const x = d => P + (W - 2 * P) * days.indexOf(d) / (days.length - 1);
+  const y = v => H - P - (H - 2 * P) * (v - lo) / ((hi - lo) || 1);
+  const col = {HFEA: "#2b5d8a", SPY: "#a8700a"};
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` + Object.entries(lanes).map(([k, v]) =>
+    `<polyline fill="none" stroke="${col[k] || "#555"}" stroke-width="2" vector-effect="non-scaling-stroke"
+      points="${v.map(h => x(h.day) + "," + y(h.nav)).join(" ")}"/>`).join("") + `</svg>
+    <div class="mono"><span style="color:#2b5d8a">■ HFEA</span> &nbsp; <span style="color:#a8700a">■ SPY</span> · ${days[0]} → ${days[days.length - 1]}</div>`;
+}
+async function refresh(){
+  const j = await (await fetch("/api/alloclab/status", {cache: "no-store"})).json();
+  const L = j.lanes || {};
+  $("tiles").innerHTML = Object.entries(L).map(([k, d]) => {
+    const r = d.ret_pct;
+    return `<div class="tile"><div class="v ${r > 0 ? "pos" : r < 0 ? "neg" : ""}">${d.nav == null ? "—" : "$" + fmt(d.nav, 0)}</div>
+      <div class="l">${k === "HFEA" ? "HFEA — 55% UPRO / 45% TMF" : "SPY — yardstick"}</div>
+      <div class="m">${r == null ? "starts at the next 16:30 ET pass" : (r >= 0 ? "+" : "") + fmt(r) + "% · since " + (d.started || "").slice(0, 10)}</div></div>`;
+  }).join("") + (L.HFEA && L.SPY && L.HFEA.nav != null ?
+    `<div class="tile"><div class="v ${L.HFEA.nav >= L.SPY.nav ? "pos" : "neg"}">${L.HFEA.nav >= L.SPY.nav ? "+" : "−"}$${fmt(Math.abs(L.HFEA.nav - L.SPY.nav), 0)}</div>
+      <div class="l">HFEA vs SPY</div><div class="m">last rebalance ${L.HFEA.last_rebal || "—"}</div></div>` : "");
+  $("chart").innerHTML = chart(j.nav_history || []);
+  const pos = (j.positions || []).filter(p => p.qty > 0);
+  $("positions").innerHTML = pos.length ? `<table><thead><tr><th>Lane</th><th>ETF</th><th class="n">Shares</th><th class="n">Last</th>
+    <th class="n">Value</th><th class="n">Weight</th><th class="n">Target</th></tr></thead><tbody>` +
+    pos.map(p => { const d = L[p.lane] || {}; return `<tr><td>${p.lane}</td><td><b>${p.sym}</b></td><td class="n">${fmt(p.qty, 3)}</td>
+      <td class="n">$${fmt(p.last_px)}</td><td class="n">$${fmt(p.qty * p.last_px, 0)}</td>
+      <td class="n">${fmt(100 * ((d.weights || {})[p.sym] || 0), 1)}%</td><td class="n">${fmt(100 * ((d.target || {})[p.sym] || 0), 0)}%</td></tr>`; }).join("") +
+    "</tbody></table>" : "none yet — the lanes open on the first 16:30 ET pass";
+  const o = j.orders || [];
+  $("orders").innerHTML = o.length ? `<table><thead><tr><th>Day</th><th>Lane</th><th>ETF</th><th class="n">Shares</th><th class="n">Price</th>
+    <th class="n">Cost</th><th>Note</th></tr></thead><tbody>` + o.map(r => `<tr><td>${r.day}</td><td>${r.lane}</td><td><b>${r.sym}</b></td>
+      <td class="n ${r.qty >= 0 ? "pos" : "neg"}">${r.qty >= 0 ? "+" : ""}${fmt(r.qty, 3)}</td><td class="n">$${fmt(r.px)}</td>
+      <td class="n">$${fmt(r.cost)}</td><td>${r.note || ""}</td></tr>`).join("") + "</tbody></table>" : "none yet";
+}
+async function runNow(){
+  $("msg").textContent = " running…";
+  const j = await (await fetch("/api/alloclab/run", {method: "POST"})).json();
+  $("msg").textContent = " " + (j.msg || (j.ok ? "✓ marked " + j.day : "error"));
+  refresh();
+}
+refresh();
+</script>
+</body>
+</html>

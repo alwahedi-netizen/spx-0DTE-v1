@@ -126,6 +126,13 @@
       <div class="phase" data-p="2"><span></span><span></span><span></span><span></span></div>
       <div class="phase-l"><span>spec</span><span>paper</span><span>gates</span><span>live</span></div>
     </a>
+    <a class="desk" href="/allocations">
+      <div class="top"><h2>Allocations</h2><span class="badge warn" id="allB">paper</span></div>
+      <p>HFEA (55% UPRO / 45% TMF, quarterly) vs SPY — first idea promoted by the weekly research scan; $10k each</p>
+      <div id="all"><div class="kv"><span>Loading…</span></div></div>
+      <div class="phase" data-p="2"><span></span><span></span><span></span><span></span></div>
+      <div class="phase-l"><span>spec</span><span>paper</span><span>gates</span><span>live</span></div>
+    </a>
   </div>
   <footer style="margin-top:14px">Phase bar: spec → paper → gate verdicts → live pilot.</footer>
 </div>
@@ -151,11 +158,11 @@ async function load(){
     `<div class="kv"><span>Paper P&amp;L, all time (closed)</span><b>${money(all.TOTAL)}</b></div>` +
     `<div class="kv"><span>Live armed</span><b>${armed.length ? armed.join(", ") : "none"}</b></div>` +
     `<div class="kv"><span>Live realized today</span><b>${money(live.realized)}</b></div>`;
-  for (const [key, el] of [["crypto", "cry"], ["fx", "fx"], ["commodities", "cmd"]]) {
+  for (const [key, el] of [["crypto", "cry"], ["fx", "fx"], ["commodities", "cmd"], ["allocations", "all"]]) {
     const L = j[key];
     if (!L || L.error) { $(el).innerHTML = `<div class="kv"><span class="neg">lab unavailable</span></div>`; continue; }
     if (!L.started) {
-      $(el).innerHTML = `<div class="kv"><span>Not started</span><b class="mut">${key === "fx" ? "confirm rates, press Start" : "awaiting import"}</b></div>`;
+      $(el).innerHTML = `<div class="kv"><span>Not started</span><b class="mut">${key === "fx" ? "confirm rates, press Start" : key === "allocations" ? "starts at 16:30 ET" : "awaiting import"}</b></div>`;
       $(el + "B").textContent = "not started"; $(el + "B").className = "badge";
       continue;
     }

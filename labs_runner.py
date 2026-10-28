@@ -11,6 +11,7 @@ this file only replaces the trader's gex_scheduler hooks:
   Commodities  daily()          17:15 ET, weekdays
   FX           snapshot_nav()   17:10 ET, weekdays (TR30 rides this job)
   FX           rebalance()      07:15 ET, first weekday of the month (day <= 3)
+  Allocations  daily()          16:30 ET, weekdays (alloc_lab.py, added 2026-10-28)
 
 Every job is idempotent inside its lab (per UTC day / per month), so the
 runner uses windows instead of exact minutes: a restart inside a window
@@ -33,6 +34,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import alloc_lab
 import cmd_lab
 import crypto_lab
 import fx_lab
@@ -45,6 +47,7 @@ LABS = {            # prefix -> (module, state table)
     "cryptolab": (crypto_lab, "cryptolab_state"),
     "cmdlab": (cmd_lab, "cmdlab_state"),
     "fxlab": (fx_lab, "fxlab_state"),
+    "alloclab": (alloc_lab, "alloclab_state"),
 }
 
 
@@ -61,6 +64,8 @@ def due(now_et: datetime) -> list:
         jobs.append("fx-rebalance")
     if weekday and _in(hhmm, "17:10", "18:50"):
         jobs.append("fx-nav")
+    if weekday and _in(hhmm, "16:30", "18:50"):
+        jobs.append("alloc-daily")
     if weekday and _in(hhmm, "17:15", "18:50"):
         jobs.append("cmd-daily")
     if _in(hhmm, "17:20", "18:50"):
@@ -73,6 +78,7 @@ JOBS = {
     "fx-nav": lambda: fx_lab.snapshot_nav(),
     "cmd-daily": lambda: cmd_lab.daily(),
     "crypto-daily": lambda: crypto_lab.daily(),
+    "alloc-daily": lambda: alloc_lab.daily(),
 }
 
 

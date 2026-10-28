@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import alloc_lab
 import cmd_lab
 import crypto_lab
 import fx_lab
@@ -83,22 +84,23 @@ assert fx_lab.LANES == ("CARRY", "CARRY-V", "TSMOM") and fx_lab.GROSS == 2.0
 assert (fx_lab.COST_RT, fx_lab.COST_RT_SCANDI) == (0.0004, 0.0008)
 assert (fx_lab.TR_W, fx_lab.TR_BAND, fx_lab.TR_STOP) == (30, 0.99, 0.85)
 ok("fx: CARRY/CARRY-V/TSMOM, gross 2x, 4/8bp, TR30 30/1%/15%")
-for m in (crypto_lab, cmd_lab, fx_lab):
+for m in (crypto_lab, cmd_lab, fx_lab, alloc_lab):
     assert m.DB.parts[-3:] == ("data", "labs", "labs.sqlite"), m.DB
-ok("all three journals point at data/labs/labs.sqlite")
+ok("all four journals point at data/labs/labs.sqlite")
 
 # ── 2. scheduler windows ─────────────────────────────────────────────────────
 print("scheduler windows (ET)")
 d = lambda s: datetime.fromisoformat(s).replace(tzinfo=ET)
-assert lr.due(d("2026-10-15T17:20")) == ["fx-nav", "cmd-daily", "crypto-daily"]
-assert lr.due(d("2026-10-15T17:12")) == ["fx-nav"]
+assert lr.due(d("2026-10-15T17:20")) == ["fx-nav", "alloc-daily", "cmd-daily", "crypto-daily"]
+assert lr.due(d("2026-10-15T16:40")) == ["alloc-daily"]
+assert lr.due(d("2026-10-15T17:12")) == ["fx-nav", "alloc-daily"]
 assert lr.due(d("2026-10-17T17:30")) == ["crypto-daily"]          # Saturday
 assert lr.due(d("2026-10-15T18:50")) == []                        # UTC day rolls soon
 assert lr.due(d("2026-10-15T12:00")) == []
 assert lr.due(d("2026-11-02T07:30")) == ["fx-rebalance"]          # Mon the 2nd
 assert lr.due(d("2026-11-01T07:30")) == []                        # Sunday
 assert lr.due(d("2026-11-05T07:30")) == []                        # past day 3
-ok("crypto daily 7d, cmd + fx-nav weekdays, fx rebalance day<=3, windows close 18:50")
+ok("crypto daily 7d, alloc + cmd + fx-nav weekdays, fx rebalance day<=3, windows close 18:50")
 for t in ("17:20", "17:45", "18:49"):     # every evening window is still the same UTC day
     for mon in ("2026-07-15", "2026-12-15"):
         loc = d(f"{mon}T{t}")
@@ -114,9 +116,9 @@ lr.export = lambda *a, **k: 0
 done, logs = set(), []
 lr.run_due(d("2026-10-15T17:20"), done, log=logs.append)
 lr.run_due(d("2026-10-15T17:40"), done, log=logs.append)
-assert calls == ["fx-nav", "cmd-daily", "crypto-daily"], calls
+assert calls == ["fx-nav", "alloc-daily", "cmd-daily", "crypto-daily"], calls
 lr.run_due(d("2026-10-16T17:20"), done, log=logs.append)
-assert len(calls) == 6
+assert len(calls) == 8
 ok("run_due: each job once per ET date per process")
 lr.JOBS["cmd-daily"] = lambda: 1 / 0
 lr.run_due(d("2026-10-19T17:20"), done, log=logs.append)
@@ -171,6 +173,55 @@ assert fx_lab.start()["ok"] is False
 assert fx_lab.snapshot_nav()["ok"] is False
 ok("start blocked until rates are confirmed; NAV job is a no-op before start")
 
+# ── 5b. allocations lab (Hedgefundie paper, owner go 2026-10-28) ────────────
+print("allocations lab")
+assert alloc_lab.LANES == {"HFEA": {"UPRO": 0.55, "TMF": 0.45}, "SPY": {"SPY": 1.0}}
+assert alloc_lab.COST == 0.0005 and alloc_lab.START_NAV == 10_000.0
+ok("frozen: HFEA 55/45 UPRO/TMF quarterly, SPY yardstick, 5bp, $10k each")
+alloc_lab.DB = tmpdb()
+APX = {"UPRO": [100.0], "TMF": [50.0], "SPY": [400.0]}
+alloc_lab._chart = lambda s, rng="5d": APX[s]
+ACLK = {"now": None}
+alloc_lab._now = lambda: ACLK["now"]
+def aday(s):
+    ACLK["now"] = datetime.fromisoformat(s + "T16:45:00").replace(tzinfo=alloc_lab.ET)
+aday("2026-10-29")
+r = alloc_lab.daily()
+assert r["ok"] and set(r["lanes"]) == {"HFEA", "SPY"}
+s = alloc_lab.status()["lanes"]
+assert abs(s["HFEA"]["weights"]["UPRO"] - 0.55) < 1e-3 and abs(s["HFEA"]["weights"]["TMF"] - 0.45) < 1e-3
+assert abs(s["HFEA"]["nav"] - (10_000 - 10_000 * 0.0005)) < 0.02
+ok("first pass starts both lanes at target weights, charging 5bp")
+assert "already ran" in alloc_lab.daily()["msg"]
+ok("one pass per ET date")
+APX.update(UPRO=[130.0], TMF=[40.0], SPY=[420.0])
+aday("2026-10-30")
+alloc_lab.daily()
+s = alloc_lab.status()["lanes"]
+assert s["HFEA"]["weights"]["UPRO"] > 0.6                      # drifts inside the quarter
+with sqlite3.connect(alloc_lab.DB) as c:
+    n_orders = c.execute("SELECT COUNT(*) FROM alloclab_orders").fetchone()[0]
+assert n_orders == 3
+ok("weights drift inside a quarter with no trades")
+aday("2026-10-31")                                               # Saturday
+assert "weekend" in alloc_lab.daily()["msg"]
+aday("2027-01-04")                                               # first run of Q1
+alloc_lab.daily()
+s = alloc_lab.status()["lanes"]
+assert abs(s["HFEA"]["weights"]["UPRO"] - 0.55) < 1e-3 and s["HFEA"]["last_rebal"] == "2027-Q1"
+assert s["SPY"]["weights"]["SPY"] > 0.99
+with sqlite3.connect(alloc_lab.DB) as c:
+    notes = [r[0] for r in c.execute("SELECT note FROM alloclab_orders WHERE lane='HFEA'")]
+    spy_orders = c.execute("SELECT COUNT(*) FROM alloclab_orders WHERE lane='SPY'").fetchone()[0]
+assert notes.count("rebalance 2027-Q1") == 2 and spy_orders == 1
+ok("new quarter rebalances HFEA back to 55/45; SPY is never rebalanced")
+nav_before = s["HFEA"]["nav"]
+alloc_lab._chart = lambda s, rng="5d": (_ for _ in ()).throw(OSError("down"))
+aday("2027-01-05")
+r = alloc_lab.daily()
+assert not r["ok"] and alloc_lab.status()["lanes"]["HFEA"]["last_run"] == "2027-01-04"
+ok("a missing price skips the pass (no half-marked day) and retries next window")
+
 # ── 6. one-time import from the trader's journal + CSV export ────────────────
 print("import + export")
 src = crypto_lab.DB                  # the crypto journal built above stands in
@@ -212,7 +263,7 @@ ok("export writes one CSV per lab table, atomically")
 
 # ── 7. dashboard routes ──────────────────────────────────────────────────────
 print("dashboard")
-for m in (crypto_lab, cmd_lab, fx_lab):
+for m in (crypto_lab, cmd_lab, fx_lab, alloc_lab):
     m.DB = dst
 import paper_dashboard as pdash
 cl = pdash.app.test_client()
@@ -231,6 +282,11 @@ assert ov["crypto"]["started"] and set(ov["crypto"]["lanes"]) >= {"TR30"}
 assert ov["fx"]["started"] is False
 assert ov["commodities"]["started"]
 ok("overview carries crypto / fx / commodities headlines")
+resp = cl.get("/allocations")
+assert resp.status_code == 200 and b"Allocations Lab" in resp.data and b"lab-nav.js" in resp.data
+assert cl.get("/api/alloclab/status").get_json()["ok"]
+assert "allocations" in ov
+ok("/allocations page, its status API and the overview card")
 
 real = Path(__file__).resolve().parent / "data" / "labs"
 assert not real.exists() or real.stat().st_mtime < START, "tests wrote into data/labs"
