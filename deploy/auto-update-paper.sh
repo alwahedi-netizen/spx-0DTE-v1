@@ -64,7 +64,8 @@ else
 # tests_labs.py gates the crypto / FX / commodities labs (moved in 2026-10-15).
 if ! (cd "$CLONE" && python3 tests_paper.py >/tmp/paper-tests.log 2>&1 \
       && python3 tests_stocks.py >>/tmp/paper-tests.log 2>&1 \
-      && python3 tests_labs.py >>/tmp/paper-tests.log 2>&1); then
+      && python3 tests_labs.py >>/tmp/paper-tests.log 2>&1 \
+      && python3 tests_research.py >>/tmp/paper-tests.log 2>&1); then
   log "TESTS FAILED — deploy blocked. tail /tmp/paper-tests.log:"
   tail -5 /tmp/paper-tests.log
   exit 0
@@ -88,6 +89,14 @@ if git -C "$CLONE" diff --name-only "$cur" "$r" 2>/dev/null | grep -q '^deploy/'
 fi
 
 fi  # end data-only vs full-deploy
+
+# Research ledger (RESEARCH.md): the weekly scan pushes data/research/ to main
+# as a data-only commit; mirror it into the app so the Research tab shows it.
+if [ -d "$CLONE/data/research" ]; then
+  mkdir -p "$APP_DIR/data/research"
+  rsync -a --delete --exclude 'cache' "$CLONE/data/research/" "$APP_DIR/data/research/"
+  chown -R "$(stat -c %U "$APP_DIR")":"$(stat -c %U "$APP_DIR")" "$APP_DIR/data/research" 2>/dev/null || true
+fi
 fi  # end deploy stage ($cur != $r)
 
 # ── journal backup: commit the live CSVs into the repo (hourly) ─────────────

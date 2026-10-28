@@ -18,3 +18,6 @@ data/stocks/history_tr/
 # labs_runner exports every table to data/labs/*.csv, and THOSE are committed.
 data/labs/*.sqlite
 data/labs/*.sqlite-*
+
+# research scan: price cache is rebuilt daily (ideas.csv and results/ ARE committed)
+data/research/cache/

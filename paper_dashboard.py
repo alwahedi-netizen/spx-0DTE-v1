@@ -664,6 +664,35 @@ def _lab_headline(mod, prefix):
             "since": min((r.get("started") or "") for r in st)[:10]}
 
 
+# ── research scan (RESEARCH.md): the weekly ledger, read-only ───────────────
+
+RESEARCH_DIR = BASE_DIR / "data" / "research"
+
+
+@app.get("/research")
+def research_page():
+    return send_from_directory(app.static_folder, "research.html")
+
+
+@app.get("/api/research")
+def api_research():
+    import csv
+    import json as _json
+    ideas, results = [], {}
+    f = RESEARCH_DIR / "ideas.csv"
+    if f.exists():
+        with open(f, newline="", encoding="utf-8") as fh:
+            ideas = list(csv.DictReader(fh))
+    rdir = RESEARCH_DIR / "results"
+    if rdir.is_dir():
+        for r in sorted(rdir.glob("*.json")):
+            try:
+                results[r.stem] = _json.loads(r.read_text())
+            except Exception:
+                pass
+    return jsonify({"ideas": ideas, "results": results})
+
+
 @app.get("/api/lab/overview")
 def api_lab_overview():
     """One call for the Overview page: each section's headline numbers."""

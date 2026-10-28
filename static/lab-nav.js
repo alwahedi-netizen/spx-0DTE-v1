@@ -10,6 +10,7 @@
     { path: "/crypto",      label: "Crypto",        tag: "paper" },
     { path: "/fx",          label: "FX",            tag: "paper" },
     { path: "/commodities", label: "Commodities",   tag: "paper" },
+    { path: "/research",    label: "Research",      tag: "weekly" },
   ];
   const here = location.pathname.replace(/\/+$/, "") || "/";
   const css = `
