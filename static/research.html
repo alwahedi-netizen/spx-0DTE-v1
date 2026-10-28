@@ -58,7 +58,8 @@ function render(){
   if (R.length) $("results").innerHTML = `<table><thead><tr><th>Idea</th><th>Verdict</th><th>Period</th>
     <th class="n">Return/yr</th><th class="n">Bench</th><th class="n">Worst DD</th><th class="n">Sharpe</th>
     <th class="n">Bench Sharpe</th><th class="n">Confidence</th><th class="n">Held-out Sharpe</th><th class="n">Trials</th></tr></thead><tbody>` +
-    R.map(r => `<tr><td><b>${esc(r.idea)}</b><div class="mut">${esc(r.notes)}</div></td>
+    R.map(r => `<tr><td><b>${esc(r.idea)}</b>${r.track === "allocation" ? ` <span class="pill">allocation</span>` : ""}<div class="mut">${esc(r.notes)}</div>
+      ${r.h10 ? `<div class="mut">10-yr windows beating: ${pct(r.h10.share_beating)} (${esc(r.h10.status)}) · 20-yr: ${r.h20 && r.h20.share_beating != null ? pct(r.h20.share_beating) + " (" + esc(r.h20.status) + ")" : esc(r.h20 && r.h20.status)} · worst year ${esc(r.worst_year && r.worst_year[0])} ${pct(r.worst_year && r.worst_year[1])}</div>` : ""}</td>
       <td><span class="pill ${esc(r.verdict)}">${esc(r.verdict)}</span></td>
       <td class="mut">${esc((r.period || []).join(" → "))}<br>vs ${esc(r.bench)}</td>
       <td class="n">${pct(r.idea_cagr)}</td><td class="n">${pct(r.bench_cagr)}</td>

@@ -68,6 +68,25 @@ full-period Sharpe at least 0.10 above the benchmark's (no near-copies). A PASS 
 Phase 2; PROMISING stays in Phase 1 for a refinement next week (once); FAIL
 goes to `graveyard`.
 
+## 4b. Allocation track (owner, 2026-10-28)
+
+Buy-and-hold **allocations** (fixed or slowly rebalanced mixes, e.g. a
+leveraged 55/45) trade a few times a year and cannot reach 99% confidence on
+any realistic history, so they are judged on the owner's question instead:
+*does it beat the benchmark over long holding periods?*
+Use `research_bt.evaluate_allocation(...)` with the longest history available
+(mutual-fund proxies such as VFINX / VUSTX are fine when the ETF is young —
+say which). Verdict:
+- **10-year check:** beats the benchmark in ≥70% of rolling 10-year windows
+  (monthly steps), the median window beats it, and the latest window beats it.
+- **20-year check** (only if 10-year passes): the same rules on 20-year windows.
+- **PASS** = both pass. **PROMISING** = 10-year passes but history is too short
+  for 20-year windows. **FAIL** = otherwise.
+- Always report the worst calendar year: whether that loss is survivable is
+  the owner's call, not the harness's.
+Trading signals stay on the §4 strict bar. Do not move a threshold after
+seeing a result; changes to these rules apply to the next idea.
+
 ## 5. Ledger and commits
 
 Update `data/research/ideas.csv` (columns as in the header; `score` = sum of the

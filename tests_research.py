@@ -95,6 +95,32 @@ for k in ("idea_cagr", "bench_cagr", "idea_sharpe", "confidence", "oos_idea_shar
     assert k in res
 ok("results carry every field the Research page shows")
 
+# ── 2b. allocation track ─────────────────────────────────────────────────────
+print("allocation track")
+LONG = [f"{1990 + i // 252}-{1 + (i % 252) // 21:02d}-{1 + i % 21:02d}" for i in range(252 * 26)]
+random.seed(11)
+base = [100.0]
+for _ in LONG[1:]:
+    base.append(base[-1] * (1 + random.gauss(0.0003, 0.01)))
+better = [p * (1.0002 ** k) for k, p in enumerate(base)]     # bench + ~5%/yr, same swings
+FEED.update({"BEN": dict(zip(LONG, base)), "BETTER": dict(zip(LONG, better))})
+FEED["^IRX"].update({d: 3.0 for d in LONG})
+r = rb.evaluate_allocation("T-ALLOC-WIN", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                           start="1990-01-01", fetch=fetch, save=False)
+assert r["h10"]["status"] == "PASS" and r["h20"]["status"] == "PASS" and r["verdict"] == "PASS"
+assert r["h10"]["share_beating"] == 1.0 and r["h10"]["windows"] >= 12
+ok("an allocation that beats the benchmark every decade PASSes 10y then 20y")
+r = rb.evaluate_allocation("T-ALLOC-SAME", lambda i, d, p: {"BEN": 1.0}, ["BEN"], "BEN",
+                           start="1990-01-01", fetch=fetch, save=False)
+assert r["verdict"] == "FAIL" and r["h20"]["status"].startswith("NOT RUN")
+ok("the benchmark itself FAILs and the 20-year check is skipped")
+r = rb.evaluate_allocation("T-ALLOC-SHORT", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                           start="2003-01-01", fetch=fetch, save=False)
+assert r["h10"]["status"] == "PASS" and r["h20"]["status"] == "INSUFFICIENT" and r["verdict"] == "PROMISING"
+ok("too little history for 20-year windows gives PROMISING, not PASS")
+assert "worst_year" in r and len(r["calendar_years"]) >= 13
+ok("worst calendar year and the year-by-year table are reported")
+
 # ── 3. ledger ────────────────────────────────────────────────────────────────
 print("ledger")
 COLS = ["id", "date", "asset_class", "name", "summary", "source", "evidence", "costs", "diversify",

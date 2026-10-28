@@ -249,6 +249,100 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     return out
 
 
+# ── allocation track (owner 2026-10-28) ─────────────────────────────────────
+# Buy-and-hold allocations (e.g. leveraged 55/45) trade a few times a year and
+# can never reach 99% confidence on a lifetime of data, so they are judged on
+# what the owner cares about: does it beat the benchmark over long holding
+# periods? Rolling 10-year windows first; if those pass, 20-year windows.
+
+ALLOC_WIN_SHARE = 0.70      # beat the benchmark in >= 70% of rolling windows
+ALLOC_MIN_WINDOWS = 12      # a horizon needs >= 12 monthly window starts
+
+
+def rolling_windows(rets, bret, years, step=21):
+    """CAGR of idea and benchmark over every `years`-long window (monthly steps)."""
+    n = int(years * 252)
+    out = []
+    for s in range(0, len(rets) - n + 1, step):
+        out.append((s, cagr(rets[s:s + n]), cagr(bret[s:s + n])))
+    if len(rets) >= n and (not out or out[-1][0] != len(rets) - n):
+        s = len(rets) - n                       # always include the latest window
+        out.append((s, cagr(rets[s:]), cagr(bret[s:])))
+    return out
+
+
+def horizon_check(rets, bret, dates, years):
+    w = rolling_windows(rets, bret, years)
+    if len(w) < ALLOC_MIN_WINDOWS:
+        return {"years": years, "windows": len(w), "status": "INSUFFICIENT"}
+    ex = sorted(a - b for _, a, b in w)
+    share = sum(1 for _, a, b in w if a > b) / len(w)
+    s_last, a_last, b_last = w[-1]
+    worst = min(w, key=lambda x: x[1])
+    ok = share >= ALLOC_WIN_SHARE and ex[len(ex) // 2] > 0 and a_last > b_last
+    return {"years": years, "windows": len(w), "share_beating": round(share, 3),
+            "median_excess_cagr": round(ex[len(ex) // 2], 4),
+            "worst_window_excess_cagr": round(ex[0], 4),
+            "latest_window": [dates[s_last + 1], dates[-1]],
+            "latest_idea_cagr": round(a_last, 4), "latest_bench_cagr": round(b_last, 4),
+            "worst_window_idea_cagr": round(worst[1], 4),
+            "worst_window_start": dates[worst[0] + 1],
+            "status": "PASS" if ok else "FAIL"}
+
+
+def calendar_years(rets, bret, dates):
+    yr = {}
+    for i, d in enumerate(dates[1:]):
+        a = yr.setdefault(d[:4], [1.0, 1.0])
+        a[0] *= 1 + rets[i]
+        a[1] *= 1 + bret[i]
+    return {y: [round(a - 1, 4), round(b - 1, 4)] for y, (a, b) in sorted(yr.items())}
+
+
+def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
+                        cost_bps=5.0, trials=1, notes="", fetch=None, save=True):
+    """Allocation-track verdict: PASS when rolling 10-year AND 20-year windows
+    both pass; PROMISING when 10-year passes but 20-year history is too short;
+    FAIL otherwise. A window horizon passes when the idea beats the benchmark
+    in >= 70% of windows, the median window beats it, and the latest window
+    beats it. The worst calendar year is reported for the owner to judge."""
+    syms = sorted(set(symbols) | {bench})
+    dates, px = prices(syms, start, fetch)
+    rf = tbill(dates, fetch)
+    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps)
+    bret = bench_returns(bench, dates, px, rf)
+    h10 = horizon_check(rets, bret, dates, 10)
+    h20 = horizon_check(rets, bret, dates, 20) if h10["status"] == "PASS" else \
+        {"years": 20, "status": "NOT RUN (10-year failed)"}
+    verdict = ("PASS" if h10["status"] == "PASS" and h20["status"] == "PASS" else
+               "PROMISING" if h10["status"] == "PASS" and h20["status"] == "INSUFFICIENT" else
+               "FAIL")
+    years = calendar_years(rets, bret, dates)
+    worst_y = min(years, key=lambda y: years[y][0])
+    rf1 = rf[1:]
+    out = {
+        "idea": idea_id, "track": "allocation",
+        "run": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "period": [dates[0], dates[-1]], "bench": bench, "cost_bps": cost_bps,
+        "trials": trials, "notes": notes,
+        "idea_cagr": round(cagr(rets), 4), "bench_cagr": round(cagr(bret), 4),
+        "idea_sharpe": round(sharpe(rets, rf1), 3), "bench_sharpe": round(sharpe(bret, rf1), 3),
+        "idea_maxdd": round(max_dd(rets), 4), "bench_maxdd": round(max_dd(bret), 4),
+        "turnover_per_year": round(turnover / (len(rets) / 252), 2),
+        "confidence": round(sharpe_confidence(rets, bret, rf1), 4),
+        "years_beating_bench": f"{sum(1 for a, b in years.values() if a > b)}/{len(years)}",
+        "worst_year": [worst_y] + years[worst_y],
+        "h10": h10, "h20": h20, "calendar_years": years, "verdict": verdict,
+    }
+    cut = int(len(rets) * (1 - OOS_FRAC))
+    out.update(oos_from=dates[cut + 1], oos_idea_sharpe=round(sharpe(rets[cut:], rf1[cut:]), 3),
+               oos_bench_sharpe=round(sharpe(bret[cut:], rf1[cut:]), 3))
+    if save:
+        RESULTS.mkdir(parents=True, exist_ok=True)
+        (RESULTS / f"{idea_id}.json").write_text(json.dumps(out, indent=1))
+    return out
+
+
 if __name__ == "__main__":
     # smoke run: 10-month SMA timing on SPY vs buy & hold (a known benchmark idea)
     def sma10(i, dates, px):
