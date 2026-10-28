@@ -1,0 +1,25 @@
+{
+ "idea": "R-2026-10-28-HFEA",
+ "run": "2026-10-28T20:27:31+00:00",
+ "period": [
+  "2002-08-01",
+  "2026-10-28"
+ ],
+ "bench": "SPY",
+ "cost_bps": 5.0,
+ "trials": 1,
+ "notes": "55% sim-UPRO / 45% sim-TMF, quarterly rebalance, 2002+ incl. 2008 and 2022",
+ "idea_cagr": 0.189,
+ "bench_cagr": 0.1136,
+ "idea_sharpe": 0.674,
+ "bench_sharpe": 0.576,
+ "idea_maxdd": -0.7017,
+ "bench_maxdd": -0.5519,
+ "turnover_per_year": 0.6,
+ "confidence": 0.7255,
+ "oos_from": "2019-07-19",
+ "oos_idea_sharpe": 0.41,
+ "oos_bench_sharpe": 0.698,
+ "oos_idea_cagr": 0.1168,
+ "verdict": "FAIL"
+}

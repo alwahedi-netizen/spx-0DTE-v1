@@ -40,15 +40,27 @@ dates, px = rb.prices(["AAA"], "1990-01-01", fetch)
 rf = rb.tbill(dates, fetch)
 assert abs(rf[0] - 0.05 / 252) < 1e-12
 peek = lambda i, d, p: {"AAA": 1.0} if i + 1 < len(d) and p["AAA"][i + 1] > p["AAA"][i] else {}
-r_cheat, _ = rb.simulate(peek, dates, px, rf, cost_bps=0)
-# peek decides at i using i+1, so it is applied on (i+1 -> i+2): no free lunch
-assert rb.cagr(r_cheat) < 0.5, rb.cagr(r_cheat)
-ok("weights act on the NEXT day's move (peeking one day ahead earns nothing special)")
+try:
+    rb.simulate(peek, dates, px, rf, cost_bps=0)
+    raise AssertionError("peeking at tomorrow was allowed")
+except rb.LookAheadError:
+    pass
+ok("an idea that reads tomorrow's price is stopped (LookAheadError)")
+mom = lambda i, d, p: {"AAA": 1.0} if i and p["AAA"][-1] > p["AAA"][-2] else {}
+r_mom, _ = rb.simulate(mom, dates, px, rf, cost_bps=0)
+exp = [(px["AAA"][i + 1] / px["AAA"][i] - 1) if i and px["AAA"][i] > px["AAA"][i - 1] else rf[i + 1]
+       for i in range(len(dates) - 1)]
+assert max(abs(a - b) for a, b in zip(r_mom, exp)) < 1e-12
+ok("a decision at close i earns exactly close i -> i+1 (negative and slice indexing see only the past)")
 hold = lambda i, d, p: {"AAA": 1.0}
 r_hold, turn = rb.simulate(hold, dates, px, rf, cost_bps=0)
 b = rb.bench_returns("AAA", dates, px, rf)
-assert abs(sum(r_hold[1:]) - sum(b[1:])) < 1e-9
-ok("always-long matches buy & hold after day one")
+assert max(abs(x - y) for x, y in zip(r_hold, b)) < 1e-12
+ok("always-long matches buy & hold exactly")
+q = lambda i, d, p: {"AAA": 0.5}
+_, tq = rb.simulate(q, dates, px, rf, cost_bps=0)
+assert tq < 0.5 + 0.02 * len(dates), tq
+ok("a constant weight only trades the small daily drift back to target")
 r_cash, _ = rb.simulate(lambda i, d, p: {}, dates, px, rf, cost_bps=0)
 assert all(abs(x - 0.05 / 252) < 1e-12 for x in r_cash)
 ok("uninvested capital earns the T-bill rate")
@@ -59,6 +71,7 @@ assert t0 > 1000 and sum(r0) - sum(r9) > 0.5 * t0 * 50 / 1e4
 ok("costs are charged on turnover")
 lev = lambda i, d, p: {"AAA": 2.0}
 r_lev, _ = rb.simulate(lev, dates, px, rf, cost_bps=0)
+
 assert abs(r_lev[5] - (2 * b[5] - rf[6])) < 1e-9
 ok("leverage above 1x pays T-bill financing")
 

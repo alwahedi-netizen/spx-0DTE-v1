@@ -9,8 +9,8 @@ An idea is a function that, at each day's close, returns target weights:
     def weights(i, dates, px) -> {symbol: weight}
 
 `px[sym][i]` is the adjusted close on `dates[i]` (None when missing). The
-function may only look at index <= i. The harness applies the weights from
-the NEXT close (no look-ahead), charges `cost_bps` on every unit of turnover,
+function can only read index <= i (reading ahead raises LookAheadError). The
+weights decided at close i earn the move from close i to close i+1, charges `cost_bps` on every unit of turnover,
 pays the T-bill rate on uninvested cash (1 - sum of |weights|, never negative),
 and charges the T-bill rate on gross exposure above 1 (financing).
 
@@ -89,27 +89,56 @@ def tbill(dates, fetch=None):
 
 # ── simulation ───────────────────────────────────────────────────────────────
 
+class LookAheadError(Exception):
+    pass
+
+
+class _Past:
+    """A price column the idea may read only up to today's index."""
+    __slots__ = ("col", "clock")
+
+    def __init__(self, col, clock):
+        self.col, self.clock = col, clock
+
+    def __len__(self):
+        return self.clock[0] + 1
+
+    def __getitem__(self, k):
+        now = self.clock[0]
+        if isinstance(k, slice):
+            start, stop, step = k.indices(now + 1)
+            return self.col[start:stop:step]
+        if k < 0:
+            k += now + 1
+        if k > now or k < 0:
+            raise LookAheadError(f"read index {k} on day {now}")
+        return self.col[k]
+
+
 def simulate(weights_fn, dates, px, rf, cost_bps=5.0):
-    """Daily net returns of the idea. Weights decided at close i earn i+1."""
+    """Daily net returns of the idea. Weights decided at close i earn i -> i+1.
+    The idea sees prices only up to index i (reading ahead raises)."""
+    clock = [0]
+    view = {s: _Past(c, clock) for s, c in px.items()}
     rets, turnover, held = [], 0.0, {}
     for i in range(len(dates) - 1):
-        r = 0.0
-        for s, w in held.items():
-            a, b = px[s][i], px[s][i + 1]
-            if w and a and b:
-                r += w * (b / a - 1)
-        gross = sum(abs(w) for w in held.values())
-        r += max(0.0, 1 - gross) * rf[i + 1] - max(0.0, gross - 1) * rf[i + 1]
-        new = {s: w for s, w in (weights_fn(i, dates, px) or {}).items() if w}
-        # drift existing weights by today's move before measuring turnover
-        drift = {}
-        for s, w in held.items():
-            a, b = px[s][i], px[s][i + 1]
-            drift[s] = w * (b / a) / (1 + r) if (a and b and 1 + r) else w
-        t = sum(abs(new.get(s, 0) - drift.get(s, 0)) for s in set(new) | set(drift))
+        clock[0] = i
+        new = {s: w for s, w in (weights_fn(i, dates, view) or {}).items() if w}
+        t = sum(abs(new.get(s, 0) - held.get(s, 0)) for s in set(new) | set(held))
         turnover += t
+        r = 0.0
+        for s, w in new.items():
+            a, b = px[s][i], px[s][i + 1]
+            if a and b:
+                r += w * (b / a - 1)
+        gross = sum(abs(w) for w in new.values())
+        r += max(0.0, 1 - gross) * rf[i + 1] - max(0.0, gross - 1) * rf[i + 1]
         r -= t * cost_bps / 1e4
-        held = new
+        # holdings drift to close i+1 (the base the next decision trades from)
+        held = {}
+        for s, w in new.items():
+            a, b = px[s][i], px[s][i + 1]
+            held[s] = w * (b / a) / (1 + r) if (a and b and 1 + r) else w
         rets.append(r)
     return rets, turnover
 
