@@ -8,3 +8,9 @@ paper run 2026-10-29 | budget $5000 | gex positive
 [10:30] band 7690-7745 em 23.8 skew 0.975
   2026-10-29-MPM-10:30-PUT STOPPED @ 3.35 pnl -170
 [11:00] MPM PUT_SPREAD credit 1.52 stop/side 3.05
+  2026-10-29-ORB-PUT STOPPED @ -3.82 pnl -448
+[12:00] MEIC IRON_CONDOR credit 3.80 stop/side 3.80
+[12:00] MNG SKIP/REGIME gex=positive
+[12:00] MEP PUT_SPREAD credit 1.85 stop/side 3.70
+  2026-10-29-MEIC-12:00-PUT STOPPED @ 3.93 pnl -208
+  2026-10-29-MEP-12:00-PUT STOPPED @ 3.93 pnl -208
