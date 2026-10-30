@@ -40,3 +40,20 @@ paper run 2026-10-30 | budget $5000 | gex negative
 [14:30] MEIC IRON_CONDOR credit 3.28 stop/side 3.28
 [14:30] MNG SKIP/RISK
 [14:30] MEP SKIP/RISK
+  2026-10-30-MEIC-12:00-CALL TP @ 0.00 pnl +160
+  2026-10-30-MNG-12:00-CALL TP @ 0.00 pnl +160
+  2026-10-30-MEIC-12:30-CALL TP @ 0.00 pnl +155
+  2026-10-30-MNG-12:30-CALL TP @ 0.00 pnl +155
+  2026-10-30-MEIC-14:30-PUT TP @ 0.00 pnl +160
+  2026-10-30-MEIC-14:30-CALL STOPPED @ 3.98 pnl -230
+  2026-10-30-MEIC-13:00-CALL TP @ 0.00 pnl +183
+  2026-10-30-MNG-13:00-CALL TP @ 0.00 pnl +183
+  2026-10-30-MEIC-14:00-CALL TP @ 0.00 pnl +170
+  2026-10-30-MNG-14:00-CALL TP @ 0.00 pnl +170
+  2026-10-30-PBW-WIDE EXPIRED @ 4.96 pnl +76
+  2026-10-30-PBW-UP EXPIRED @ -10.00 pnl +715
+  2026-10-30-ORB-PUT EXPIRED @ -19.96 pnl +1091
+[16:05] contained=1 close 7580.07 band 7570-7635
+paper run: day complete.
+paper run 2026-10-30 | budget $5000 | gex negative
+paper run: day complete.
