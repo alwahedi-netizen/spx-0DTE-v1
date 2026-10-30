@@ -26,3 +26,4 @@ id,ts,lane,ccy,action,notional,px,note
 25,2026-10-28T21:10:10+00:00,TR30,SEK,SKIP,0.0,0.10112195281896191,signal skipped — fully invested
 26,2026-10-29T21:10:24+00:00,TR30,JPY,SKIP,0.0,0.006343728526053998,signal skipped — fully invested
 27,2026-10-29T21:10:24+00:00,TR30,SEK,SKIP,0.0,0.10176014334863943,signal skipped — fully invested
+28,2026-10-30T21:10:05+00:00,TR30,JPY,SKIP,0.0,0.006348440618744349,signal skipped — fully invested
