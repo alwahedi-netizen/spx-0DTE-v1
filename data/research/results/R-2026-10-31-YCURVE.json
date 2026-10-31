@@ -1,0 +1,25 @@
+{
+ "idea": "R-2026-10-31-YCURVE",
+ "run": "2026-10-31T02:50:03+00:00",
+ "period": [
+  "1986-01-02",
+  "2026-10-30"
+ ],
+ "bench": "VFINX",
+ "cost_bps": 5.0,
+ "trials": 1,
+ "notes": "S&P 500 unless 10y < 3m T-bill at month start (then T-bills); monthly; 1986+",
+ "idea_cagr": 0.1055,
+ "bench_cagr": 0.1118,
+ "idea_sharpe": 0.491,
+ "bench_sharpe": 0.502,
+ "idea_maxdd": -0.5525,
+ "bench_maxdd": -0.5525,
+ "turnover_per_year": 0.32,
+ "confidence": 0.4228,
+ "oos_from": "2014-07-25",
+ "oos_idea_sharpe": 0.752,
+ "oos_bench_sharpe": 0.69,
+ "oos_idea_cagr": 0.1211,
+ "verdict": "FAIL"
+}
