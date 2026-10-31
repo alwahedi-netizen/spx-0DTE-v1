@@ -258,6 +258,8 @@ def html(rep, intro=""):
     th = 'style="text-align:left;padding:5px 8px;background:#f6f4ef;font-size:12px"'
     td = 'style="padding:5px 8px;border-bottom:1px solid #eee;font-size:13px"'
     tdr = 'style="padding:5px 8px;border-bottom:1px solid #eee;font-size:13px;text-align:right;white-space:nowrap"'
+    tdc = lambda v: (f'style="padding:5px 8px;border-bottom:1px solid #eee;font-size:13px;'
+                     f'text-align:right;white-space:nowrap;color:{_col(v)}"')
     h = ['<div style="font-family:Segoe UI,Arial,sans-serif;color:#1e232b;max-width:780px">',
          "<p>Tariq,</p>", intro and f"<p>{intro}</p>",
          f"<p>Week to <b>{rep['asof']}</b> (since {rep['week_start']}). "
@@ -275,7 +277,7 @@ def html(rep, intro=""):
         h.append(f"<table style='border-collapse:collapse'><tr><th {th}>Lane</th><th {th}>Total P&amp;L</th>"
                  f"<th {th}>Closed trades</th><th {th}>This week</th><th {th}>Open now</th></tr>")
         for k, v in st["lanes"].items():
-            h.append(f"<tr><td {td}><b>{k}</b></td><td {tdr} style='color:{_col(v['total'])}'>{_money(v['total'])}</td>"
+            h.append(f"<tr><td {td}><b>{k}</b></td><td {tdc(v['total'])}>{_money(v['total'])}</td>"
                      f"<td {tdr}>{v['closed']} ({v['wins']} won)</td>"
                      f"<td {tdr}>{v['week_closed']} closed, {_money(v['week_realized'])}</td>"
                      f"<td {td}>{', '.join(v['open']) or '—'}</td></tr>")
@@ -291,7 +293,7 @@ def html(rep, intro=""):
             wk = "; ".join(f"{t['sym']} {_money(t['pnl'])}" for t in s["closed_week"])
             h.append(f"<tr><td {td}><b>{s['label']}</b><br><span style='font-size:11px;color:#6b7280'>since {s['first']}</span></td>"
                      f"<td {tdr}>${s['now']:,.0f}</td>"
-                     f"<td {tdr} style='color:{_col(s['week_pct'])}'>{_pct(s['week_pct'])}</td>"
+                     f"<td {tdc(s['week_pct'])}>{_pct(s['week_pct'])}</td>"
                      f"<td {tdr}><span style='color:{_col(s['total_pct'])}'>{_pct(s['total_pct'])}</span>{spy_note}</td>"
                      f"<td {tdr}>{_pct(s['max_dd'])}</td>"
                      f"<td {td}>{', '.join(s['open']) or 'cash'}{('<br><span style=font-size:11px>closed: ' + wk + '</span>') if wk else ''}</td></tr>")
