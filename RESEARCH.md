@@ -14,7 +14,7 @@ exactly. Changing the rules means editing this file, not the schedule.
 | Phase | What | Who moves an idea in |
 |---|---|---|
 | 0 Idea | Found, scored, logged in `data/research/ideas.csv` | the scan |
-| 1 Backtest | `research_bt.py`, rules written before the run | the scan (top 1–3 per week) |
+| 1 Backtest | `research_bt.py`, rules written before the run | the scan (top 1–5 per week + a monthly deep dive) |
 | 2 Paper | A pre-registered lane in the matching Paper Lab sandbox | **Tariq says "go"** |
 | 3 Live | Small size via the hub's single Schwab grant | **Tariq says "go", after the paper gates pass** |
 
@@ -28,7 +28,19 @@ It recommends; Tariq decides.
 - Quantocracy (aggregator): https://quantocracy.com
 - Alpha Architect, Quantpedia (new strategies), Robot Wealth, QuantStart,
   Return Stacked, Allocate Smartly, Flirting with Models (Newfound), CXO Advisory
-- r/algotrading, r/quant (only ideas with a stated, testable rule)
+- r/algotrading, r/quant (only ideas with a stated, testable rule; Reddit may
+  be unreachable from the scan's environment — say so in the email if it is)
+- *Added 2026-10-31 (owner):*
+  - **Google Scholar + SSRN keyword searches** (newest first), e.g.
+    "trading strategy out-of-sample net of transaction costs", "time-series
+    momentum", "carry strategy", "tactical asset allocation", "volatility
+    managed portfolio", "cryptocurrency trading strategy", "commodity futures
+    strategy", "currency strategy", "bond return predictability"
+  - **GitHub**: strategy repositories updated in the window with a stated rule
+    and a backtest (search: "backtest strategy", "trading strategy", sorted by
+    recently updated) — the rule, not the code, is what gets scored
+  - **Journal of Portfolio Management** and **Financial Analysts Journal**:
+    new-issue abstracts
 
 Skip anything about options or that needs data we cannot get (tick data, paid
 alt-data, order books). Max **20 ideas scored per week**.
@@ -51,7 +63,8 @@ the difference matters.
 | tradeable | 10 | not executable at Schwab | Schwab-tradeable ETF/stock/future |
 | simplicity | 10 | many tuned parameters | ≤3 parameters, published defaults |
 
-Backtest the top 1–3 ideas scoring **≥60**, one script each at
+Backtest the top **1–5** ideas scoring **≥50** (owner, 2026-10-31; was 1–3 at
+≥60), one script each at
 `data/research/ideas/<id>.py`, calling `research_bt.evaluate(...)`:
 - rules fixed **before** the first run, using the source's published parameters;
 - benchmark: SPY (stocks), AGG or IEF (bonds), T-bills (FX, market-neutral),
@@ -91,6 +104,33 @@ say which). Verdict:
 Trading signals stay on the §4 strict bar. Do not move a threshold after
 seeing a result; changes to these rules apply to the next idea.
 
+## 4c. Monthly deep dive (owner, 2026-10-31)
+
+On the **first scan of each calendar month** (the Saturday falling on day 1–7),
+in addition to the weekly scan, take the next family from the rotation below
+that has no `DD-` row in the ledger yet, and test its classic published form
+across **every asset class we can get honest daily data for** — equity indices
+(VFINX/SPY, QQQ, IWM, EFA, EEM), bonds (VUSTX/TLT, IEF), commodities (GLD,
+DBC/commodity ETFs, CL=F/GC=F for history), FX (G10 pairs vs USD) and crypto
+(BTC-USD, ETH-USD) — one `research_bt` run per class, same rules everywhere,
+rules fixed before the first run. Use the strict bar (§4) for signals and the
+allocation track (§4b) for allocations; `trials` = number of classes run.
+Log one ledger row per family: `DD-<yyyy-mm>-<family>`, the per-class verdicts
+in notes, and the best class only as a candidate for a follow-up — never as a
+PASS on its own (picking the best of N classes is itself a trial).
+
+Rotation (in order; restart at the top when all are done):
+1. Time-series trend (12-1 momentum and 10-month SMA)
+2. Carry (yield / roll / interest-rate differential)
+3. Cross-sectional momentum (12-1, top third vs bottom third, monthly)
+4. Long-term reversal / value (5-year losers vs winners)
+5. Volatility targeting (scale to 15% realized vol)
+6. Seasonality (turn of month, sell-in-May, day-of-week)
+7. Short-term reversal (1-week losers, weekly)
+8. Low volatility / betting-against-beta
+9. Risk parity across asset classes (inverse vol, monthly)
+10. Breakout / channel (Donchian 20/55 with ATR stop)
+
 ## 5. Ledger and commits
 
 Update `data/research/ideas.csv` (columns as in the header; `score` = sum of the
@@ -109,6 +149,8 @@ Plain language, short:
    result vs benchmark (return/yr, worst drawdown, Sharpe, confidence,
    held-out result), and the exact sentence Tariq can reply to approve.
 2. **Backtested this week**: one row each — verdict and one-line why.
+   On a deep-dive week, a separate section: the family, one row per asset
+   class (return vs benchmark, worst drop, verdict) and the one-line takeaway.
 3. **New ideas scored**: table name · asset class · score · one-line idea · link.
 4. **Paper lanes due a verdict** (from the labs' gates), if any.
 
