@@ -7,6 +7,7 @@ T-bill cash charged, the verdict thresholds, and a ledger the page can read.
 """
 
 import csv
+from datetime import date
 import math
 import random
 import sys
@@ -120,6 +121,26 @@ assert r["h10"]["status"] == "PASS" and r["h20"]["status"] == "INSUFFICIENT" and
 ok("too little history for 20-year windows gives PROMISING, not PASS")
 assert "worst_year" in r and len(r["calendar_years"]) >= 13
 ok("worst calendar year and the year-by-year table are reported")
+
+# ── 2c. weekly performance report ───────────────────────────────────────────
+print("performance report")
+import perf_report as pr
+spy_feed = {d: 100.0 + i * 0.1 for i, d in enumerate(f"2026-{m:02d}-{dd:02d}" for m in (9, 10, 11) for dd in range(1, 29))}
+rep = pr.build(fetch=lambda s: spy_feed)
+assert rep["asof"] and set(rep["labs"]) <= set(pr.LAB_META)
+for lab in rep["labs"].values():
+    for s in lab["lanes"].values():
+        assert {"now", "week_pct", "total_pct", "max_dd", "open"} <= set(s) and s["max_dd"] <= 0
+if rep.get("stocks"):
+    assert set(pr.STOCK_PAPER_LANES) <= set(rep["stocks"]["lanes"])
+body = pr.html(rep)
+assert "Needs attention" in body and "<table" in body and "Options and Project Shine" in body
+assert "week" in rep["spy"] or "error" in rep["spy"]
+ok("perf_report builds from the snapshotted journals and renders the email (offline SPY)")
+s = pr.stats([(date(2026, 1, 1), 10_000.0), (date(2026, 1, 5), 12_000.0), (date(2026, 1, 9), 9_000.0)],
+             10_000.0, date(2026, 1, 9), date(2026, 1, 6))
+assert s["week_pct"] == -0.25 and s["max_dd"] == -0.25 and s["total_pct"] == -0.1
+ok("lane stats: week change, since start, drawdown from peak")
 
 # ── 3. ledger ────────────────────────────────────────────────────────────────
 print("ledger")
