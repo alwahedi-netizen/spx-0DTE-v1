@@ -7,3 +7,10 @@ paper run 2026-11-02 | budget $5000 | gex negative
 [10:30] OCB BUY CALL 7665.0/7695.0 debit 8.18 stop 4.09
 [10:30] MPM PUT_SPREAD credit 1.52 stop/side 3.05
 [10:30] band 7635-7685 em 22.6 skew 0.999
+  2026-11-02-ORB-CALL STOPPED @ -3.68 pnl -450
+  2026-11-02-OCB-CALL STOPPED @ -3.68 pnl -450
+  2026-11-02-MPM-10:30-PUT STOPPED @ 3.08 pnl -156
+[11:00] MPM PUT_SPREAD credit 1.80 stop/side 3.60
+paper run 2026-11-02 | budget $5000 | gex negative
+paper run 2026-11-02 | budget $5000 | gex negative
+paper run 2026-11-02 | budget $5000 | gex negative
