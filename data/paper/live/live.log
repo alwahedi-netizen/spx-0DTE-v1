@@ -7354,3 +7354,5 @@
 [2026-11-02T08:24:34-05:00] schwab audit …910: token refresh failed: HTTP 400
 [2026-11-02T08:34:34-05:00] schwab audit …719: token refresh failed: HTTP 400
 [2026-11-02T08:34:35-05:00] schwab audit …910: token refresh failed: HTTP 400
+[2026-11-02T10:30:27-05:00] 2026-11-02-ORB-CALL OPEN submitted -8.30 (order 1008515374533)
+[2026-11-02T10:30:58-05:00] 2026-11-02-ORB-CALL FILLED @ -7.00 (limit -8.30)
