@@ -42,3 +42,24 @@ The estate migrated behind a Cloudflare Worker on 2026-11-01/02
 - Hub-side (FYI): the combo journals + shine.sqlite now stream
   continuously to R2 (litestream-uid* units) with hourly snapshot
   backups. This repo's own DBs/journals are NOT in that backup set.
+
+## Edge (Cloudflare) — since 2026-11-02
+
+paper.sahmi.ae is routed through the estate's Cloudflare worker
+`logicon-estate-router` (repo combo-trader-tv, branch
+claude/new-session-tsupmi, `wrangler.router.jsonc` + `cloudflare/router-worker.mjs`),
+migrated by the trader session ("Phase 7"). For this host it does **edge auth +
+pass-through only**: a request without a valid `sahmi_gate` cookie is sent to
+`/gate/login` at the edge; everything else reaches the hub unchanged — no edge
+caching, no edge assets, no cron for this app.
+
+- Don't add a second worker for paper.sahmi.ae; changes go into that worker
+  (another session's repo — ask Tariq first).
+- New pages/APIs here need nothing at the edge: they pass through. Never ask
+  for edge caching of lab data (live paper journals).
+- Health check: `curl -s https://paper.sahmi.ae/__cf/version` (host_scope).
+- Rollback (owner/trader session): remove the `paper.sahmi.ae/*` route from
+  `wrangler.router.jsonc` and push — traffic goes straight to the hub again.
+- Not covered by the estate's R2/Litestream backups: this app's
+  `data/labs/labs.sqlite` and the CSV journals; their off-box copy is the
+  hourly git snapshot (deploy/auto-update-paper.sh).
