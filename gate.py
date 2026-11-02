@@ -437,10 +437,30 @@ def _page(error: str = ""):
     return resp
 
 
+def _valid_svc_pass(raw: str, now=None) -> bool:
+    """Short-lived service pass minted by the edge worker's Cron Trigger
+    (estate migration Phase 6): '<unix_ts>.<hex hmac(secret, "svc|"+ts)>',
+    valid ±300s, signed with the same gate_secret the cookie uses. Lets a
+    scheduled tick through nginx's auth_request without any new secret;
+    scope is whatever single endpoint the edge worker aims it at."""
+    try:
+        ts, sig = raw.split(".", 1)
+        if abs((now or time.time()) - int(ts)) > 300:
+            return False
+        want = hmac.new(_secret(), f"svc|{ts}".encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(want, sig)
+    except Exception:
+        return False
+
+
 @app.get("/gate/check")
 def check():
     tok = request.cookies.get(COOKIE_NAME, "")
-    return ("", 204) if _valid_token(tok) else ("", 401)
+    if _valid_token(tok):
+        return "", 204
+    if _valid_svc_pass(request.headers.get("X-Logicon-Svc", "")):
+        return "", 204
+    return "", 401
 
 
 @app.get("/gate/login")
