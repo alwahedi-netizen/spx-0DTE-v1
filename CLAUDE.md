@@ -11,14 +11,23 @@ Tariq often runs several Claude Code sessions at the same time and may paste a m
 
 ## Estate status after the Cloudflare migration (2026-11-02) — read before touching gate.py or nginx
 
-The Combo Trader platform (trader.sahmi.ae) migrated behind a Cloudflare
-Worker on 2026-11-01/02 (owner-ordered; plan of record:
-`CLOUDFLARE_MIGRATION.md` in `alwahedi-netizen/combo-trader-tv`).
-**This repo's apps did NOT migrate and are not going to:**
+The estate migrated behind a Cloudflare Worker on 2026-11-01/02
+(owner-ordered; plan of record: `CLOUDFLARE_MIGRATION.md` in
+`alwahedi-netizen/combo-trader-tv`). What it means for THIS repo:
 
-- **paper.sahmi.ae (0DTE lab) and the Stox sandbox run exactly as before** —
-  hub nginx + gate, no Worker in front, explicitly on the migration's
-  "never moves" list. Nothing here changed routing-wise.
+- **paper.sahmi.ae (0DTE lab + Stox sandbox) is now routed through the
+  estate edge Worker — but for EDGE AUTH + PASS-THROUGH ONLY** (owner
+  order, 2026-11-02). Unauthenticated requests are 302'd to the gate at
+  the edge; authenticated ones pass to hub nginx -> port 5250 exactly
+  as before. NOTHING of this repo's app is cached, served from the
+  edge, or otherwise touched — all trader-only Worker rooms are
+  hostname-gated off for paper, and no code here changed. Day-to-day
+  development is unaffected; deploys work as before (the Worker is a
+  transparent front). One new rule: any NEW endpoint that must be
+  reachable WITHOUT the gate cookie (a webhook, a health probe) needs
+  a matching exemption in the edge Worker too — ask Tariq / the
+  combo-trader-tv session. Rollback lives there (remove the paper
+  route from wrangler.router.jsonc).
 - **But `gate.py` is now shared edge infrastructure.** The Cloudflare
   Worker verifies the `sahmi_gate` cookie itself (HMAC vs the same
   gate secret) for every trader.sahmi.ae request, and gate.py's
