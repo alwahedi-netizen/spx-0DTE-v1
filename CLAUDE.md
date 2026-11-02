@@ -39,9 +39,10 @@ The estate migrated behind a Cloudflare Worker on 2026-11-01/02
 - **Rotating the gate secret now has two extra steps:** after rotating
   on the hub, update the `GATE_SECRET` GitHub Actions secret in
   combo-trader-tv and re-run its "Deploy Cloudflare edge" workflow.
-- Hub-side (FYI): the combo journals + shine.sqlite now stream
-  continuously to R2 (litestream-uid* units) with hourly snapshot
-  backups. This repo's own DBs/journals are NOT in that backup set.
+- Hub-side (FYI): the combo journals, shine.sqlite AND this repo's
+  data/labs/labs.sqlite now stream continuously to R2 (litestream-uid*
+  units) with hourly snapshots. The CSV journals' off-box copy remains
+  the hourly git snapshot.
 
 ## Edge (Cloudflare) — since 2026-11-02
 
@@ -60,6 +61,17 @@ caching, no edge assets, no cron for this app.
 - Health check: `curl -s https://paper.sahmi.ae/__cf/version` (host_scope).
 - Rollback (owner/trader session): remove the `paper.sahmi.ae/*` route from
   `wrangler.router.jsonc` and push — traffic goes straight to the hub again.
-- Not covered by the estate's R2/Litestream backups: this app's
-  `data/labs/labs.sqlite` and the CSV journals; their off-box copy is the
-  hourly git snapshot (deploy/auto-update-paper.sh).
+- `data/labs/labs.sqlite` IS in the estate's R2 + Litestream backups
+  (since 2026-11-02); the CSV journals' off-box copy is the hourly git
+  snapshot (deploy/auto-update-paper.sh).
+
+## Hubless program (owner decision 2026-11-02)
+
+Tariq decided: migrate everything to Cloudflare and eventually power off
+the hub. Plan of record: `HUB_RUNBOOK.md` (Part B) here + Part B section of
+`CLOUDFLARE_MIGRATION.md` in combo-trader-tv. **The trader session
+(combo-trader-tv) executes all phases**, including this repo's pieces (B2
+sign-in gate, B5 Paper Lab). Before changing gate.py or lab architecture,
+sync with Tariq/the trader session so the port doesn't chase a moving
+target. Day-to-day lab work continues as normal until each phase's
+parallel-run begins.

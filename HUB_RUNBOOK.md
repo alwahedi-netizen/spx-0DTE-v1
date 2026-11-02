@@ -10,7 +10,7 @@ lost ties." Two parts:
   Cloudflare, in what order, and the one decision that makes "zero servers"
   possible.
 
-> Status: **draft, not yet rehearsed.** §1 lists what the repos say the hub
+> Status: **draft, not yet rehearsed; §7 decisions TAKEN (2026-11-02), Part B owned by the trader session.** §1 lists what the repos say the hub
 > runs; `deploy/hub_inventory.sh` (read-only, prints no secrets) confirms it
 > against the real box. A runbook nobody has run is a hope — §6 is the
 > rehearsal on a throwaway droplet that turns it into a procedure.
@@ -49,7 +49,7 @@ GitHub, does not live on the hub).
 | Paper Lab CSV journals | GitHub (hourly snapshot commits) | ✅ |
 | `/opt/logicon/infra/.env` (Schwab app key/secret, other API keys) | **password manager** (as a secure note) | ⚠️ owner to confirm |
 | `tokens.json` (Schwab grant) | nowhere — recreate with `/reauth` (90 s) | ✅ by design |
-| `gate_secret` | password manager **and** GitHub secret `GATE_SECRET` (must be identical) | ⚠️ roll it first (it was pasted in chat 2026-11-02), then store |
+| `gate_secret` | password manager **and** GitHub secret `GATE_SECRET` (= `base64 -w0` of the raw file — store the raw file, derive the b64; they are NOT byte-identical) | ⚠️ roll it first (it was pasted in chat 2026-11-02), then store |
 | `gate_credentials.json` (login password hash + TOTP secret) | password manager, or re-enroll with `setup_sahmi_login.sh` (new authenticator QR) | ⚠️ |
 | R2 API token (`r2-backup.env`) | password manager | ⚠️ roll it first (pasted in chat 2026-11-02) |
 | Hub `docker-compose.yml` + its `.env` (incl. IB login) | **git** (compose file, secrets stripped) + password manager (.env) | ❌ **gap** — `hub_inventory.sh` prints its path |
@@ -131,11 +131,14 @@ Paper Lab CSV journals come with the `spx-0DTE-v1` clone (`data/`).
 (home + trader + paper + shine, all behind the gate). Restore the client-portal
 site from its source (see inventory). `nginx -t && systemctl reload nginx`.
 
-**3.8 Schwab.** Start the Schwab backend, open `https://trader.sahmi.ae/reauth`
+**3.8 Schwab.** ONLY after §3.10's DNS cutover (until then
+trader.sahmi.ae still resolves to the dead box) — or over the tailnet at
+`http://hub:8445/reauth`. Start the Schwab backend, open the reauth page
 → Schwab login → paste the redirect URL. Countdown shows 7 days.
 
 **3.9 Backups + auto-deploy on.**
 ```
+git -C /root/combo-trader pull   # the script must be current: it auto-creates the svc-uid1000 passwd entry
 sudo bash /root/combo-trader/deploy/setup_litestream_journals.sh --force   # per-owner streaming
 sudo cp /root/combo-trader/deploy/logicon-autoupdate.{service,timer} /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now logicon-autoupdate.timer
@@ -147,14 +150,16 @@ sudo systemctl daemon-reload && sudo systemctl enable --now logicon-autoupdate.t
 
 ### 4. Verify (all must pass)
 ```
-for h in trader paper shine; do curl -sI https://$h.sahmi.ae/ | grep -iE '^HTTP|server-timing'; done   # 302 + edge-auth
+for h in sahmi.ae www.sahmi.ae trader.sahmi.ae paper.sahmi.ae shine.sahmi.ae; do curl -sI https://$h/ | grep -iE '^HTTP|server-timing'; done   # 302 + edge-auth (EDGE only — these pass even with the hub dead)
 curl -s https://paper.sahmi.ae/__cf/version | head -c 200                                            # router healthy
 systemctl --no-pager status logicon-paper logicon-gate logicon-beta shine 'litestream-uid*' | grep -E '●|Active'
 docker ps --format '{{.Names}} {{.Status}}'                                                         # hub-platform/schwab/gex Up
 journalctl -u 'litestream-uid*' -n 30 --no-pager | grep -c 'wal segment written'                     # > 0
 ```
-Then sign in on the website: trader desk loads, `/reauth` shows 7 days, Paper
-Lab overview shows the same NAVs as before the outage, Shine shows its lanes.
+Then sign in on the website — THIS is what verifies the rebuilt hub (the
+curls above only prove the edge): trader desk loads, `/reauth` shows 7 days,
+Paper Lab overview shows the same NAVs as before the outage, Shine shows its
+lanes.
 
 ### 5. Rollback / old box
 Until §4 passes, the old droplet (if alive) stays powered **off** but not
@@ -175,33 +180,45 @@ as written, delete the droplet. Repeat yearly.
 Everything except two items could run on Cloudflare (Workers + D1 + Cron +
 Containers). The two:
 
-1. **IB gateway** — needs a long-lived Java process with IBKR 2FA; nothing on
-   Cloudflare runs it. **But it is read-only monitoring** (`deploy/ib/README_IB.md`:
-   "No trading"). Options: (a) drop IB monitoring; (b) keep one tiny VM only
-   for it. **Owner decision.** (a) makes "no servers" achievable.
+1. **IB gateway** — needs a long-lived Java process with IBKR 2FA.
+   **DECIDED (owner, 2026-11-02): "migrate IB monitor, it's just monitor."**
+   Target: a Cloudflare **Container** running IB Gateway + the dashboard.
+   Caveat that makes it LAST (B7): a container restart may require an IBKR
+   2FA re-approval on the owner's phone; if that proves too noisy in
+   practice, fallback = tiny VM or drop (owner re-decides then).
 2. **The Schwab grant** — today a long-running process refreshes the token.
    It does not need to be: access tokens last 30 min and are refreshed from a
    7-day refresh token. A **Cron Worker every 25 min** + the token in a
    **Durable Object** (one single writer = the "ONE grant" rule enforced by
-   design) replaces it; the weekly `/reauth` becomes a Worker page. Feasible.
+   design) replaces it; the weekly `/reauth` becomes a Worker page.
+   **DECIDED (owner, 2026-11-02): approved** — estate rule amended in
+   combo-trader-tv CLAUDE.md, effective only when B4 ships. NOTE: the
+   refresher itself can never parallel-run (two refreshers invalidate each
+   other) — B4's refresher is a hard cutover; only the quote/order proxy
+   parallel-runs.
 
 ### 8. Phases (each reversible; the hub stays until the last one is done)
 
 | # | Move | To | Size | Owner of the code today |
 |---|---|---|---|---|
 | B1 | Close the §2 gaps; rehearse §6 | — | days | this session |
-| B2 | **Sign-in gate** (login page, TOTP, cookie minting) | Worker + KV/D1 — the edge already verifies the cookie | small | spx-0DTE-v1 (this session) |
-| B3 | **Shine** (Flask + SQLite, monthly cadence, Yahoo fallback) | Worker + D1 + Cron | small–medium | combo-trader-tv beta (Shine session) — Lane A frozen, logic ported verbatim, parallel-run before switching |
+| B2 | **Sign-in gate** (login page, TOTP, cookie minting) | Worker + KV/D1 — the edge already verifies the cookie | small | code: spx-0DTE-v1; executed by the trader session |
+| B3 | **Shine** (Flask + SQLite, monthly cadence, Yahoo fallback) | Worker + D1 + Cron | small–medium | code: combo-trader-tv; executed by the trader session — Lane A frozen, logic ported verbatim, parallel-run before switching |
 | B4 | **Schwab grant** refresher + `/reauth` + quote/order proxy | Durable Object + Cron Worker | medium, **live money** | trader session |
-| B5 | **Paper Lab** (labs, research, reports; 0DTE lab + MEIC live mirror last) | Workers + D1 + Cron (labs/research), Container for anything long-running | large | this session |
+| B5 | **Paper Lab** (labs, research, reports; 0DTE lab + MEIC live mirror last) | Workers + D1 + Cron (labs/research), Container for anything long-running | large | code: spx-0DTE-v1; executed by the trader session |
 | B6 | **Trader platform** (Flask app, Chromium GEX scans, scheduler, Auto-Invest orders) | Cloudflare Containers (Python + Chromium) + Cron | largest | trader session |
-| B7 | IB: drop it or tiny VM (decision in §7) | — | — | — |
+| B7 | IB monitor -> Cloudflare Container (decided §7; fallback tiny VM or drop) | Container | medium | trader session |
 | B8 | Power off the hub (keep the R2 backups + this runbook) | — | — | owner |
 
 Rules for every phase: run the new piece **in parallel** with the hub version
 first, compare outputs for ≥1 week (live-money pieces: ≥1 month, paper first),
 switch with a DNS/route change that is undone in one line, and never two
 Schwab refreshers at once.
+
+**Program ownership (owner decision 2026-11-02): the trader session
+(combo-trader-tv, session_01XfUd7BBJNdtoRiqJysJGU4) executes all of B1–B7**,
+coordinating through each repo's CLAUDE.md. Other sessions: before changing
+gate.py, Shine, or Paper Lab architecture, sync with Tariq/the trader session.
 
 **Honest cost:** B2–B3 are weeks; B4–B6 are months of careful work across three
 sessions' code, with live trading in the path. The estate is safe and
