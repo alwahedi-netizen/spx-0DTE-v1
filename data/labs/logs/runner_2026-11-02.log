@@ -1,2 +1,5 @@
 07:15:10 labs fx-rebalance: {'CARRY': {'nav': 10096.93, 'legs': 5, 'cost': 0.12}, 'CARRY-V': {'nav': 10024.25, 'legs': 4, 'cost': 0.1}, 'TSMOM': {'nav': 9922.67, 'legs': 9, 'cost': 0.21}}
 16:30:10 labs alloc-daily: {'HFEA': {'nav': 9730.92, 'rebalanced': False}, 'SPY': {'nav': 9733.32, 'rebalanced': False}, 'VMSPX15': {'nav': 9596.53, 'rebalanced': True}, 'RP2X': {'nav': 9720.15, 'rebalanced': True}}
+17:10:11 labs fx-nav: {'CARRY': 10072.79, 'CARRY-V': 10002.74, 'TSMOM': 9920.78, 'TR30': 10021.26}
+17:15:13 labs cmd-daily: {'H21': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'H63': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'TR30': {'nav': 9840.11, 'opened': 0, 'closed': 0, 'signals': []}}
+17:20:15 labs crypto-daily: {'H5': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'H10': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'TR30': {'nav': 8444.07, 'opened': 0, 'closed': 0, 'signals': []}}
