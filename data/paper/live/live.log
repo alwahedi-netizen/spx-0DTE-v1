@@ -7348,3 +7348,9 @@
 [2026-10-30T16:07:04-04:00] 2026-10-30-MEIC-13:00-CALL settled at intrinsic +0.00 pnl +183
 [2026-10-30T16:07:04-04:00] cancel 1008509734202: HTTP 400
 [2026-10-30T16:07:04-04:00] 2026-10-30-MEIC-14:30-PUT settled at intrinsic +0.00 pnl +188
+[2026-11-02T08:14:32-05:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-11-02T08:14:33-05:00] schwab audit …910: token refresh failed: HTTP 400
+[2026-11-02T08:24:33-05:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-11-02T08:24:34-05:00] schwab audit …910: token refresh failed: HTTP 400
+[2026-11-02T08:34:34-05:00] schwab audit …719: token refresh failed: HTTP 400
+[2026-11-02T08:34:35-05:00] schwab audit …910: token refresh failed: HTTP 400
