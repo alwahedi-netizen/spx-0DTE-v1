@@ -739,7 +739,12 @@ def main():
     threading.Thread(target=_supervisor, daemon=True).start()
     threading.Thread(target=_stocks_supervisor, daemon=True).start()
     threading.Thread(target=_first_backtest, daemon=True).start()
-    threading.Thread(target=_live_loop, daemon=True).start()
+    # PAPER_LIVE_LOOP=0 -> no MEIC live mirror in this process (the Cloudflare
+    # Container parallel run sets it; the hub copy keeps the default "1").
+    if os.environ.get("PAPER_LIVE_LOOP", "1") != "0":
+        threading.Thread(target=_live_loop, daemon=True).start()
+    else:
+        print("MEIC live loop DISABLED (PAPER_LIVE_LOOP=0)", flush=True)
     if labs_runner is not None:
         threading.Thread(target=_labs_scheduler, daemon=True).start()
     print(f"SPX Paper Trader dashboard: http://{HOST}:{PORT}/", flush=True)

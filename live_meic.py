@@ -411,6 +411,7 @@ class Broker:
                            "tick that account on the approval screen")
 
     def place(self, order: dict) -> str:
+        _assert_orders_allowed("place")
         if self.dry:
             log(f"DRY-RUN …{self.tail} place {order['orderType']} {order['price']}")
             return f"dry-{int(time.time()*1000)}"
@@ -466,6 +467,7 @@ class Broker:
         return r.json()
 
     def cancel(self, order_id: str):
+        _assert_orders_allowed("cancel")
         if self.dry:
             return
         import requests
@@ -475,7 +477,19 @@ class Broker:
             log(f"cancel {order_id}: HTTP {r.status_code}")
 
 
+# Hubless program B5: a second copy of this lab (the Cloudflare Container
+# parallel run) must NEVER send or cancel a real order — the hub copy is the
+# only live MEIC until the explicit cutover. The container sets
+# LIVE_ORDERS_FORBIDDEN=1; this guard sits on the two order-mutating calls
+# so no code path (loop, dashboard button, manual call) can get past it.
+# Placed after the class on purpose; it is resolved at call time.
 # ── the mirror cycle ─────────────────────────────────────────────────────────
+
+def _assert_orders_allowed(what: str):
+    if os.environ.get("LIVE_ORDERS_FORBIDDEN") == "1":
+        raise RuntimeError(f"live order {what} refused: LIVE_ORDERS_FORBIDDEN=1 "
+                           "(this lab copy is a parallel run, not the live mirror)")
+
 
 def _paper_today(ds: str, strats: set) -> list:
     return [p for p in st.read("positions")
