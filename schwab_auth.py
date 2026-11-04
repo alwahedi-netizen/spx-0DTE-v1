@@ -72,13 +72,21 @@ def _svc_pass() -> str:
     return f"{ts}.{sig}"
 
 
-_edge_cache = {"token": None, "expires_at": 0.0}
+_edge_cache = {"token": None, "expires_at": 0.0, "fetched_at": 0.0}
+_EDGE_RECHECK_S = int(os.environ.get("EDGE_TOKEN_RECHECK_S", "60"))
 _edge_lock = threading.Lock()
 
 
 def _edge_access_token() -> str:
     with _edge_lock:
-        if _edge_cache["token"] and time.time() < _edge_cache["expires_at"] - 60:
+        # Re-ask the edge at least every EDGE_TOKEN_RECHECK_S (default 60 s):
+        # the edge answers from its own cache (no Schwab call), and a
+        # re-auth at /reauth replaces the grant — Schwab then rejects the
+        # old access token, so a long local cache would leave this process
+        # "Disconnected" for up to 30 min after every re-login.
+        now = time.time()
+        if (_edge_cache["token"] and now < _edge_cache["expires_at"] - 60
+                and now - _edge_cache.get("fetched_at", 0) < _EDGE_RECHECK_S):
             return _edge_cache["token"]
         resp = requests.post(EDGE_TOKEN_URL,
                              headers={"X-Logicon-Svc": _svc_pass()}, timeout=25)
@@ -87,6 +95,7 @@ def _edge_access_token() -> str:
                             " — check custody at https://trader.sahmi.ae/reauth2")
         data = resp.json()
         _edge_cache["token"] = data["access_token"]
+        _edge_cache["fetched_at"] = time.time()
         _edge_cache["expires_at"] = datetime.fromisoformat(
             data["expires_at"].replace("Z", "+00:00")).timestamp()
         return _edge_cache["token"]
