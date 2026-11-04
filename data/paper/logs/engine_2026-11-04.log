@@ -31,3 +31,10 @@ paper run 2026-11-04 | budget $5000 | gex negative
 [14:30] MEIC SKIP/RISK
 [14:30] MNG SKIP/RISK
 [14:30] MEP SKIP/RISK
+  2026-11-04-MEIC-12:00-CALL TP @ 0.00 pnl +155
+  2026-11-04-MNG-12:00-CALL TP @ 0.00 pnl +155
+paper run 2026-11-04 | budget $5000 | gex negative
+  2026-11-04-MEIC-12:30-CALL TP @ 0.00 pnl +170
+  2026-11-04-MNG-12:30-CALL TP @ 0.00 pnl +170
+  2026-11-04-MEIC-13:00-CALL TP @ 0.00 pnl +215
+paper run 2026-11-04 | budget $5000 | gex negative
