@@ -75,3 +75,21 @@ sign-in gate, B5 Paper Lab). Before changing gate.py or lab architecture,
 sync with Tariq/the trader session so the port doesn't chase a moving
 target. Day-to-day lab work continues as normal until each phase's
 parallel-run begins.
+
+## The lab now also runs on Cloudflare (B5, since 2026-11-04)
+
+A second copy of this lab runs in a Cloudflare Container (worker
+`logicon-paper-lab`, built from combo-trader-tv). It is rebuilt NIGHTLY
+(02:17 UTC) from this repo's `main` — so whatever lands on main reaches
+that copy the next night. It is a PARALLEL RUN that must never trade:
+- Keep the two switches working: `PAPER_LIVE_LOOP=0` (paper_dashboard
+  does not start the live loop) and `LIVE_ORDERS_FORBIDDEN=1`
+  (live_meic.place()/cancel() refuse). Never remove or bypass them; any
+  new code that can send, modify or cancel a real order MUST call
+  `_assert_orders_allowed()` first.
+- `data/paper/live/armed.json` must stay out of git (it is the live
+  arming state; the container image deletes it and never snapshots it).
+- The hub copy is still the live one. Defaults (switches unset) keep it
+  exactly as before.
+Owner can view the Cloudflare copy at paper.sahmi.ae/__lab/edge (banner
+shown; /__lab/hub switches back).
