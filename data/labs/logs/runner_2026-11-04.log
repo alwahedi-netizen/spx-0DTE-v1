@@ -1,1 +1,8 @@
 16:30:05 labs alloc-daily: {'HFEA': {'nav': 10033.72, 'rebalanced': False}, 'SPY': {'nav': 9923.91, 'rebalanced': False}, 'VMSPX15': {'nav': 9876.98, 'rebalanced': False}, 'RP2X': {'nav': 9984.45, 'rebalanced': False}}
+17:10:08 labs fx-nav: {'CARRY': 10094.69, 'CARRY-V': 9999.17, 'TSMOM': 9892.87, 'TR30': 10046.67}
+17:15:09 labs cmd-daily: {'H21': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'H63': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'TR30': {'nav': 9459.9, 'opened': 0, 'closed': 1, 'signals': []}}
+17:20:13 labs crypto-daily: {'H5': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'H10': {'nav': 10000.0, 'opened': 0, 'closed': 0, 'signals': []}, 'TR30': {'nav': 8623.98, 'opened': 0, 'closed': 0, 'signals': []}}
+17:29:23 labs fx-nav: {'CARRY': 10100.54, 'CARRY-V': 10003.39, 'TSMOM': 9893.28}
+17:29:23 labs alloc-daily: already ran for 2026-11-04
+17:29:23 labs cmd-daily: already ran for 2026-11-04
+17:29:23 labs crypto-daily: already ran for 2026-11-04

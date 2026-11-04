@@ -6,3 +6,4 @@ id,lane,sym,entry_day,entry_px,exit_day,exit_px,qty,pnl,pnl_pct,note
 5,TR30,USO,2026-10-22,162.50999450683594,,,0.0,,,SKIPPED — fully invested
 6,TR30,PDBC,2026-10-28,20.139999389648438,,,0.0,,,SKIPPED — fully invested
 7,TR30,USO,2026-10-29,168.19000244140625,,,0.0,,,SKIPPED — fully invested
+8,TR30,BNO,2026-10-08,63.63999938964844,2026-11-04,60.400001525878906,39.2717,-127.95,-5.09,trail exit · peak 71.39 · held 19 bars
