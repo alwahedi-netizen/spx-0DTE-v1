@@ -23,7 +23,12 @@ file:  export LOGICON_TOKENS_FILE=/path/to/combo-trader-tv/tokens.json
 import base64
 import json
 import sys
+import base64
+import hashlib
+import hmac
 import os
+import threading
+import time
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -37,6 +42,54 @@ TOKEN_URL = "https://api.schwabapi.com/v1/oauth/token"
 TOKEN_FILE = Path(os.environ.get("LOGICON_TOKENS_FILE",
                                  Path(__file__).parent / "tokens.json"))
 REFRESH_TOKEN_LIFE_DAYS = 7   # Schwab hard limit — refresh token dies 7 days after auth
+
+# ── B4 edge custody (hubless program, owner-approved 2026-11-02) ─────────────
+# SCHWAB_TOKEN_SOURCE=edge: the grant lives in the estate edge worker's
+# Durable Object (the ONE refresher). This module then fetches short-lived
+# access tokens from the edge (service pass signed with the sahmi gate
+# secret) and refuses local refresh/auth so a competing grant can never be
+# created. Flag unset (default): behavior unchanged.
+EDGE_TOKEN_URL = os.environ.get(
+    "LOGICON_EDGE_TOKEN_URL", "https://trader.sahmi.ae/api/schwab/token")
+
+
+def _edge_mode() -> bool:
+    return os.environ.get("SCHWAB_TOKEN_SOURCE", "").lower() == "edge"
+
+
+def _svc_secret() -> bytes:
+    b64 = os.environ.get("LOGICON_SVC_SECRET_B64", "")
+    if b64:
+        return base64.b64decode(b64)
+    path = os.environ.get("LOGICON_SVC_SECRET_FILE",
+                          "/opt/logicon/spx-paper-trader/gate_secret")
+    return Path(path).read_bytes()
+
+
+def _svc_pass() -> str:
+    ts = str(int(time.time()))
+    sig = hmac.new(_svc_secret(), f"svc|{ts}".encode(), hashlib.sha256).hexdigest()
+    return f"{ts}.{sig}"
+
+
+_edge_cache = {"token": None, "expires_at": 0.0}
+_edge_lock = threading.Lock()
+
+
+def _edge_access_token() -> str:
+    with _edge_lock:
+        if _edge_cache["token"] and time.time() < _edge_cache["expires_at"] - 60:
+            return _edge_cache["token"]
+        resp = requests.post(EDGE_TOKEN_URL,
+                             headers={"X-Logicon-Svc": _svc_pass()}, timeout=25)
+        if resp.status_code != 200:
+            raise AuthError(f"edge token endpoint HTTP {resp.status_code}"
+                            " — check custody at https://trader.sahmi.ae/reauth2")
+        data = resp.json()
+        _edge_cache["token"] = data["access_token"]
+        _edge_cache["expires_at"] = datetime.fromisoformat(
+            data["expires_at"].replace("Z", "+00:00")).timestamp()
+        return _edge_cache["token"]
 
 
 def shared_mode() -> bool:
@@ -122,6 +175,9 @@ def is_token_expired(tokens: dict) -> bool:
 
 
 def refresh_access_token(tokens: dict = None) -> dict:
+    if _edge_mode():
+        raise AuthError("edge custody active — this process must not refresh "
+                        "(ONE-grant rule); tokens come from the edge worker")
     if tokens is None:
         tokens = load_tokens()
     refresh_token = tokens.get("refresh_token")
@@ -145,6 +201,8 @@ def refresh_access_token(tokens: dict = None) -> dict:
 
 def get_access_token() -> str:
     """Valid access token, refreshing if needed. Raises AuthError, never exits."""
+    if _edge_mode():
+        return _edge_access_token()
     tokens = load_tokens()
     if is_token_expired(tokens):
         tokens = refresh_access_token(tokens)
@@ -160,6 +218,9 @@ def build_auth_url() -> str:
 
 
 def exchange_redirect_url(redirect_url: str) -> dict:
+    if _edge_mode():
+        raise AuthError("edge custody active — re-authenticate at "
+                        "https://trader.sahmi.ae/reauth2 (ONE-grant rule)")
     parsed = urllib.parse.urlparse(redirect_url.strip())
     params = urllib.parse.parse_qs(parsed.query)
     auth_code = params.get("code", [None])[0]
