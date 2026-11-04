@@ -12,3 +12,9 @@ paper run 2026-11-04 | budget $5000 | gex negative
   2026-11-04-OCB-CALL STOPPED @ -5.67 pnl -608
   2026-11-04-MPM-10:30-PUT STOPPED @ 3.48 pnl -181
   2026-11-04-MPM-11:00-PUT STOPPED @ 3.35 pnl -183
+[12:00] MEIC IRON_CONDOR credit 3.30 stop/side 3.30
+[12:00] MNG IRON_CONDOR credit 3.30 stop/side 3.30
+[12:00] MEP PUT_SPREAD credit 1.75 stop/side 3.50
+[12:30] MEIC IRON_CONDOR credit 3.38 stop/side 3.38
+[12:30] MNG IRON_CONDOR credit 3.38 stop/side 3.38
+[12:30] MEP PUT_SPREAD credit 1.68 stop/side 3.35
