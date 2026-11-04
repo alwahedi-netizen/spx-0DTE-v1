@@ -1,2 +1,8 @@
 waiting 293s for 09:00 ET pre-market step
 paper run 2026-11-04 | budget $5000 | gex negative
+[10:00] MPM PUT_SPREAD credit 1.50 stop/side 3.00
+[10:15] PBW BWB 7640/7680x2/7690 credit 2.88 maxloss 27.12
+[10:30] ORB BUY CALL 7690.0/7720.0 debit 11.75 stop 5.87
+[10:30] OCB BUY CALL 7690.0/7720.0 debit 11.75 stop 5.87
+[10:30] MPM PUT_SPREAD credit 1.67 stop/side 3.35
+[10:30] band 7655-7720 em 30.1 skew 0.981
