@@ -1,5 +1,20 @@
 # Notes for Claude Code sessions
 
+## HUB RETIRED — 2026-11-05 (owner order; executed by the trader session)
+
+The Paper Lab moved off the hub at 16:39 UTC (owner: "move all modules all
+together"): the hub's `logicon-paper` + its update timer are stopped, its
+final `data/` (INCLUDING the arming, live/armed.json — open positions are
+only managed by armed strategies) went to R2, and the Cloudflare Container
+`logicon-paper-lab` (built nightly from this repo's main) is paper.sahmi.ae
+and runs the live MEIC loop (live only after the hub's stop marker; MEIC
+came over armed). The arming persists in the container's R2 snapshot only
+while it is the live copy. Pushes here deploy via the
+combo-trader-tv workflow `deploy-paperlab.yml` (nightly 02:17 UTC + on
+dispatch), no longer via the hub. NEVER restart the hub lab: two live loops
+would double-trade. Hourly journal commits from the hub stop with it; the
+lab's data now persists to R2 (container/paper-lab/).
+
 ## Working across sessions (from Tariq)
 
 Tariq often runs several Claude Code sessions at the same time and may paste a message into the wrong one.
