@@ -208,6 +208,25 @@ rb.VAULT_FROM = old_vault
 for n in ("trials.json", "vault_log.json"):
     (rb.RESULTS / n).unlink(missing_ok=True)
 
+# ── 2f. potential rating / building blocks (owner 2026-11-07) ───────────────
+print("potential rating")
+random.seed(21)
+bret_t = [random.gauss(0.0004, 0.012) for _ in range(252 * 12)]
+rf_t = [0.0001] * len(bret_t)
+safer = [b * 0.5 if b < -0.01 else b * 0.9 for b in bret_t]       # cuts crashes, keeps most upside
+tr = rb.traits(safer, bret_t, rf_t)
+assert tr["dd_cut"] >= 0.3 and "risk-reducer" in tr["building_blocks"], tr
+assert tr["potential_suggested"] >= 2
+ok("a crash-cutting rule is tagged risk-reducer even without beating the benchmark")
+indep = [random.gauss(0.0003, 0.008) for _ in bret_t]
+tr2 = rb.traits(indep, bret_t, rf_t)
+assert "diversifier" in tr2["building_blocks"] and abs(tr2["corr_to_bench"]) < 0.1
+ok("an uncorrelated positive stream is tagged diversifier")
+r = rb.evaluate("T-TRAITS", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                start="1990-01-01", fetch=fetch, save=False)
+assert "traits" in r and "potential_suggested" in r["traits"] and "active_sharpe_bench_uptrend" in r["traits"]
+ok("every result carries traits + a suggested potential (regime split included)")
+
 # ── 2c. weekly performance report ───────────────────────────────────────────
 print("performance report")
 import perf_report as pr

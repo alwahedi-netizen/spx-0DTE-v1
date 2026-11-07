@@ -1,0 +1,48 @@
+id,asset_class,family,verdict,potential,blocks,works_when,fails_when,lesson,combine_with,revisit_when,updated
+DD-2026-11-TREND,multi,trend,FAIL,5,risk-reducer,"any asset in a sustained bear market (S&P -33% vs -55%, Nasdaq -29% vs -83%, intl -31% vs -61%)",choppy sideways markets: whipsaw costs; rarely beats buy-and-hold return,"Trend is crash insurance, not a return engine — the most reliable risk-reducer in the ledger, across every asset class","VTSPYL, HFEA, RPARL (lever up a trend-protected core)",,2026-11-07
+R-2026-10-28-VTSPYL,stocks,vol-target,PASS,5,conditional-edge,calm-to-normal volatility; cuts exposure before vol spikes,fast V-shaped rebounds after it has de-levered,Volatility targeting turns the same S&P into a better-shaped return; passed the allocation track,"DD-2026-11-TREND (trend filter on the levered core), RPARL",,2026-11-07
+R-2026-10-28-HFEA,stocks,leveraged-allocation,PASS,4,conditional-edge,falling rates / stock-bond negative correlation (1986-2021),rising-rate regimes when stocks and bonds fall together (2022),Leveraged 55/45 wins over 20-year windows but needs a regime guard for positive stock-bond correlation,CORRACC or a stock-bond correlation switch; DD-2026-11-TREND,,2026-11-07
+R-2026-10-28-RPARL,multi,risk-parity,FAIL,4,"diversifier,risk-reducer","most 20-year windows (+14.3%/yr vs +9.4%, Sharpe 0.78 vs 0.47)",shorter windows / 2022-type joint drawdowns,Strong long-run shape; failed only the shorter-horizon bar — a prime building block,"CORRACC (de-risk switch), DD-2026-11-TREND",,2026-11-07
+R-2026-11-07-CORRACC,stocks,correlation-hedge,FAIL,4,risk-reducer,crises where correlations jump (worst drop -34% vs -55%),calm markets; parameter X=1.13 was picked from 26 tries (overfit risk),"Correlation spikes are a usable crisis signal; use a robust default, not the source's tuned value","RPARL, HFEA (de-risk when correlations accelerate)",,2026-11-07
+R-2026-11-07-BEST6M,stocks,seasonality,FAIL,3,risk-reducer,drawdown control (-36% vs -55%) at similar Sharpe,return: +9.0%/yr vs +11.1%; weaker since 2014,"Seasonality is a mild risk filter, not alpha",combine with trend/vol-target overlays as a secondary filter,,2026-11-07
+R-2026-11-07-PREFOMC,stocks,event,FAIL,2,conditional-edge,"2000-2015 (+0.35%/trade, 62% won)",after publication (2016+: +0.03%/trade),Published event anomalies decay; the edge is arbitraged once known,"event filter only, not standalone",intraday data for the 14:00 exit,2026-11-07
+R-2026-11-07-TOY,stocks,calendar,FAIL,0,,pre-1990s,1988-2026: equal to T-bills; held-out negative,The January small-cap effect is gone,,,2026-11-07
+R-2026-10-31-YCURVE,stocks,macro-timing,FAIL,2,conditional-edge,recession lead signal,"as a timing rule: same -55% worst drop, lower return",Curve inversion warns early but is a poor stand-alone switch,combine with trend as a confirmation filter,,2026-11-07
+G-OVN,stocks,overnight,FAIL,4,conditional-edge,close-to-open drift is real,any cost above ~0.5bp per side,"Real effect killed by costs — the fix is execution (MOC/MOO auctions), not the signal",auction-only execution lane,an execution method under 0.5bp/side,2026-11-07
+G-GAPFADE,stocks,short-reversal,FAIL,3,conditional-edge,94% confidence (near miss),strict 99% bar,A near miss worth conditioning (volatility or regime filter),"regime filter from the lab (negative-GEX, VIX state)",,2026-11-07
+G-MOM,stocks,momentum,FAIL,3,,literature: robust across markets,our test: false pass from survivorship; failed point-in-time,Single-stock momentum must be tested on survivorship-free data before judging,"value (Asness value x momentum), trend filter",Sharadar survivorship-free data connected,2026-11-07
+G-STK-SUITE,stocks,rules-suite,FAIL,1,,—,40+ classic stock rules on point-in-time S&P 500: none cleared the bar,Simple published stock rules are mostly arbitraged,,,2026-11-07
+G-ASIAN,stocks,technical,FAIL,1,,—,no lane cleared the bar,Ichimoku/Supertrend/KDJ add nothing over plain trend,,,2026-11-07
+G-PAIRS,stocks,stat-arb,FAIL,1,,pre-2020,edge decayed to -$40/trade since 2020,Classic pairs trading is crowded out,,,2026-11-07
+G-DIP,stocks,dip-buying,FAIL,1,,—,dip lots +8.2%/yr vs +12.8% any day,Waiting for dips costs time in the market,,,2026-11-07
+I-2026-10-28-LETFSHORT,stocks,vol-decay,,2,conditional-edge,crisis volatility spikes,after borrow fees and realistic order timing,Leveraged-ETF decay pays mainly in crises — a possible crisis-convexity piece,crisis hedge sleeve,cheap borrow + pre-close execution,2026-11-07
+I-2026-10-28-CMDFX,fx,commodity-fx,,2,conditional-edge,"thin EM currencies (BRL, RUB, PEN, NZD)",G10 (AUD/CAD): dead,The export-price signal lives only where markets are thin,,EM FX becomes tradeable,2026-11-07
+I-2026-10-28-TRENDVAL,stocks,value-momentum,,3,,literature: value x momentum is one of the strongest combos,untestable without point-in-time fundamentals,Top candidate once fundamentals data exists,G-MOM,Sharadar fundamentals connected,2026-11-07
+I-2026-11-07-GREENBLATT,stocks,quality-value,,3,,literature,needs point-in-time fundamentals,Retest when the data exists,TRENDVAL,Sharadar fundamentals connected,2026-11-07
+I-2026-10-28-INSIDER,stocks,insider,,2,conditional-edge,2008-type dislocations,outside crises,Edge concentrated in one crisis,,Form 4 data pipeline,2026-11-07
+I-2026-10-28-HMM,stocks,regime-model,,2,,—,out-of-sample fragile (Quantpedia),"Regime models: prefer simple observable regimes (trend, vol, GEX) over hidden states",,,2026-11-07
+I-2026-11-07-FXML,fx,ml,,2,conditional-edge,signal is real,cannot pay the spread,ML signals need slower holding periods or cheaper execution,carry/trend FX lanes as a filter,,2026-11-07
+I-2026-11-07-BUYBACKS,stocks,flows,,2,,—,data paywalled,Corporate buyback flow is a plausible macro tilt,,Z.1 data located,2026-11-07
+I-2026-10-28-TURTLE,futures,trend,,2,risk-reducer,trend years,—,Already covered by TR30 paper lanes,DD-2026-11-TREND,,2026-11-07
+I-2026-10-28-SIMPLEETF,stocks,risk-parity,,2,diversifier,—,variant of a failed suite rule,See RPARL for the levered version that has shape,RPARL,,2026-11-07
+I-2026-10-28-CRYPTOXS,crypto,cross-sectional,,2,,—,coin survivorship; can't short alts at Schwab,Crypto cross-section is untestable honestly for now,,survivorship-free coin data,2026-11-07
+I-2026-10-28-FACTORTIME,stocks,factor-timing,,2,,—,needs daily long-short factor returns,Ken French daily factors are now connected — revisit,FF5+Mom from research_bt,,2026-11-07
+I-2026-10-31-SACECOMBO,multi,momentum-value,,2,,—,value half needs valuation-spread data,,,valuation data,2026-11-07
+I-2026-10-28-ELECTION,stocks,event,,1,,—,only 9 events,Too few events to ever reach confidence,,,2026-11-07
+I-2026-10-28-HALVING,crypto,cycle,,1,,—,~4 cycles,Unfalsifiable,,,2026-11-07
+I-2026-10-28-OPTV,stocks,tactical,,1,,—,proprietary rules,,,,2026-11-07
+I-2026-10-28-OU,stocks,mean-reversion,,1,,—,short-term stock mean reversion fails on costs,High-turnover reversion dies on costs,,,2026-11-07
+I-2026-10-28-MOMLIQ,stocks,momentum-overlay,,1,,—,weak evidence,,,,2026-11-07
+I-2026-10-31-STRATMOM,multi,meta,,1,,—,"momentum-of-momentum, weak evidence",,,,2026-11-07
+I-2026-10-31-AICAL,stocks,data-mined,,0,,—,pure data mining,"No rationale, no test",,,2026-11-07
+I-2026-10-31-NIFTYFUT,futures,index-futures,,1,,—,not tradeable at Schwab,,,,2026-11-07
+I-2026-10-31-AIAGENTS,crypto,ai-agent,,0,,—,no reproducible rule,,,,2026-11-07
+I-2026-10-31-PUMPFUN,crypto,memecoin,,0,,—,"on-chain data, untradeable",,,,2026-11-07
+I-2026-11-07-ELDER,stocks,trend-pullback,,1,,—,same bet as failed PB90/RSI2,,,,2026-11-07
+I-2026-11-07-CHARTRHYME,stocks,ml-pattern,,1,,—,gross-only results; Sharpe 6.4 before costs,"A too-good gross Sharpe is a red flag, not a signal",,,2026-11-07
+I-2026-11-07-BRHYBRID,stocks,regional,,1,,—,not tradeable; not significant,,,,2026-11-07
+I-2026-11-07-MACRODL,stocks,ml-macro,,1,,—,"proprietary data, many parameters",,,,2026-11-07
+P-CRYPTO,crypto,lab,,,,,,In paper — verdict at 12 months,,,2026-11-07
+P-CMD,futures,lab,,,,,,In paper — verdict at 12 months,,,2026-11-07
+P-FX,fx,lab,,,,,,In paper — carry lanes need verified policy rates,,,2026-11-07
+P-SHINE,stocks,lab,,,,,,Frozen 5-year forward test,,,2026-11-07

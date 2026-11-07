@@ -392,6 +392,68 @@ def factor_alpha(rets, rf, dates, factors):
             "loadings": {k: round(b, 2) for k, b in zip(names, beta[1:])}, "days": len(y)}
 
 
+# ── potential rating: what a FAILED idea can still teach (owner 2026-11-07) ──
+# "Even if the idea fails today, qualify it as a shortlisted idea that has
+# potential — combine it later into our own proprietary system." The verdict
+# says whether an idea stands alone; the potential says whether it is a
+# useful BUILDING BLOCK. Suggested automatically here; the run confirms it
+# with a written reason in data/research/learnings.csv.
+
+def _sh(x):
+    sd = _sd(x)
+    return _mean(x) / sd * math.sqrt(252) if sd and len(x) > 20 else 0.0
+
+
+def _corr(a, b):
+    ma, mb, sa, sb = _mean(a), _mean(b), _sd(a), _sd(b)
+    if not sa or not sb or len(a) < 3:
+        return 0.0
+    return sum((x - ma) * (y - mb) for x, y in zip(a, b)) / ((len(a) - 1) * sa * sb)
+
+
+def traits(rets, bret, rf, bench_px=None):
+    """Behaviour of an idea beyond its verdict: diversification, drawdown
+    cut, regime split (benchmark above/below its 200-day average), early vs
+    late half, best and worst 5-year stretch — plus a suggested potential."""
+    active = [a - b for a, b in zip(rets, bret)]
+    t = {"corr_to_bench": round(_corr(rets, bret), 2)}
+    bdd, idd = max_dd(bret), max_dd(rets)
+    t["dd_cut"] = round(1 - idd / bdd, 2) if bdd < 0 else None
+    t["sharpe_ratio_vs_bench"] = round(sharpe(rets, rf) / sharpe(bret, rf), 2) if sharpe(bret, rf) > 0 else None
+    h = len(active) // 2
+    t["active_sharpe_first_half"] = round(_sh(active[:h]), 2)
+    t["active_sharpe_second_half"] = round(_sh(active[h:]), 2)
+    if bench_px and len(bench_px) >= len(rets) + 1:
+        up, dn = [], []
+        for i, a in enumerate(active):
+            w = [p for p in bench_px[max(0, i - 199):i + 1] if p]
+            if len(w) >= 150 and bench_px[i]:
+                (up if bench_px[i] >= sum(w) / len(w) else dn).append(a)
+        t["active_sharpe_bench_uptrend"] = round(_sh(up), 2) if len(up) > 250 else None
+        t["active_sharpe_bench_downtrend"] = round(_sh(dn), 2) if len(dn) > 250 else None
+    win = 252 * 5
+    if len(active) > win + 252:
+        rolls = [_sh(active[s:s + win]) for s in range(0, len(active) - win, 63)]
+        t["best_5y_active_sharpe"], t["worst_5y_active_sharpe"] = round(max(rolls), 2), round(min(rolls), 2)
+    blocks, score = [], 0
+    regime = [v for k, v in t.items() if k.startswith(("active_sharpe_bench", "best_5y")) and v is not None]
+    if any(v >= 0.5 for v in regime) or t["active_sharpe_first_half"] >= 0.5 or t["active_sharpe_second_half"] >= 0.5:
+        blocks.append("conditional-edge"); score += 1
+    bs, isr = sharpe(bret, rf), sharpe(rets, rf)
+    keeps_quality = isr >= 0.8 * bs if bs > 0 else isr >= bs
+    if t["dd_cut"] is not None and t["dd_cut"] >= 0.3 and keeps_quality:
+        blocks.append("risk-reducer"); score += 1
+    if abs(t["corr_to_bench"]) <= 0.3 and sharpe(rets, rf) > 0:
+        blocks.append("diversifier"); score += 1
+    if _sh(active) > 0:
+        score += 1
+    if t["active_sharpe_second_half"] > 0:
+        score += 1
+    t["building_blocks"] = blocks
+    t["potential_suggested"] = score          # 0-5; the run confirms with a reason
+    return t
+
+
 # ── one call per idea ────────────────────────────────────────────────────────
 
 def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
@@ -481,6 +543,7 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
         "variants": len(variants),
         "factor_alpha": fa,
         "gates": gates,
+        "traits": traits(rets, bret, rf1, px.get(bench) if bench else None),
         "family": family, "vault": ("VAULT TEST (full history, one-time)" if vault
                                     else f"sealed from {VAULT_FROM}"),
     }

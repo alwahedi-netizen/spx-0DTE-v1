@@ -19,8 +19,28 @@ exactly. Changing the rules means editing this file, not the schedule.
 > **Supersedes the scheduled prompt** (owner, 2026-11-07): if the prompt that
 > started this run still says "weekly", "~7-14 days", "max 20 ideas", "top
 > 1–5" or "first Saturday", THIS FILE wins: run daily, score ≥10 sourced
-> ideas per asset class PLUS ≥3 original ones (§2b), backtest the top ≤2
-> per class, deep dive on day 1 of the month.
+> ideas per asset class PLUS ≥3 original ones (§2b), test every testable
+> idea ≥40 (up to 5 per class), rate and log learnings for ALL of them
+> (§00), deep dive on day 1 of the month.
+
+## 00. Learning first (owner 2026-11-07)
+
+"Don't be overly restrictive in idea selection — that enables our learning.
+Capture learnings from each idea, build a knowledge base, rate it; a failed
+idea can still be shortlisted as having potential and later combined into
+our own proprietary system."
+- **Start every run by reading `data/research/KNOWLEDGE.md` and
+  `learnings.csv`;** end it by updating both (one learnings row per idea
+  scored or tested, and the themes/shortlist/combination tables).
+- **Test broadly:** every idea scoring ≥ 40 that our data can test gets a
+  Phase-1 run (up to 5 per asset class per day; more when time allows).
+  Only untestable or untradeable ideas skip the test — they still get a
+  learnings row saying what data or access would unlock them.
+- **Rate potential (0–5)** for every idea, separate from the verdict, using
+  the `traits` research_bt reports (rubric in KNOWLEDGE.md). Potential ≥ 3
+  goes on the shortlist even when the verdict is FAIL.
+- **Learnings rows** must say: when it works, when it fails, the lesson,
+  what to combine it with, and what would make it worth revisiting.
 
 ## 0. World-class protocol (owner 2026-11-07: "match what world class is doing — cost is not a problem")
 
@@ -61,7 +81,7 @@ exactly. Changing the rules means editing this file, not the schedule.
 | Phase | What | Who moves an idea in |
 |---|---|---|
 | 0 Idea | Found, scored, logged in `data/research/ideas.csv` | the scan |
-| 1 Backtest | `research_bt.py`, rules written before the run | the scan (top ≤2 per asset class per day + a monthly deep dive) |
+| 1 Backtest | `research_bt.py`, rules written before the run | the scan (every testable idea ≥40, up to 5 per class per day + a monthly deep dive) |
 | 2 Paper | A pre-registered lane in the matching Paper Lab sandbox | **Tariq says "go"** |
 | 3 Live | Small size via the hub's single Schwab grant | **Tariq says "go", after the paper gates pass** |
 
@@ -116,6 +136,8 @@ email, and make it up from canon mining the next day.
 "Why limit yourself to what is published? You can always combine or do
 variations." Each daily run ALSO designs **≥3 original ideas per asset class**
 (id prefix `L-` for lab-generated), on top of the ≥10 sourced ones:
+  - **shortlist first:** ingredients come from the KNOWLEDGE.md shortlist
+    (potential ≥ 3) and its queued combination candidates;
   - **combinations** of signals that each have evidence (e.g. trend × carry,
     value × momentum, a regime filter from one class applied to another);
   - **variations** of ledger ideas that failed for a stated, fixable reason
@@ -153,8 +175,9 @@ the difference matters.
 | tradeable | 10 | not executable at Schwab | Schwab-tradeable ETF/stock/future |
 | simplicity | 10 | many tuned parameters | ≤3 parameters, published defaults |
 
-Backtest the top **≤2 ideas per asset class per day** scoring **≥50** (owner,
-2026-11-07 daily; was 1–5 per week), one script each at
+Backtest **every testable idea scoring ≥40 — up to 5 per asset class per
+day** (owner, 2026-11-07: test broadly to learn; was top 1–5 per week at
+≥50), one script each at
 `data/research/ideas/<id>.py`, calling `research_bt.evaluate(...)`:
 - rules fixed **before** the first run, using the source's published parameters;
 - benchmark: SPY (stocks), AGG or IEF (bonds), T-bills (FX, market-neutral),
@@ -244,6 +267,8 @@ DAILY and SHORT (a 2-minute read; the full ledger is the Research tab):
 3. **New ideas scored**: per asset class, the count and the TOP 3 by score
    (name · score · one-line idea · link); the rest are in the Research tab.
 4. **Paper lanes due a verdict** (from the labs' gates), if any.
+5. **Learned today:** 2–4 bullets — new shortlist entries (potential ≥ 3,
+   even if FAIL) and any theme the knowledge base changed.
 
 No jargon without a plain-English gloss. If nothing passed, say so plainly:
 that is the normal outcome.
