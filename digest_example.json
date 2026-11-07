@@ -1,0 +1,97 @@
+{
+ "date": "Saturday 7 November 2026",
+ "prepared": "23:10 UAE",
+ "headline": "A strong live week for MEIC (+$1,555 after fees). Research tested 28 ideas and none passed. The one apparent winner was broken by our red team.",
+ "kpis": [
+  {"label": "MEIC live · week", "value": "+$1,555", "sub": "32 trades, after fees", "tone": "pos"},
+  {"label": "Live vs paper", "value": "142%", "sub": "252 live MEIC trades", "tone": "pos"},
+  {"label": "Research", "value": "103 · 28 · 0", "sub": "ideas · tested · passed"},
+  {"label": "SPY · week", "value": "−2.7%", "sub": "week to Fri 6 Nov", "tone": "neg"}
+ ],
+ "decisions": [
+  {"title": "Options: test a volatility-regime gate?", "detail": "It sizes MEIC/MNG/FLY trades by whether recent real moves beat what the morning straddle priced. It scored **29.5/40**, the only recommendation tonight. Our own data runs opposite to the published claim, so the direction must be fixed before testing.", "reply": "go VRP gate Phase 1"},
+  {"title": "Retire MEP?", "detail": "MEP is the weakest lane in the lab: **−$3,433** over 57 trades, profit factor 0.54. MPM and OCB also still paper-trade without being in the lab config.", "reply": "retire MEP · keep MPM, OCB"},
+  {"title": "Confirm the FX carry rates", "detail": "The carry lanes rank currencies by placeholder policy rates until you confirm them on paper.sahmi.ae/fx.", "reply": "rates confirmed"}
+ ],
+ "sections": [
+  {"title": "Trading & labs · Fri 6 Nov session", "blocks": [
+   {"type": "table", "columns": ["Lab", "Friday", "Week", "PF", "Live"], "align": ["l", "r", "r", "r", "l"], "rows": [
+    [{"text": "MEIC", "tone": "neutral"}, {"text": "+$402", "tone": "pos"}, {"text": "+$2,346", "tone": "pos"}, "2.11", {"text": "+$1,555 net", "tone": "pos"}],
+    ["MNG", {"text": "no trades", "tone": "muted"}, {"text": "+$1,314", "tone": "pos"}, "2.76", {"text": "dry run", "tone": "info"}],
+    ["ORB", {"text": "+$1,870", "tone": "pos"}, {"text": "+$2,230", "tone": "pos"}, "2.46", {"text": "−$949 (2)", "tone": "neg"}],
+    ["FLY", {"text": "+$675", "tone": "pos"}, "+$72", "1.05", {"text": "—", "tone": "muted"}],
+    ["MPM", "+$112", {"text": "−$638", "tone": "neg"}, "0.61", {"text": "—", "tone": "muted"}],
+    ["MEP", {"text": "−$303", "tone": "neg"}, {"text": "−$773", "tone": "neg"}, "0.66", {"text": "—", "tone": "muted"}],
+    ["OCB", {"text": "—", "tone": "muted"}, {"text": "−$1,058", "tone": "neg"}, "0.00", {"text": "—", "tone": "muted"}],
+    ["PBW", "+$137", {"text": "−$4,493", "tone": "neg"}, "0.42", {"text": "retired", "tone": "muted"}]
+   ]},
+   {"type": "bullets", "items": [
+    "**Armed:** MEIC live on …719 · MNG dry run on …910 (since 10:58 Sat). Nothing else.",
+    "**Live vs paper:** no drift. Live fills average about $5 a trade better than paper."
+   ]},
+   {"type": "callout", "tone": "warn", "text": "**Correction:** this morning I said live kept 105% of paper. My cost monitor was subtracting fees twice; the correct figure is **142%**. Fixed and tested."}
+  ]},
+  {"title": "Performance · week to Fri 6 Nov", "blocks": [
+   {"type": "table", "columns": ["Lane", "Week", "Since 28 Oct"], "align": ["l", "r", "r"], "rows": [
+    ["Risk parity 2×", {"text": "−0.8%", "tone": "neg"}, {"text": "−3.5%", "tone": "neg"}],
+    ["SPY (yardstick)", {"text": "−2.7%", "tone": "neg"}, {"text": "−4.8%", "tone": "neg"}],
+    ["Hedgefundie 55/45", {"text": "−4.0%", "tone": "neg"}, {"text": "−6.2%", "tone": "neg"}],
+    ["Vol-managed S&P 1.5×", {"text": "−4.1%", "tone": "neg"}, {"text": "−7.3%", "tone": "neg"}],
+    ["Stocks book ($98,750)", {"text": "−$570", "tone": "neg"}, {"text": "−$1,250", "tone": "neg"}]
+   ]},
+   {"type": "bullets", "items": [
+    "**Needs attention:** crypto breakout is 16% below its peak; commodity breakout lost 7.0% this week.",
+    "FX lanes are down about 1%. The carry lanes use unconfirmed rates (decision 3)."
+   ]}
+  ]},
+  {"title": "Research · stocks, bonds, FX, futures, crypto", "blocks": [
+   {"type": "table", "columns": ["Class", "Ideas", "Tested", "Passed"], "align": ["l", "r", "r", "r"], "rows": [
+    ["Stocks", "16 + 3 retests", "8", "0"], ["Bonds", "23", "5", "0"], ["FX", "18", "5", "0"],
+    ["Futures / commodities", "19", "5", "0"], ["Crypto", "24", "5", "0"]
+   ]},
+   {"type": "para", "text": "**Three results worth knowing**"},
+   {"type": "table", "columns": ["Idea", "Verdict", "Why"], "align": ["l", "l", "l"], "rows": [
+    ["**Greenblatt quality-value** (honest data)", {"text": "near miss", "tone": "near"}, "+14.2%/yr vs S&P +7.6% (2000–24) with genuine alpha. Passed all five statistical tests; lost to the S&P in 2017–24."],
+    ["**High-yield bond trend**", {"text": "pass → broken", "tone": "fail"}, "The red team found the edge came from stale fund prices. On the tradeable ETF it is only a modest crash-cutter."],
+    ["**Momentum retest** (old G-MOM)", {"text": "fail", "tone": "fail"}, "Beat SPY (+9.1% vs +7.6%) but it is just the known momentum factor. The old pass was survivorship bias."]
+   ]},
+   {"type": "para", "text": "**What we learned**"},
+   {"type": "bullets", "items": [
+    "Single-stock anomalies are mostly known factors. Only quality-value showed real alpha.",
+    "Stale prices manufacture edges. Illiquid assets are now judged on tradeable ETFs.",
+    "Crash protection repeats in every asset class (BTC worst drop −46% vs −83%; commodities −31% vs −76%), but beating buy-and-hold does not.",
+    "Small, uncorrelated rates/FX edges (end-of-month Treasuries, FOMC-day dollar) lift a portfolio even though they fail alone."
+   ]},
+   {"type": "callout", "tone": "info", "text": "**10 new building blocks** went on the shortlist. A first portfolio of 9 of them reached a Sharpe of **1.51** at 2.5% volatility. Next combinations: Greenblatt + trend overlay, and a rates/FX sleeve."}
+  ]},
+  {"title": "Options research", "blocks": [
+   {"type": "table", "columns": ["Candidate", "Score", "Verdict"], "align": ["l", "r", "l"], "rows": [
+    ["Volatility-regime gate (MEIC/MNG/FLY)", "29.5", {"text": "Phase 1?", "tone": "pass"}],
+    ["Flat fly at 10:00 (Option Alpha)", "25.0", {"text": "watchlist", "tone": "near"}],
+    ["45-DTE put spread after a 3% drop", "24.5", {"text": "watchlist", "tone": "near"}],
+    ["1–7 DTE instead of 0DTE", "22.0", {"text": "watchlist", "tone": "near"}],
+    ["Naked straddle / naked strangles", "13.5 / 17", {"text": "rejected", "tone": "fail"}]
+   ]},
+   {"type": "bullets", "items": [
+    "**Live:** MEIC (404 paper trades, +$6,223, PF 1.16) · **Dry run:** MNG (+$2,239, PF 1.26).",
+    "**Paper:** ORB (+$5,297, PF 1.42) · FLYR (+$670) · FLY (−$1,071). **Retired:** PBW, BAND, LATE, METF."
+   ]}
+  ]},
+  {"title": "Estate & data", "blocks": [
+   {"type": "bullets", "items": [
+    "**All systems healthy:** platform live with Schwab OK · paper lab live, saved every 10 min · data hub has Friday's data (12,538 stocks and ETFs), 0 errors.",
+    "**FMP vs Sharadar compare:** 13 checks so far, largest price gap 0.007%. The real test starts Monday; your FMP decision reminder is Sat 14 Nov, 09:00.",
+    "**Changes today:** data hub launched · ARM button fixed for phones · PBW retired, MNG promoted · Sharadar connected · live cost monitor fixed · all reports merged into this digest."
+   ]}
+  ]},
+  {"title": "Tomorrow & open problems", "blocks": [
+   {"type": "bullets", "items": [
+    "**Queue:** insider-buying retest · Greenblatt + trend · rates/FX sleeve · bond credit-trend · FX value-trend · gold crisis sleeve.",
+    "**Fixed tonight:** a research run planned for 11:13 never started; tonight's digest did all the work instead.",
+    "**Data gaps:** free FRED rates and CPI would unlock 6 FX ideas; back-adjusted futures would unlock the curve ideas.",
+    "**Harness issues** (reported): crypto and weekday assets can't be mixed in one test; FX dates are off by a day in summer; one Sharadar filter is blocked."
+   ]}
+  ]}
+ ],
+ "links": [{"label": "Research ledger", "url": "https://paper.sahmi.ae/research"}, {"label": "0DTE lab", "url": "https://paper.sahmi.ae/suggested"}, {"label": "Data hub status", "url": "https://logicon-data.alwahedi.workers.dev/"}]
+}

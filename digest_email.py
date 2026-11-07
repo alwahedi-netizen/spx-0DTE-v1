@@ -11,6 +11,8 @@ show the text part when both exist. Stdlib only.
     python3 digest_email.py digest.json out.html     render
     python3 digest_email.py --selftest              smoke test
 
+Worked example (the first nightly digest, 2026-11-07): digest_example.json
+
 Schema
   {"date": "Sat 7 Nov 2026", "prepared": "23:10 UAE", "headline": "...",
    "kpis": [{"label", "value", "sub", "tone": "pos|neg|neutral"}],     # 2-4 tiles
