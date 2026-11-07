@@ -16,6 +16,11 @@ anything in the ledger or RETIRED.md are blocked (§3).
 The daily run is a scheduled cloud session. It reads this file and follows it
 exactly. Changing the rules means editing this file, not the schedule.
 
+> **Supersedes the scheduled prompt** (owner, 2026-11-07): if the prompt that
+> started this run still says "weekly", "~7-14 days", "max 20 ideas", "top
+> 1–5" or "first Saturday", THIS FILE wins: run daily, score ≥10 ideas per
+> asset class, backtest the top ≤2 per class, deep dive on day 1 of the month.
+
 ## 1. Pipeline and who decides
 
 | Phase | What | Who moves an idea in |
