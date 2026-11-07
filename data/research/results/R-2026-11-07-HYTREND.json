@@ -1,0 +1,59 @@
+{
+ "idea": "R-2026-11-07-HYTREND",
+ "run": "2026-11-07T18:31:49+00:00",
+ "period": [
+  "1992-01-02",
+  "2024-10-31"
+ ],
+ "bench": "VBMFX",
+ "cost_bps": 3.0,
+ "trials": 5,
+ "notes": "VWEHX if its close (i-1) > 200-day SMA else VFITX; daily, 1-day lag; bench VBMFX (AGG proxy); 1992+",
+ "idea_cagr": 0.072,
+ "bench_cagr": 0.0448,
+ "idea_sharpe": 1.051,
+ "bench_sharpe": 0.46,
+ "idea_maxdd": -0.1282,
+ "bench_maxdd": -0.1884,
+ "turnover_per_year": 7.65,
+ "confidence": 0.9999,
+ "oos_from": "2014-12-23",
+ "oos_idea_sharpe": 0.573,
+ "oos_bench_sharpe": -0.051,
+ "oos_idea_cagr": 0.0419,
+ "verdict": "PASS",
+ "asset_class": "bonds",
+ "deflated_sharpe": 0.9887,
+ "active_t": 3.57,
+ "sharpe_2x_costs": 0.998,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "ok",
+  "t_stat_3": "ok",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.57,
+  "dd_cut": 0.32,
+  "sharpe_ratio_vs_bench": 2.28,
+  "active_sharpe_first_half": 0.38,
+  "active_sharpe_second_half": 0.82,
+  "active_sharpe_bench_uptrend": 0.91,
+  "active_sharpe_bench_downtrend": -0.68,
+  "best_5y_active_sharpe": 1.67,
+  "worst_5y_active_sharpe": -0.9,
+  "building_blocks": [
+   "conditional-edge",
+   "risk-reducer"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "R-2026-11-07-HYTREND",
+ "vault": "sealed from 2024-11-01"
+}

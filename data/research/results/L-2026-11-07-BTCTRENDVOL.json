@@ -1,0 +1,58 @@
+{
+ "idea": "L-2026-11-07-BTCTRENDVOL",
+ "run": "2026-11-07T18:30:48+00:00",
+ "period": [
+  "2015-01-01",
+  "2024-10-31"
+ ],
+ "bench": "BTC-USD",
+ "cost_bps": 25.0,
+ "trials": 7,
+ "notes": "lab original: BTC month-end 10-mo SMA trend x min(1, 50%/30d vol) sized weekly; 25bp; tests Moreira-Muir vs Tripathi 2026 on BTC; vault sealed from 2024-11",
+ "idea_cagr": 0.4248,
+ "bench_cagr": 0.4617,
+ "idea_sharpe": 1.139,
+ "bench_sharpe": 0.919,
+ "idea_maxdd": -0.4555,
+ "bench_maxdd": -0.834,
+ "turnover_per_year": 2.5,
+ "confidence": 0.8986,
+ "oos_from": "2021-11-19",
+ "oos_idea_sharpe": 0.764,
+ "oos_bench_sharpe": 0.251,
+ "oos_idea_cagr": 0.2517,
+ "verdict": "FAIL",
+ "asset_class": "crypto",
+ "deflated_sharpe": 0.0035,
+ "active_t": -1.36,
+ "sharpe_2x_costs": 1.121,
+ "robust_share": 0.8,
+ "variants": 5,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.79,
+  "dd_cut": 0.45,
+  "sharpe_ratio_vs_bench": 1.24,
+  "active_sharpe_first_half": -0.51,
+  "active_sharpe_second_half": -0.19,
+  "active_sharpe_bench_uptrend": -0.8,
+  "active_sharpe_bench_downtrend": -0.16,
+  "best_5y_active_sharpe": 0.29,
+  "worst_5y_active_sharpe": -0.93,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "btc-trend-vol",
+ "vault": "sealed from 2024-11-01"
+}

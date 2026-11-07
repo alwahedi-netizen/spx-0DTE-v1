@@ -1,0 +1,59 @@
+{
+ "idea": "L-2026-11-07-CORRSWITCH",
+ "run": "2026-11-07T18:30:54+00:00",
+ "period": [
+  "2000-09-01",
+  "2024-10-31"
+ ],
+ "bench": "VFINX",
+ "cost_bps": 5.0,
+ "trials": 15,
+ "notes": "LAB: inverse-63d-vol risk parity VFINX/VUSTX/GC=F, 2x (T-bill + 1%/yr) when 63d stock-bond corr <= 0 else 1x, monthly; variants corr 42/84d, threshold -/+0.10; vault sealed",
+ "idea_cagr": 0.1257,
+ "bench_cagr": 0.0773,
+ "idea_sharpe": 0.763,
+ "bench_sharpe": 0.396,
+ "idea_maxdd": -0.3881,
+ "bench_maxdd": -0.5525,
+ "turnover_per_year": 3.63,
+ "confidence": 0.943,
+ "oos_from": "2017-08-03",
+ "oos_idea_sharpe": 0.435,
+ "oos_bench_sharpe": 0.659,
+ "oos_idea_cagr": 0.0826,
+ "verdict": "FAIL",
+ "asset_class": "etf",
+ "deflated_sharpe": 0.1921,
+ "active_t": 0.9,
+ "sharpe_2x_costs": 0.751,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.35,
+  "dd_cut": 0.3,
+  "sharpe_ratio_vs_bench": 1.92,
+  "active_sharpe_first_half": 0.56,
+  "active_sharpe_second_half": -0.3,
+  "active_sharpe_bench_uptrend": 0.19,
+  "active_sharpe_bench_downtrend": 0.06,
+  "best_5y_active_sharpe": 0.71,
+  "worst_5y_active_sharpe": -0.47,
+  "building_blocks": [
+   "conditional-edge",
+   "risk-reducer"
+  ],
+  "potential_suggested": 3
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "L-CORRSWITCH",
+ "vault": "sealed from 2024-11-01"
+}

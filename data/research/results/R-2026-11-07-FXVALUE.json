@@ -1,0 +1,56 @@
+{
+ "idea": "R-2026-11-07-FXVALUE",
+ "run": "2026-11-07T18:31:39+00:00",
+ "period": [
+  "2003-12-01",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 2.0,
+ "trials": 5,
+ "notes": "AMP currency value without CPI (nominal 5y reversal, avg 4.5-5.5y ago vs today), rank-weighted incl. USD, monthly, spot pairs, T-bills bench; harness charges ~rf on the dollar-neutral book (conservative)",
+ "idea_cagr": 0.0096,
+ "bench_cagr": 0.0155,
+ "idea_sharpe": -0.127,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.1425,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 2.18,
+ "confidence": 0.2781,
+ "oos_from": "2018-07-25",
+ "oos_idea_sharpe": -0.54,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": -0.0093,
+ "verdict": "FAIL",
+ "asset_class": "fx",
+ "deflated_sharpe": 0.0333,
+ "active_t": -0.59,
+ "sharpe_2x_costs": -0.137,
+ "robust_share": 0.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.0,
+  "dd_cut": -8446.14,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.3,
+  "active_sharpe_second_half": -0.41,
+  "best_5y_active_sharpe": 0.68,
+  "worst_5y_active_sharpe": -0.58,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "fx-value",
+ "vault": "sealed from 2024-11-01"
+}
