@@ -8,7 +8,9 @@ position_id, so each live trade has an exact theoretical twin:
 
   entry slippage  = (paper credit - live fill)            per contract, $
   exit slippage   = (live close fill - paper exit value)  per contract, $ (closed by order)
-  fees            = $1.18 per leg (4 legs when closed by order, 2 when expired)
+  fees            = what the journal already deducted: pnl_live is NET of fees
+                    (live_meic: $1.18/leg, 4 legs closed by order, 2 expired), so
+                    fees = gross fill P&L - pnl_live (estimated by legs if fills are missing)
   shortfall       = paper P&L - live net P&L   (= entry + exit slippage + fees + mismatches)
   capture         = live net / paper P&L       (share of the paper edge that reached the account)
 Sign convention everywhere: POSITIVE = cost to us, NEGATIVE = price improvement
@@ -61,10 +63,15 @@ def pairs(live_rows, paper_rows):
         qty = int(_f(r.get("qty")) or 1)
         pc = int(_f(p.get("contracts")) or 1)
         by_order = bool((r.get("close_order_id") or "").strip())
-        fees = FEE_PER_LEG * (4 if by_order else 2) * qty
-        live_net = (_f(r.get("pnl_live")) or 0.0) - fees
+        live_net = _f(r.get("pnl_live")) or 0.0          # already net of fees
         paper = (_f(p.get("pnl_theo")) or 0.0) * qty / pc
         ct, cf = _f(p.get("credit_theo")), _f(r.get("credit_fill"))
+        xf0 = _f(r.get("close_fill"))                     # expired rows carry settlement value
+        xf0 = 0.0 if xf0 is None and not by_order else xf0
+        if cf is not None and xf0 is not None:
+            fees = (cf - xf0) * 100 * qty - live_net        # gross from fills - net
+        else:
+            fees = FEE_PER_LEG * (4 if by_order else 2) * qty
         entry = (ct - cf) * 100 * qty if ct is not None and cf is not None else None
         ev, xf = _f(p.get("exit_value_theo")), _f(r.get("close_fill"))
         exit_ = (xf - ev) * 100 * qty if by_order and ev is not None and xf is not None else None
