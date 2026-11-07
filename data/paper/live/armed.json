@@ -1,1 +1,1 @@
-{"strategies": {"MEIC": {"armed": true, "account_tail": "719", "dry_run": false, "armed_at": "2026-09-24T09:34:00-04:00"}}}
+{"strategies": {"MEIC": {"armed": true, "account_tail": "719", "dry_run": false, "armed_at": "2026-09-24T09:34:00-04:00"}, "MNG": {"armed": true, "account_tail": "910", "dry_run": true, "armed_at": "2026-11-07T01:58:41-05:00"}}}
