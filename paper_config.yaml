@@ -100,7 +100,8 @@ mng:                              # MEIC mechanics, NEGATIVE-GEX days only —
   contracts: 1
 
 pbw:                              # put broken-wing butterfly, 10:15, held to
-  enabled: true                   # settlement; zero upside risk, small left tail
+  enabled: false                  # RETIRED 2026-11-07 by owner (see RETIRED.md)
+  #enabled was: true                   # settlement; zero upside risk, small left tail
   entry_time: "10:15"
   short_delta: 0.30               # v2 geometry 2026-10-10: v1 (0.20, +25/-30)
   width_up: 10                    # could never price a credit on 0DTE and this

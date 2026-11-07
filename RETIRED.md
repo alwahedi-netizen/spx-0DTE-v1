@@ -9,6 +9,19 @@ trade history of every retired strategy remains in `data/paper/*.csv`
 
 ---
 
+## PBW — put broken-wing butterfly (10:15, held to settlement)
+- **Live in lab:** 2026-10-14 → 2026-11-06 (retired by owner instruction 2026-11-07)
+- **Final record:** 16 sessions / 32 sides, **−$4,616**, PF 0.69,
+  win rate 56%, max drawdown −$5,453 (paper, v2 geometry: ~0.30-delta
+  shorts, 10-wide upper wing, 40-wide lower wing, min credit 0.30).
+- **Why it died:** small frequent credits, rare large losses — three
+  sell-off days (10-16, 11-02, 11-05) cost $3.2–3.6k each through the wide
+  lower wing, wiping out every winning day. No stop by design, so the
+  left tail was the whole risk and it arrived three times in four weeks.
+- **Lesson recorded:** a wide unprotected lower wing on 0DTE puts is a
+  short-crash bet; don't re-propose broken-wing put structures without a
+  hard intraday stop or a much narrower lower wing.
+
 ## BAND — 10:30 expected-move iron condor
 - **Live in lab:** 2026-08-31 → 2026-09-29 (retired by owner instruction)
 - **Final record:** 17 condors / 33 sides, **−$2,040**, PF 0.42,

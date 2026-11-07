@@ -421,10 +421,15 @@ def test_live_meic():
 def test_mng_pbw():
     print("MNG / PBW")
     cfg = pe.load_config(path="/nonexistent")
-    assert cfg["mng"]["enabled"] and cfg["pbw"]["enabled"]
+    assert cfg["mng"]["enabled"] and cfg["pbw"]["enabled"] is False
     assert cfg["late"]["enabled"] is False
     assert cfg["band"]["enabled"] and cfg["band"]["trade_enabled"] is False
-    ok("BAND/LATE retired (band measurement stays); MNG/PBW enabled")
+    ok("BAND/LATE/PBW retired (band measurement stays); MNG enabled")
+    import yaml as _y
+    assert _y.safe_load(open(Path(__file__).resolve().parent / "paper_config.yaml"))["pbw"]["enabled"] is False
+    import live_meic as lm
+    assert "MNG" in lm.STRATS and lm.STRATS["MNG"] == lm.STRATS["MEIC"]
+    ok("PBW retired in the live config too; MNG armable with MEIC's rails (owner 2026-11-07)")
 
     assert pe.mng_day_ok("negative") is True
     assert pe.mng_day_ok("positive") is False

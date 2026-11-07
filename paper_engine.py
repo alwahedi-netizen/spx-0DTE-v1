@@ -116,7 +116,12 @@ DEFAULTS = {
     # one, which prices as a genuine credit. v1 took ZERO trades, so the
     # experiment's record starts clean here.
     "pbw": {
-        "enabled": True, "entry_time": "10:15",
+        "enabled": False,         # RETIRED 2026-11-07 by owner: 16 sessions,
+                                  # -$4,616, PF 0.69, max drawdown -$5,453 —
+                                  # three single-day losses of $3.2-3.6k on
+                                  # sell-offs through the 40-wide lower wing.
+                                  # See RETIRED.md.
+        "entry_time": "10:15",
         "short_delta": 0.30, "width_up": 10, "width_down": 40,
         "min_credit": 0.30, "contracts": 1,
     },

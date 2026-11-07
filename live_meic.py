@@ -61,6 +61,12 @@ STRATS = {
     "FLY":  {"entry_last": "13:15", "cap": 2,  "daily_stop": -400.0},
     "FLYR": {"entry_last": "14:50", "cap": 4,  "daily_stop": -400.0},
     "ORB":  {"entry_last": "13:15", "cap": 2,  "daily_stop": -600.0},
+    # MNG (MEIC on negative-GEX days) promoted by owner 2026-11-07 after its
+    # paper gate (102 sides, PF 1.26): same rails as MEIC. Arms like the
+    # others — playbook: 2 clean DRY-RUN weeks before real money. Note: on
+    # negative-GEX days MNG and MEIC open the SAME spreads, so arming both
+    # live on one account doubles size on those days.
+    "MNG":  {"entry_last": "15:00", "cap": 12, "daily_stop": -1000.0},
 }
 GLOBAL_DAILY_STOP = -2000.0   # realized $ across ALL live strategies
 

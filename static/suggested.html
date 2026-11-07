@@ -112,7 +112,7 @@ if(window.self===window.top){document.getElementById('backTrader').style.display
 
 <script>
 let LIVE=null;
-const LIVE_STRATS=["MEIC","FLY","FLYR","ORB"];
+const LIVE_STRATS=["MEIC","MNG","FLY","FLYR","ORB"];
 function esc(s){return String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 function fmt(v){const n=parseFloat(v);return isNaN(n)?'—':(n>0?'+':'')+n.toFixed(0)}
 function panel(name,s){
