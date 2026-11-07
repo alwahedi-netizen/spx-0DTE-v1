@@ -1,4 +1,4 @@
-# RESEARCH.md — the weekly strategy-research scan
+# RESEARCH.md — the daily strategy-research scan
 
 Owner request (2026-10-28): every week, scan the web for new trading techniques
 that look worth testing, score them, backtest the best, and email Tariq
@@ -6,7 +6,14 @@ that look worth testing, score them, backtest the best, and email Tariq
 **stocks/ETFs, bonds, FX, futures/commodities, crypto. NOT options** (another
 instance owns options).
 
-The weekly run is a scheduled cloud session. It reads this file and follows it
+**DAILY since 2026-11-07** (owner: "at least 10 ideas every day under each
+asset class — world-class quant research"). Quota: **≥10 scored ideas per
+asset class per day** (stocks/ETFs, bonds, FX, futures/commodities, crypto =
+≥50/day). World-class means the FILTER, not the count: every idea needs a
+citable source and an exact rule; nothing is invented or padded; repeats of
+anything in the ledger or RETIRED.md are blocked (§3).
+
+The daily run is a scheduled cloud session. It reads this file and follows it
 exactly. Changing the rules means editing this file, not the schedule.
 
 ## 1. Pipeline and who decides
@@ -14,14 +21,14 @@ exactly. Changing the rules means editing this file, not the schedule.
 | Phase | What | Who moves an idea in |
 |---|---|---|
 | 0 Idea | Found, scored, logged in `data/research/ideas.csv` | the scan |
-| 1 Backtest | `research_bt.py`, rules written before the run | the scan (top 1–5 per week + a monthly deep dive) |
+| 1 Backtest | `research_bt.py`, rules written before the run | the scan (top ≤2 per asset class per day + a monthly deep dive) |
 | 2 Paper | A pre-registered lane in the matching Paper Lab sandbox | **Tariq says "go"** |
 | 3 Live | Small size via the hub's single Schwab grant | **Tariq says "go", after the paper gates pass** |
 
 The scan never builds a paper lane, never touches a running lab, never trades.
 It recommends; Tariq decides.
 
-## 2. Sources (scan each, newest first, last ~14 days)
+## 2. Sources (scan each, newest first, since the last scan; widen to ~30 days when a class is thin)
 
 - arXiv q-fin (PM, TR, ST): https://arxiv.org/list/q-fin/new and search
 - SSRN finance (new working papers on trading strategies)
@@ -42,8 +49,27 @@ It recommends; Tariq decides.
   - **Journal of Portfolio Management** and **Financial Analysts Journal**:
     new-issue abstracts
 
+Daily additions (2026-11-07), to reach the per-class quota with quality:
+  - **arXiv q-fin** (PM, TR, ST, CP) and **SSRN FEN / NBER** working papers;
+    central-bank & BIS working papers (rates, FX, carry, macro)
+  - **Practitioner research**: AQR, Man Institute, Research Affiliates, Robeco
+    Quant, Alpha Architect, Quantpedia (new + "screener"), CXO Advisory,
+    Allocate Smartly, Verdad, Newfound/Return Stacked, Hudson & Thames
+  - **Asset-class desks**: CME Group & EIA research (commodities/futures);
+    Coin Metrics, Kaiko, Glassnode research (crypto, daily-data rules only);
+    BIS/IMF FX notes; bond: Treasury/Fed term-premium and curve research
+  - **Canon mining** when new publications are thin: untested VARIANTS of the
+    classic literature (Jegadeesh-Titman, Moskowitz-Ooi-Pedersen TSMOM, Asness
+    et al. "Value and Momentum Everywhere", Koijen et al. carry, Frazzini-
+    Pedersen BAB, Baltas-Kosowski, Hurst-Ooi-Pedersen, Gorton-Rouwenhorst) —
+    each with the paper as source and the exact variant stated; a variant of
+    a ledger row must say which row and why the difference matters (§3)
+
 Skip anything about options or that needs data we cannot get (tick data, paid
-alt-data, order books). Max **20 ideas scored per week**.
+alt-data, order books). **Quota: ≥10 scored ideas per asset class per day.**
+Never fabricate a source or rule to meet it: if a class truly has fewer than
+10 credible ideas that day, score what exists, say the count plainly in the
+email, and make it up from canon mining the next day.
 
 ## 3. De-duplication
 
@@ -63,8 +89,8 @@ the difference matters.
 | tradeable | 10 | not executable at Schwab | Schwab-tradeable ETF/stock/future |
 | simplicity | 10 | many tuned parameters | ≤3 parameters, published defaults |
 
-Backtest the top **1–5** ideas scoring **≥50** (owner, 2026-10-31; was 1–3 at
-≥60), one script each at
+Backtest the top **≤2 ideas per asset class per day** scoring **≥50** (owner,
+2026-11-07 daily; was 1–5 per week), one script each at
 `data/research/ideas/<id>.py`, calling `research_bt.evaluate(...)`:
 - rules fixed **before** the first run, using the source's published parameters;
 - benchmark: SPY (stocks), AGG or IEF (bonds), T-bills (FX, market-neutral),
@@ -106,8 +132,8 @@ seeing a result; changes to these rules apply to the next idea.
 
 ## 4c. Monthly deep dive (owner, 2026-10-31)
 
-On the **first scan of each calendar month** (the Saturday falling on day 1–7),
-in addition to the weekly scan, take the next family from the rotation below
+On the **first scan of each calendar month** (day 1),
+in addition to the daily scan, take the next family from the rotation below
 that has no `DD-` row in the ledger yet, and test its classic published form
 across **every asset class we can get honest daily data for** — equity indices
 (VFINX/SPY, QQQ, IWM, EFA, EEM), bonds (VUSTX/TLT, IEF), commodities (GLD,
@@ -136,22 +162,23 @@ Rotation (in order; restart at the top when all are done):
 Update `data/research/ideas.csv` (columns as in the header; `score` = sum of the
 six criteria; `phase` one of idea / backtest / paper-proposed / paper / live /
 rejected / graveyard). Commit ONLY files under `data/research/` to `main` of
-alwahedi-netizen/spx-0DTE-v1 (a data-only change: the hub syncs it to the
-Research tab without a redeploy). Never edit any other file or branch; if the
+alwahedi-netizen/spx-0DTE-v1 (a data-only change: the Cloudflare lab rebuilds
+nightly from main, which refreshes the Research tab). Never edit any other file or branch; if the
 harness itself needs a fix, say so in the email instead.
 
 ## 6. The email (to alwahedi@logicon.ae)
 
 Subject: `Logicon research — <date>: <n> new · <k> backtested · <p> pass`
 
-Plain language, short:
+DAILY and SHORT (a 2-minute read; the full ledger is the Research tab):
 1. **Ready for Phase 2** (PASS this week): name, what it does in one line,
    result vs benchmark (return/yr, worst drawdown, Sharpe, confidence,
    held-out result), and the exact sentence Tariq can reply to approve.
 2. **Backtested this week**: one row each — verdict and one-line why.
    On a deep-dive week, a separate section: the family, one row per asset
    class (return vs benchmark, worst drop, verdict) and the one-line takeaway.
-3. **New ideas scored**: table name · asset class · score · one-line idea · link.
+3. **New ideas scored**: per asset class, the count and the TOP 3 by score
+   (name · score · one-line idea · link); the rest are in the Research tab.
 4. **Paper lanes due a verdict** (from the labs' gates), if any.
 
 No jargon without a plain-English gloss. If nothing passed, say so plainly:
