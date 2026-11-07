@@ -1,0 +1,42 @@
+# Hourly journal snapshot — replaces the hub's hourly commit (the hub was
+# retired 2026-11-05; the Paper Lab now runs in a Cloudflare Container and
+# saves its data/ to R2). This job fetches that snapshot from the lab Worker
+# and commits the journals here exactly as the hub did, so the weekly
+# reports (perf_report.py etc.) keep reading git.
+# Auth: GitHub's OIDC token (no secret); the lab Worker accepts only main of
+# this repo. Data paths/excludes mirror deploy/auto-update-paper.sh.
+name: Journal snapshot (Cloudflare lab -> git)
+on:
+  schedule: [{ cron: "7 * * * *" }]
+  workflow_dispatch: {}
+permissions: { contents: write, id-token: write }
+concurrency: { group: journal-snapshot, cancel-in-progress: false }
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - name: Fetch the lab's latest data snapshot
+        run: |
+          tok=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=logicon-lab-export" | python3 -c 'import json,sys;print(json.load(sys.stdin)["value"])')
+          curl -fsS -D /tmp/h.txt -H "Authorization: Bearer $tok" -o /tmp/lab.tgz \
+            https://logicon-paper-lab.alwahedi.workers.dev/__export/data.tar.gz
+          grep -i '^x-snapshot-at' /tmp/h.txt || true
+          mkdir -p /tmp/lab && tar -xzf /tmp/lab.tgz -C /tmp/lab --no-same-owner
+      - name: Copy journals (same rules as the hub)
+        run: |
+          S=/tmp/lab/data
+          [ -d $S/paper ] && mkdir -p data/paper && rsync -a $S/paper/ data/paper/
+          [ -d $S/stocks ] && mkdir -p data/stocks && rsync -a --exclude cache --exclude history --exclude history_tr $S/stocks/ data/stocks/
+          [ -d $S/labs ] && mkdir -p data/labs && rsync -a --exclude '*.sqlite' --exclude '*.sqlite-*' $S/labs/ data/labs/
+          git status --short -- data | head -20
+      - name: Commit and push if changed
+        run: |
+          [ -n "$(git status --porcelain -- data/paper data/stocks data/labs)" ] || { echo "no change"; exit 0; }
+          git add data/paper data/stocks data/labs
+          git -c user.name="Logicon Lab (Cloudflare)" -c user.email="alwahedi@logicon.ae" \
+            commit -q -m "journal snapshot $(TZ=America/New_York date '+%F %H:%M ET')"
+          for i in 1 2 3; do git push -q origin main && exit 0; git pull --rebase -q origin main; done
+          exit 1
