@@ -67,10 +67,13 @@ our own proprietary system."
    realism, and whether it is a known factor in disguise. Its findings go in
    the ledger notes; a PASS the red team breaks is reported as FAIL with the
    reason. Only a PASS that survives the red team reaches the email as PASS.
-4. **Portfolio fit.** For a surviving PASS, report its return correlation
-   with SPY, AGG and the closest existing paper lane, and whether adding it
-   at 10% raises the combined Sharpe — an uncorrelated small edge beats a
-   correlated big one.
+4. **Portfolio fit** (`portfolio.py`). research_bt saves monthly returns of
+   every shortlist-grade idea (suggested potential ≥ 3) to
+   `data/research/series/`. For every PASS or new shortlist entry, run
+   `portfolio.marginal(book, id, series)` where the book = the shortlist's
+   series (inverse-vol weighted): report correlation to the book and the
+   Sharpe gain from adding it at 10%. An uncorrelated small edge beats a
+   correlated big one; combination candidates (§2b) are judged the same way.
 5. **Data honesty.** Daily Yahoo data has no delisted stocks and no
    point-in-time fundamentals: any cross-sectional single-stock idea is
    marked `survivorship-biased` in its notes and can be PROMISING at best

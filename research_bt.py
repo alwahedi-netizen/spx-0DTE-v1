@@ -547,6 +547,11 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
         "family": family, "vault": ("VAULT TEST (full history, one-time)" if vault
                                     else f"sealed from {VAULT_FROM}"),
     }
+    if save and out["traits"].get("potential_suggested", 0) >= 3:
+        # shortlist candidates keep their monthly returns for portfolio work
+        import portfolio
+        portfolio.save_series(idea_id, portfolio.monthly(dates[1:], rets),
+                              {"verdict": verdict, "bench": bench or "T-bills", "family": family})
     if save:
         fam[family] = fam.get(family, 0) + 1 + len(variants)
         _jsave("trials.json", fam)

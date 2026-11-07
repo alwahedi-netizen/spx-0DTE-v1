@@ -227,6 +227,31 @@ r = rb.evaluate("T-TRAITS", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
 assert "traits" in r and "potential_suggested" in r["traits"] and "active_sharpe_bench_uptrend" in r["traits"]
 ok("every result carries traits + a suggested potential (regime split included)")
 
+# ── 2g. portfolio construction (owner shortfall #3) ─────────────────────────
+print("portfolio construction")
+import portfolio as pf
+random.seed(33)
+ms = [f"{2000 + i // 12}-{1 + i % 12:02d}" for i in range(240)]
+eq_ = {m: random.gauss(0.008, 0.045) for m in ms}
+bond = {m: random.gauss(0.003, 0.015) for m in ms}
+clone = {m: eq_[m] * 0.9 + random.gauss(0, 0.003) for m in ms}
+indep = {m: random.gauss(0.006, 0.02) for m in ms}
+w = pf.inverse_vol_weights({"eq": eq_, "bond": bond})
+assert w["bond"] > w["eq"] and abs(sum(w.values()) - 1) < 1e-12
+ok("inverse-vol weights: the calmer sleeve gets more capital, weights sum to 1")
+c = pf.correlation({"eq": eq_, "clone": clone})
+assert c[("eq", "clone")] > 0.95 and abs(c[("eq", "eq")] - 1) < 1e-9
+base = {"eq": eq_, "bond": bond}
+m_ind = pf.marginal(base, "indep", indep)
+m_cln = pf.marginal(base, "clone", clone)
+assert m_ind["adds_value"] and m_ind["sharpe_gain"] > m_cln["sharpe_gain"]
+assert m_ind["corr_to_book"] < m_cln["corr_to_book"]
+ok("an uncorrelated edge adds more to the book than a correlated clone")
+dts = ["2020-01-02", "2020-01-03", "2020-02-03"]
+mo = pf.monthly(dts, [0.01, 0.02, -0.01])
+assert abs(mo["2020-01"] - (1.01 * 1.02 - 1)) < 1e-12 and abs(mo["2020-02"] + 0.01) < 1e-12
+ok("daily -> monthly compounding")
+
 # ── 2c. weekly performance report ───────────────────────────────────────────
 print("performance report")
 import perf_report as pr
@@ -272,5 +297,7 @@ j = cl.get("/api/research").get_json()
 assert len(j["ideas"]) == len(rows) and cl.get("/research").status_code == 200
 ok("/research page and /api/research serve the ledger")
 
+for _f in (rb.BASE_DIR / "data" / "research" / "series").glob("T-*.json"):
+    _f.unlink()                                  # test fixtures never stay in the repo
 print(f"\nALL {PASS} RESEARCH CHECKS PASSED")
 sys.exit(0)
