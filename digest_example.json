@@ -1,97 +1,536 @@
 {
  "date": "Saturday 7 November 2026",
- "prepared": "23:10 UAE",
- "headline": "A strong live week for MEIC (+$1,555 after fees). Research tested 28 ideas and none passed. The one apparent winner was broken by our red team.",
+ "prepared": "23:30 UAE (rewritten in plain language)",
+ "headline": "MEIC, the strategy trading real money, had a good week: +$1,696 after fees. Tonight's research tested 28 strategy ideas. None is ready for you: the one that looked like a winner was a data error, caught by our checks.",
  "kpis": [
-  {"label": "MEIC live · week", "value": "+$1,555", "sub": "32 trades, after fees", "tone": "pos"},
-  {"label": "Live vs paper", "value": "142%", "sub": "252 live MEIC trades", "tone": "pos"},
-  {"label": "Research", "value": "103 · 28 · 0", "sub": "ideas · tested · passed"},
-  {"label": "SPY · week", "value": "−2.7%", "sub": "week to Fri 6 Nov", "tone": "neg"}
+  {
+   "label": "Real-money P&L · week",
+   "value": "+$1,696",
+   "sub": "MEIC, 32 trades, after fees",
+   "tone": "pos"
+  },
+  {
+   "label": "Real money vs simulation",
+   "value": "142%",
+   "sub": "live earned more than paper",
+   "tone": "pos"
+  },
+  {
+   "label": "Ideas researched tonight",
+   "value": "103",
+   "sub": "28 backtested · 0 approved",
+   "tone": "neutral"
+  },
+  {
+   "label": "S&P 500 · week",
+   "value": "−2.7%",
+   "sub": "the market's week",
+   "tone": "neg"
+  }
  ],
  "decisions": [
-  {"title": "Options: test a volatility-regime gate?", "detail": "It sizes MEIC/MNG/FLY trades by whether recent real moves beat what the morning straddle priced. It scored **29.5/40**, the only recommendation tonight. Our own data runs opposite to the published claim, so the direction must be fixed before testing.", "reply": "go VRP gate Phase 1"},
-  {"title": "Retire MEP?", "detail": "MEP is the weakest lane in the lab: **−$3,433** over 57 trades, profit factor 0.54. MPM and OCB also still paper-trade without being in the lab config.", "reply": "retire MEP · keep MPM, OCB"},
-  {"title": "Confirm the FX carry rates", "detail": "The carry lanes rank currencies by placeholder policy rates until you confirm them on paper.sahmi.ae/fx.", "reply": "rates confirmed"}
+  {
+   "title": "Should we test a \"volatility check\" before our options trades?",
+   "detail": [
+    "**What it is:** before MEIC, MNG or FLY opens a trade, compare how far the market has really moved over the last 5 days with how far the options market expected it to move. Then trade normal size, smaller, or skip the day.",
+    "**Why now:** it was the best new options idea tonight (29.5 of 40 points; 28+ means worth testing). It is backed by a 193-day study of SPY options and an April 2026 academic paper.",
+    "**The catch:** a quick look at our own 45 days of data shows the opposite of the paper's claim. MEIC earned more after the market moved MORE than expected.",
+    "**Recommendation:** approve a paper-only study. I fix which direction to test before looking at more data, so we can't fool ourselves. No real money is involved."
+   ],
+   "reply": "go VRP gate Phase 1"
+  },
+  {
+   "title": "Should we stop running MEP (and keep MPM and OCB)?",
+   "detail": [
+    "**What they are:** three experiments that run in the paper lab but are not in its official line-up:",
+    "• **MEP** sells only the downside (put) half of MEIC, in the afternoon.",
+    "• **MPM** does the same in the morning.",
+    "• **OCB** trades only upward breakouts after the first half-hour.",
+    "**The numbers:** MEP has lost **$3,433** over 57 trades. It earns only 54 cents for every dollar it loses, the worst record in the lab. MPM is roughly flat (+$189 over 48 trades). OCB is +$1,305, but over only 7 trades, too few to judge.",
+    "**Recommendation:** retire MEP. Keep MPM and OCB on paper until each has about 100 trades."
+   ],
+   "reply": "retire MEP · keep MPM, OCB"
+  },
+  {
+   "title": "Please confirm the interest rates the currency strategies use",
+   "detail": [
+    "**Why it matters:** the currency \"carry\" strategies buy currencies with high interest rates and sell those with low rates, so they need each country's central-bank rate. Those rates are still placeholder numbers from setup, so this month's carry results can't be trusted.",
+    "**What to do:** open paper.sahmi.ae/fx, check the policy-rate table against current central-bank rates, correct anything wrong, then reply."
+   ],
+   "reply": "rates confirmed"
+  }
  ],
  "sections": [
-  {"title": "Trading & labs · Fri 6 Nov session", "blocks": [
-   {"type": "table", "columns": ["Lab", "Friday", "Week", "PF", "Live"], "align": ["l", "r", "r", "r", "l"], "rows": [
-    [{"text": "MEIC", "tone": "neutral"}, {"text": "+$402", "tone": "pos"}, {"text": "+$2,346", "tone": "pos"}, "2.11", {"text": "+$1,555 net", "tone": "pos"}],
-    ["MNG", {"text": "no trades", "tone": "muted"}, {"text": "+$1,314", "tone": "pos"}, "2.76", {"text": "dry run", "tone": "info"}],
-    ["ORB", {"text": "+$1,870", "tone": "pos"}, {"text": "+$2,230", "tone": "pos"}, "2.46", {"text": "−$949 (2)", "tone": "neg"}],
-    ["FLY", {"text": "+$675", "tone": "pos"}, "+$72", "1.05", {"text": "—", "tone": "muted"}],
-    ["MPM", "+$112", {"text": "−$638", "tone": "neg"}, "0.61", {"text": "—", "tone": "muted"}],
-    ["MEP", {"text": "−$303", "tone": "neg"}, {"text": "−$773", "tone": "neg"}, "0.66", {"text": "—", "tone": "muted"}],
-    ["OCB", {"text": "—", "tone": "muted"}, {"text": "−$1,058", "tone": "neg"}, "0.00", {"text": "—", "tone": "muted"}],
-    ["PBW", "+$137", {"text": "−$4,493", "tone": "neg"}, "0.42", {"text": "retired", "tone": "muted"}]
-   ]},
-   {"type": "bullets", "items": [
-    "**Armed:** MEIC live on …719 · MNG dry run on …910 (since 10:58 Sat). Nothing else.",
-    "**Live vs paper:** no drift. Live fills average about $5 a trade better than paper."
-   ]},
-   {"type": "callout", "tone": "warn", "text": "**Correction:** this morning I said live kept 105% of paper. My cost monitor was subtracting fees twice; the correct figure is **142%**. Fixed and tested."}
-  ]},
-  {"title": "Performance · week to Fri 6 Nov", "blocks": [
-   {"type": "table", "columns": ["Lane", "Week", "Since 28 Oct"], "align": ["l", "r", "r"], "rows": [
-    ["Risk parity 2×", {"text": "−0.8%", "tone": "neg"}, {"text": "−3.5%", "tone": "neg"}],
-    ["SPY (yardstick)", {"text": "−2.7%", "tone": "neg"}, {"text": "−4.8%", "tone": "neg"}],
-    ["Hedgefundie 55/45", {"text": "−4.0%", "tone": "neg"}, {"text": "−6.2%", "tone": "neg"}],
-    ["Vol-managed S&P 1.5×", {"text": "−4.1%", "tone": "neg"}, {"text": "−7.3%", "tone": "neg"}],
-    ["Stocks book ($98,750)", {"text": "−$570", "tone": "neg"}, {"text": "−$1,250", "tone": "neg"}]
-   ]},
-   {"type": "bullets", "items": [
-    "**Needs attention:** crypto breakout is 16% below its peak; commodity breakout lost 7.0% this week.",
-    "FX lanes are down about 1%. The carry lanes use unconfirmed rates (decision 3)."
-   ]}
-  ]},
-  {"title": "Research · stocks, bonds, FX, futures, crypto", "blocks": [
-   {"type": "table", "columns": ["Class", "Ideas", "Tested", "Passed"], "align": ["l", "r", "r", "r"], "rows": [
-    ["Stocks", "16 + 3 retests", "8", "0"], ["Bonds", "23", "5", "0"], ["FX", "18", "5", "0"],
-    ["Futures / commodities", "19", "5", "0"], ["Crypto", "24", "5", "0"]
-   ]},
-   {"type": "para", "text": "**Three results worth knowing**"},
-   {"type": "table", "columns": ["Idea", "Verdict", "Why"], "align": ["l", "l", "l"], "rows": [
-    ["**Greenblatt quality-value** (honest data)", {"text": "near miss", "tone": "near"}, "+14.2%/yr vs S&P +7.6% (2000–24) with genuine alpha. Passed all five statistical tests; lost to the S&P in 2017–24."],
-    ["**High-yield bond trend**", {"text": "pass → broken", "tone": "fail"}, "The red team found the edge came from stale fund prices. On the tradeable ETF it is only a modest crash-cutter."],
-    ["**Momentum retest** (old G-MOM)", {"text": "fail", "tone": "fail"}, "Beat SPY (+9.1% vs +7.6%) but it is just the known momentum factor. The old pass was survivorship bias."]
-   ]},
-   {"type": "para", "text": "**What we learned**"},
-   {"type": "bullets", "items": [
-    "Single-stock anomalies are mostly known factors. Only quality-value showed real alpha.",
-    "Stale prices manufacture edges. Illiquid assets are now judged on tradeable ETFs.",
-    "Crash protection repeats in every asset class (BTC worst drop −46% vs −83%; commodities −31% vs −76%), but beating buy-and-hold does not.",
-    "Small, uncorrelated rates/FX edges (end-of-month Treasuries, FOMC-day dollar) lift a portfolio even though they fail alone."
-   ]},
-   {"type": "callout", "tone": "info", "text": "**10 new building blocks** went on the shortlist. A first portfolio of 9 of them reached a Sharpe of **1.51** at 2.5% volatility. Next combinations: Greenblatt + trend overlay, and a rates/FX sleeve."}
-  ]},
-  {"title": "Options research", "blocks": [
-   {"type": "table", "columns": ["Candidate", "Score", "Verdict"], "align": ["l", "r", "l"], "rows": [
-    ["Volatility-regime gate (MEIC/MNG/FLY)", "29.5", {"text": "Phase 1?", "tone": "pass"}],
-    ["Flat fly at 10:00 (Option Alpha)", "25.0", {"text": "watchlist", "tone": "near"}],
-    ["45-DTE put spread after a 3% drop", "24.5", {"text": "watchlist", "tone": "near"}],
-    ["1–7 DTE instead of 0DTE", "22.0", {"text": "watchlist", "tone": "near"}],
-    ["Naked straddle / naked strangles", "13.5 / 17", {"text": "rejected", "tone": "fail"}]
-   ]},
-   {"type": "bullets", "items": [
-    "**Live:** MEIC (404 paper trades, +$6,223, PF 1.16) · **Dry run:** MNG (+$2,239, PF 1.26).",
-    "**Paper:** ORB (+$5,297, PF 1.42) · FLYR (+$670) · FLY (−$1,071). **Retired:** PBW, BAND, LATE, METF."
-   ]}
-  ]},
-  {"title": "Estate & data", "blocks": [
-   {"type": "bullets", "items": [
-    "**All systems healthy:** platform live with Schwab OK · paper lab live, saved every 10 min · data hub has Friday's data (12,538 stocks and ETFs), 0 errors.",
-    "**FMP vs Sharadar compare:** 13 checks so far, largest price gap 0.007%. The real test starts Monday; your FMP decision reminder is Sat 14 Nov, 09:00.",
-    "**Changes today:** data hub launched · ARM button fixed for phones · PBW retired, MNG promoted · Sharadar connected · live cost monitor fixed · all reports merged into this digest."
-   ]}
-  ]},
-  {"title": "Tomorrow & open problems", "blocks": [
-   {"type": "bullets", "items": [
-    "**Queue:** insider-buying retest · Greenblatt + trend · rates/FX sleeve · bond credit-trend · FX value-trend · gold crisis sleeve.",
-    "**Fixed tonight:** a research run planned for 11:13 never started; tonight's digest did all the work instead.",
-    "**Data gaps:** free FRED rates and CPI would unlock 6 FX ideas; back-adjusted futures would unlock the curve ideas.",
-    "**Harness issues** (reported): crypto and weekday assets can't be mixed in one test; FX dates are off by a day in summer; one Sharadar filter is blocked."
-   ]}
-  ]}
+  {
+   "title": "Trading & labs · Friday 6 November (US session)",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "These are our SPX \"0DTE\" options strategies. They trade options that expire the same day, and each one runs on paper (simulated) first. Only MEIC trades real money today. Profit factor (PF) is dollars won per dollar lost: above 1.0 makes money, above 1.5 is strong."
+    },
+    {
+     "type": "table",
+     "columns": [
+      "Strategy · what it does",
+      "Friday",
+      "This week",
+      "PF (week)"
+     ],
+     "align": [
+      "l",
+      "r",
+      "r",
+      "r"
+     ],
+     "rows": [
+      [
+       "**MEIC** · sells six small iron condors between 12:00 and 14:30 that profit if SPX stays in a range. **Trades real money.**",
+       {
+        "text": "+$402",
+        "tone": "pos"
+       },
+       {
+        "text": "+$2,346",
+        "tone": "pos"
+       },
+       "2.11"
+      ],
+      [
+       "**MNG** · MEIC's rules, but only on \"negative-gamma\" days: days when options dealers' hedging tends to make the market move more. The lab found MEIC did best on those days. **In rehearsal (no real orders).**",
+       {
+        "text": "no trades",
+        "tone": "muted"
+       },
+       {
+        "text": "+$1,314",
+        "tone": "pos"
+       },
+       "2.76"
+      ],
+      [
+       "**ORB** · bets on the direction SPX breaks out of its first 30 minutes",
+       {
+        "text": "+$1,870",
+        "tone": "pos"
+       },
+       {
+        "text": "+$2,230",
+        "tone": "pos"
+       },
+       "2.46"
+      ],
+      [
+       "**FLY** · one butterfly at 13:00 that profits if SPX ends near today's price",
+       {
+        "text": "+$675",
+        "tone": "pos"
+       },
+       "+$72",
+       "1.05"
+      ],
+      [
+       "**MPM** · downside-only spreads in the morning (experiment)",
+       "+$112",
+       {
+        "text": "−$638",
+        "tone": "neg"
+       },
+       "0.61"
+      ],
+      [
+       "**MEP** · downside-only half of MEIC, afternoon (experiment)",
+       {
+        "text": "−$303",
+        "tone": "neg"
+       },
+       {
+        "text": "−$773",
+        "tone": "neg"
+       },
+       "0.66"
+      ],
+      [
+       "**OCB** · ORB, upward breakouts only (experiment)",
+       {
+        "text": "—",
+        "tone": "muted"
+       },
+       {
+        "text": "−$1,058",
+        "tone": "neg"
+       },
+       "0.00"
+      ],
+      [
+       "**PBW** · morning put butterfly. **Retired today on your instruction.**",
+       "+$137",
+       {
+        "text": "−$4,493",
+        "tone": "neg"
+       },
+       "0.42"
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "**Real-money trading.** MEIC traded 8 times on Friday for **+$454 after fees**, and 32 times this week for **+$1,696**. ORB placed 2 real trades on 2–3 November that lost **$939**. ORB is no longer switched on for real money."
+    },
+    {
+     "type": "para",
+     "text": "**What is switched on right now.** MEIC trades real money on the account ending 719. MNG has been in rehearsal on the account ending 910 since you armed it at 10:58 today: it decides and logs trades exactly as if live, but sends no orders. Nothing else is armed."
+    },
+    {
+     "type": "para",
+     "text": "**Real money vs simulation.** Over its whole life, MEIC's 252 real trades made $4,302, while the same 252 trades in simulation made $3,031. Our real fills have been about $5 a trade better than the simulation assumes. Nothing is drifting or degrading."
+    },
+    {
+     "type": "callout",
+     "tone": "warn",
+     "text": "**Two corrections to earlier messages:** (1) this morning I said live kept 105% of the simulated result. My cost report subtracted brokerage fees twice: the trading journal already records profits after fees, and the report took them off again. The true figure is 142%. (2) My first digest tonight repeated the same mistake in its weekly totals. MEIC made **+$1,696** this week (not $1,555) and **+$454** on Friday (not $419). Both are fixed and re-checked."
+    }
+   ]
+  },
+  {
+   "title": "Performance · paper portfolios, week to Friday 6 November",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "Our longer-term paper portfolios started on 28 October. It was a down week for markets: the S&P 500 fell 2.7%. Leveraged portfolios fall faster than the market in weeks like this, and that is expected."
+    },
+    {
+     "type": "table",
+     "columns": [
+      "Portfolio · what it is",
+      "Week",
+      "Since 28 Oct"
+     ],
+     "align": [
+      "l",
+      "r",
+      "r"
+     ],
+     "rows": [
+      [
+       "**Risk parity 2×** · stocks, bonds and gold balanced by risk, 2× leverage",
+       {
+        "text": "−0.8%",
+        "tone": "neg"
+       },
+       {
+        "text": "−3.5%",
+        "tone": "neg"
+       }
+      ],
+      [
+       "**S&P 500 (SPY)** · the yardstick",
+       {
+        "text": "−2.7%",
+        "tone": "neg"
+       },
+       {
+        "text": "−4.8%",
+        "tone": "neg"
+       }
+      ],
+      [
+       "**Hedgefundie 55/45** · 3× stocks (UPRO) and 3× long bonds (TMF)",
+       {
+        "text": "−4.0%",
+        "tone": "neg"
+       },
+       {
+        "text": "−6.2%",
+        "tone": "neg"
+       }
+      ],
+      [
+       "**Vol-managed S&P 1.5×** · S&P at 1.5×, cut when markets get jumpy",
+       {
+        "text": "−4.1%",
+        "tone": "neg"
+       },
+       {
+        "text": "−7.3%",
+        "tone": "neg"
+       }
+      ],
+      [
+       "**Stock-picking book** · three chart-signal strategies on $100k",
+       {
+        "text": "−$570",
+        "tone": "neg"
+       },
+       {
+        "text": "−$1,250",
+        "tone": "neg"
+       }
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "**Doing what it should:** risk parity lost only a third as much as the market, which is exactly its purpose."
+    },
+    {
+     "type": "para",
+     "text": "**Two warning lights:**"
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "**Crypto 30-day-breakout strategy:** 16% below its peak. It buys BTC/BNB/TRX when they hit a 30-day high and exits after a 15% fall. A 15% trailing exit means a drawdown this size is within its design, not a malfunction.",
+      "**Commodity version of the same strategy:** lost 7% this week (it holds sugar and a broad commodity fund)."
+     ]
+    },
+    {
+     "type": "para",
+     "text": "The currency strategies are each down about 1% and are waiting on decision 3."
+    }
+   ]
+  },
+  {
+   "title": "Research · new strategy ideas (stocks, bonds, currencies, commodities, crypto)",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "**How tonight worked:**"
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "Five research agents, one per asset class, searched academic papers, journals and practitioner research. They found 100 ideas and scored each out of 100.",
+      "The best 25, plus 3 re-tests I chose, were backtested on 20–40 years of data.",
+      "To be recommended to you, an idea must beat its benchmark with 99% statistical confidence. It must also keep winning in the most recent 30% of the data, which it never saw while being designed. It must clear five further checks used by professional quant firms: luck-adjusted returns, strength of evidence, double trading costs, nearby settings, and not just repackaging a known factor.",
+      "Finally, a separate \"red team\" agent tries to break any winner."
+     ]
+    },
+    {
+     "type": "table",
+     "columns": [
+      "Asset class",
+      "Ideas found",
+      "Backtested",
+      "Approved"
+     ],
+     "align": [
+      "l",
+      "r",
+      "r",
+      "r"
+     ],
+     "rows": [
+      [
+       "Stocks",
+       "16 + 3 re-tests",
+       "8",
+       "0"
+      ],
+      [
+       "Bonds",
+       "23",
+       "5",
+       "0"
+      ],
+      [
+       "Currencies",
+       "18",
+       "5",
+       "0"
+      ],
+      [
+       "Commodities & futures",
+       "19",
+       "5",
+       "0"
+      ],
+      [
+       "Crypto",
+       "24",
+       "5",
+       "0"
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "**The three results that matter:**"
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "**Greenblatt \"magic formula\" (buy good companies at cheap prices) · NEAR MISS.** We tested it properly for the first time. The data includes companies that later went bust, and uses only the financial figures known at each date. From 2000 to 2024 it made **14.2% a year vs 7.6% for the S&P 500**. It cleared every professional check, including showing real skill rather than a known factor. It failed one test: from 2017 to 2024, when a few giant tech stocks drove the market, it lagged. It goes on the shortlist as a building block. Next I will test it with a trend filter to soften its 57% fall in 2008.",
+      "**High-yield bond trend (own junk bonds only when they are rising) · LOOKED LIKE A WINNER, BROKEN BY THE RED TEAM.** It passed every check on the Vanguard high-yield fund's price history. The red team found that this fund's daily prices lag the real market by about a day. That lag makes a trend rule look brilliant on paper, but you could never trade it. On the real, tradeable ETF (HYG) the edge mostly disappears: it only softens crashes a little. Rejected. Lesson recorded: test illiquid assets on tradeable ETFs only.",
+      "**Stock momentum (buy the past year's winners) · FAIL.** This is the strategy that once looked great and was later stopped. On honest data it made 9.1% a year vs 7.6% for the S&P. That gain is entirely the well-known \"momentum factor\", with no extra skill. The old success came from testing only on companies that survived."
+     ]
+    },
+    {
+     "type": "para",
+     "text": "**Other ideas tested (all failed on their own):** several are useful as crash protection or as small, independent pieces of a bigger portfolio."
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "**Crypto:** a Bitcoin trend filter with risk-based sizing cut the worst loss from −83% to −46%, but made less money than simply holding Bitcoin.",
+      "**Commodities:** owning them only when their trend is up AND inflation-protected bonds beat ordinary bonds cut the worst loss from −76% to −31%.",
+      "**Bonds:** holding Treasuries only over the last 3 days of each month earned the same as always holding them, at a quarter of the risk."
+     ]
+    },
+    {
+     "type": "para",
+     "text": "**What we learned tonight:**"
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "**Most stock-picking \"secrets\" are well-known factors in disguise.** On honest data, only quality-plus-value showed real skill.",
+      "**Stale prices create fake winners.** Every illiquid-asset idea is now tested on a tradeable ETF.",
+      "**Crash protection is reliable in every asset class; beating buy-and-hold is not.** These rules are best used as a safety layer.",
+      "**Small edges work as a team.** Ten new building blocks went on the shortlist. Combined, nine of them made a steady low-risk portfolio: 3.8% a year with only 2.5% volatility, a Sharpe ratio of 1.51 (excellent risk-adjusted). The next step is to combine them deliberately."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Options research · new techniques for the 0DTE lab",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "One agent searched for new options techniques published by practitioners and academics. It scored each out of 40 for evidence, fit with what works in our lab, testability, novelty and risk control."
+    },
+    {
+     "type": "table",
+     "columns": [
+      "Idea · in plain words",
+      "Score",
+      "Verdict"
+     ],
+     "align": [
+      "l",
+      "r",
+      "l"
+     ],
+     "rows": [
+      [
+       "**Volatility check before trading** · size MEIC/MNG/FLY trades by whether recent moves beat expectations (decision 1)",
+       "29.5",
+       {
+        "text": "test it?",
+        "tone": "pass"
+       }
+      ],
+      [
+       "**10:00 \"flat\" butterfly** (Option Alpha) · centred on yesterday's close, only on calm days",
+       "25.0",
+       {
+        "text": "watchlist",
+        "tone": "near"
+       }
+      ],
+      [
+       "**45-day put spread after a 3% market drop** (tastylive) · sell protection when it's expensive, risk capped",
+       "24.5",
+       {
+        "text": "watchlist",
+        "tone": "near"
+       }
+      ],
+      [
+       "**1–7-day options instead of same-day** · same selling, more time",
+       "22.0",
+       {
+        "text": "watchlist",
+        "tone": "near"
+       }
+      ],
+      [
+       "**Naked straddle or strangle selling** · unlimited loss if the market gaps",
+       "13.5–17",
+       {
+        "text": "rejected",
+        "tone": "fail"
+       }
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "No high-quality new study came out in the last 30 days. **Where our options strategies stand (all-time):**"
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "**MEIC:** real money; +$6,223 over 404 simulated trades (PF 1.16).",
+      "**MNG:** in rehearsal; +$2,239 over 102 trades (PF 1.26).",
+      "**ORB:** paper; +$5,297 over 41 trades (PF 1.42), but most of it came from a few big days.",
+      "**FLYR:** paper; +$670.",
+      "**FLY:** paper; −$1,071.",
+      "**Retired:** PBW, BAND, LATE and METF."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Systems & data",
+   "blocks": [
+    {
+     "type": "bullets",
+     "items": [
+      "**Everything is healthy.** The trading platform is live and connected to Schwab. The paper lab is live and saves its state every 10 minutes. The new data hub has Friday's prices for 12,538 US stocks and ETFs and has had no errors.",
+      "**Replacing FMP with Sharadar (cost saving):** both sources are running side by side. In 13 price checks so far, the largest difference was 0.007%, which is effectively identical. The proper test starts Monday when the screens are in use. I will remind you on Saturday 14 Nov at 09:00 whether it is safe to cancel FMP.",
+      "**Built or changed today:** the data hub (all market data now goes through one place); the ARM button on phones now accepts \"Arm live\" in any capitalisation and shows errors; PBW retired and MNG moved to the live path (your decisions); Sharadar connected for research; the fee double-count fixed; all reports merged into this single nightly email."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Tomorrow & open problems",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "**Tomorrow's research:**"
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "Re-test \"follow company insiders' buying\" on the new data.",
+      "Combine the Greenblatt formula with a trend filter.",
+      "Build a small portfolio from tonight's bond and currency building blocks.",
+      "Continue each asset class's queue: credit trend, currency value-plus-trend, gold as a crisis hedge."
+     ]
+    },
+    {
+     "type": "para",
+     "text": "**Problems, plainly:**"
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "**The extra research run I set for 11:13 this morning never started** (that session was idle). Tonight's digest did all of today's research instead.",
+      "**Six currency ideas need data we don't have:** central-bank rates and inflation. The free US Federal Reserve database (FRED) would unlock them.",
+      "**Commodity-curve ideas need back-adjusted futures prices**, which we don't have.",
+      "**Three small bugs in the research testing tool are logged for fixing:** it can't mix crypto with weekday assets; currency dates are a day early in summer; one Sharadar filter is blocked. None of them affected tonight's verdicts."
+     ]
+    }
+   ]
+  }
  ],
- "links": [{"label": "Research ledger", "url": "https://paper.sahmi.ae/research"}, {"label": "0DTE lab", "url": "https://paper.sahmi.ae/suggested"}, {"label": "Data hub status", "url": "https://logicon-data.alwahedi.workers.dev/"}]
+ "links": [
+  {
+   "label": "Research ledger",
+   "url": "https://paper.sahmi.ae/research"
+  },
+  {
+   "label": "0DTE lab",
+   "url": "https://paper.sahmi.ae/suggested"
+  },
+  {
+   "label": "FX rates",
+   "url": "https://paper.sahmi.ae/fx"
+  },
+  {
+   "label": "Data hub status",
+   "url": "https://logicon-data.alwahedi.workers.dev/"
+  }
+ ]
 }

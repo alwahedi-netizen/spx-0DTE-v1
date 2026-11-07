@@ -16,7 +16,7 @@ Worked example (the first nightly digest, 2026-11-07): digest_example.json
 Schema
   {"date": "Sat 7 Nov 2026", "prepared": "23:10 UAE", "headline": "...",
    "kpis": [{"label", "value", "sub", "tone": "pos|neg|neutral"}],     # 2-4 tiles
-   "decisions": [{"title", "detail", "reply"}],                       # [] = none
+   "decisions": [{"title", "detail" (text or list of paragraphs), "reply"}],   # [] = none
    "sections": [{"title", "blocks": [
        {"type": "para", "text"},
        {"type": "bullets", "items": [text, ...]},
@@ -144,7 +144,8 @@ def render(d):
         inner += (f'<div style="margin:0 0 12px;padding:12px;border:1px solid {LINE};border-left:4px solid {GOLD};'
                   f'border-radius:6px">'
                   f'<div style="font-size:15px;font-weight:700;color:{INK}">{n}. {_t(x["title"])}</div>'
-                  f'<div style="font-size:14px;line-height:1.5;color:{INK};margin-top:4px">{_t(x.get("detail", ""))}</div>'
+                  + "".join(f'<div style="font-size:14px;line-height:1.5;color:{INK};margin-top:6px">{_t(par)}</div>'
+                            for par in (x.get("detail") if isinstance(x.get("detail"), list) else [x.get("detail", "")]))
                   + (f'<div style="margin-top:8px;font-size:13px;color:{MUTED}">Reply: <span style="display:inline-block;'
                      f'padding:2px 8px;border-radius:4px;background:{BG};color:{INK};font-family:Menlo,Consolas,monospace">'
                      f'{_t(x["reply"])}</span></div>' if x.get("reply") else "")
