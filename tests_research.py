@@ -122,6 +122,61 @@ ok("too little history for 20-year windows gives PROMISING, not PASS")
 assert "worst_year" in r and len(r["calendar_years"]) >= 13
 ok("worst calendar year and the year-by-year table are reported")
 
+# ── 2d. world-class gates (owner 2026-11-07) ────────────────────────────────
+print("world-class gates")
+random.seed(5)
+act = [0.0004 + random.gauss(0, 0.004) for _ in range(2500)]
+d1, d100 = rb.deflated_sharpe(act, 1), rb.deflated_sharpe(act, 100)
+assert d1 is not None and d100 is not None and d100 < d1
+weak = [0.00005 + random.gauss(0, 0.004) for _ in range(2500)]
+assert rb.deflated_sharpe(weak, 50) < 0.95
+ok("Deflated Sharpe falls as trials rise; a weak edge tried 50 ways fails it")
+x1 = [random.gauss(0, 1) for _ in range(800)]; x2 = [random.gauss(0, 1) for _ in range(800)]
+y = [0.3 + 2 * a - 0.5 * b + random.gauss(0, 0.1) for a, b in zip(x1, x2)]
+beta, tv = rb.ols(y, [x1, x2])
+assert abs(beta[0] - 0.3) < 0.02 and abs(beta[1] - 2) < 0.02 and abs(beta[2] + 0.5) < 0.02 and tv[0] > 20
+ok("OLS recovers intercept and loadings with t-stats")
+FFD = [f"{2010 + i // 336}{1 + (i % 336) // 28:02d}{1 + i % 28:02d}" for i in range(336 * 2)]
+mk = [random.gauss(0.0004, 0.01) for _ in FFD]
+ff5 = "junk header\n,Mkt-RF,SMB,HML,RMW,CMA,RF\n" + "\n".join(
+    f"{d},{m*100:.4f},{random.gauss(0,0.5):.4f},{random.gauss(0,0.5):.4f},{random.gauss(0,0.3):.4f},{random.gauss(0,0.3):.4f},0.01"
+    for d, m in zip(FFD, mk)) + "\n\nAnnual Factors\n,Mkt-RF\n1990,1.0\n"
+momc = "x\n,Mom\n" + "\n".join(f"{d},{random.gauss(0,0.6):.4f}" for d in FFD)
+fake_ff = lambda url: ff5 if "5_Factors" in url else momc
+rb.CACHE.joinpath("ff5mom.json").unlink(missing_ok=True)
+F = rb.ff_factors(fake_ff)
+dd = [f"{d[:4]}-{d[4:6]}-{d[6:]}" for d in FFD]
+assert len(F) == len(FFD) and set(F[dd[0]]) >= {"Mkt-RF", "SMB", "HML", "RMW", "CMA", "Mom"}
+assert "1990-..-.." not in F and abs(F[dd[3]]["Mkt-RF"] - round(mk[3] * 100, 4) / 100) < 1e-12
+ok("Ken French daily files parsed (5 factors + momentum, annual block ignored)")
+beta_only = [F[d]["Mkt-RF"] for d in dd]
+fa = rb.factor_alpha(beta_only, [0.0] * len(dd), dd, F)
+assert fa and abs(fa["alpha_t"]) < 2 and abs(fa["loadings"]["Mkt-RF"] - 1) < 0.01
+alpha = [F[d]["Mkt-RF"] + 0.0006 + random.gauss(0, 0.001) for d in dd]
+fa2 = rb.factor_alpha(alpha, [0.0] * len(dd), dd, F)
+assert fa2["alpha_t"] > 5
+ok("pure market exposure shows no alpha; a real excess return shows alpha t > 5")
+r = rb.evaluate("T-WC", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                start="1990-01-01", fetch=fetch, save=False, trials=5)
+assert r["verdict"] == "PASS" and r["gates"]["deflated_sharpe"] == "ok" and r["gates"]["t_stat_3"] == "ok"
+assert r["gates"]["double_costs"] == "ok" and r["trials"] == 5 and r["sharpe_2x_costs"] is not None
+ok("a genuine, consistent edge still PASSes every world-class gate")
+r = rb.evaluate("T-WC-FRAGILE", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                start="1990-01-01", fetch=fetch, save=False,
+                variants={"v1": lambda i, d, p: {"BEN": 1.0}, "v2": lambda i, d, p: {"BEN": 1.0},
+                          "v3": lambda i, d, p: {"BEN": 1.0}})
+assert r["gates"]["robustness"] == "FAIL" and r["verdict"] == "PROMISING" and r["trials"] == 4
+ok("neighbouring settings that do not work demote PASS -> PROMISING (variants count as trials)")
+rb.CACHE.joinpath("ff5mom.json").unlink(missing_ok=True)
+r = rb.evaluate("T-WC-STOCK", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN", start="1990-01-01",
+                fetch=fetch, save=False, asset_class="stocks", ff_fetch=lambda u: (_ for _ in ()).throw(OSError("offline")))
+assert r["gates"]["factor_alpha"] == "n/a" and r["cost_bps"] == rb.COST_BPS["stocks"]
+rb.CACHE.joinpath("ff5mom.json").unlink(missing_ok=True)
+r = rb.evaluate("T-WC-CRYPTO", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN", start="1990-01-01",
+                fetch=fetch, save=False, asset_class="crypto")
+assert r["cost_bps"] == 25.0 and r["factor_alpha"] is None
+ok("per-class costs; factor gate n/a (never blocks) when the factor data cannot be fetched")
+
 # ── 2c. weekly performance report ───────────────────────────────────────────
 print("performance report")
 import perf_report as pr

@@ -21,6 +21,40 @@ exactly. Changing the rules means editing this file, not the schedule.
 > 1–5" or "first Saturday", THIS FILE wins: run daily, score ≥10 ideas per
 > asset class, backtest the top ≤2 per class, deep dive on day 1 of the month.
 
+## 0. World-class protocol (owner 2026-11-07: "match what world class is doing — cost is not a problem")
+
+1. **Parallel researchers.** Each daily run spawns one research agent per
+   asset class (stocks/ETFs, bonds, FX, futures/commodities, crypto — five in
+   parallel), each sourcing and scoring its ≥10 ideas against §2–§4 with the
+   ledger loaded for de-duplication. The run merges and de-duplicates across
+   classes before anything is written.
+2. **Harness gates.** Every Phase-1 test goes through `research_bt.evaluate`
+   with `asset_class=` (per-class cost model; the Fama-French 5 + momentum
+   factor-alpha gate for stocks), an honest `trials=` (every variant ever run
+   for that idea family, not just today's), and — for any rule with a
+   parameter — `variants=` holding ≥4 neighbouring settings (e.g. lookback
+   ±25%/±50%). PASS requires: 99% confidence vs benchmark, held-out win,
+   Deflated Sharpe ≥ 0.95, t ≥ 3 (Harvey-Liu-Zhu), still beating the
+   benchmark at 2× costs, ≥70% of neighbours also beating it, and (stocks)
+   factor alpha t ≥ 2. Any FAIL demotes the verdict; the result JSON shows
+   which gate failed and the email names it.
+3. **Red team.** Every PASS or PROMISING is handed to a SEPARATE agent that
+   did not build it, with one job: break it. Check look-ahead (signals using
+   same-day closes for same-day trades, revised data), survivorship (a
+   universe of today's tickers), data errors (splits, stale prices, gaps),
+   regime dependence (does one year/crisis carry it?), cost and capacity
+   realism, and whether it is a known factor in disguise. Its findings go in
+   the ledger notes; a PASS the red team breaks is reported as FAIL with the
+   reason. Only a PASS that survives the red team reaches the email as PASS.
+4. **Portfolio fit.** For a surviving PASS, report its return correlation
+   with SPY, AGG and the closest existing paper lane, and whether adding it
+   at 10% raises the combined Sharpe — an uncorrelated small edge beats a
+   correlated big one.
+5. **Data honesty.** Daily Yahoo data has no delisted stocks and no
+   point-in-time fundamentals: any cross-sectional single-stock idea is
+   marked `survivorship-biased` in its notes and can be PROMISING at best
+   until survivorship-free data is connected (see §7).
+
 ## 1. Pipeline and who decides
 
 | Phase | What | Who moves an idea in |
@@ -188,3 +222,12 @@ DAILY and SHORT (a 2-minute read; the full ledger is the Research tab):
 
 No jargon without a plain-English gloss. If nothing passed, say so plainly:
 that is the normal outcome.
+
+## 7. Data roadmap (world-class gaps)
+
+Connected: Yahoo daily prices (ETFs, indices, FX, crypto, futures fronts),
+^IRX T-bills, Ken French daily factors (FF5 + momentum, 1926→).
+Gaps that cap what can PASS today: (a) survivorship-free US stocks incl.
+delisted names, (b) point-in-time fundamentals, (c) back-adjusted continuous
+futures with roll history. When a paid source is connected, record it here
+and lift the §0.5 cap for the ideas it covers.

@@ -24,6 +24,23 @@ Both PASS and PROMISING also need a full-period Sharpe at least 0.10 above the
 benchmark's: the Jobson-Korkie test calls a near-copy of the benchmark with a
 sliver of difference "significant", which is not an edge.
 
+WORLD-CLASS GATES (owner 2026-11-07: "match what world class is doing") — a
+PASS must ALSO clear every one of these (PROMISING needs gate 1):
+  1. Deflated Sharpe Ratio >= 0.95 (Bailey & Lopez de Prado 2014) on the
+     active returns, deflated for `trials` — the more variants were tried,
+     the higher the bar. Lucky-best-of-N cannot pass.
+  2. t-stat of the active mean >= 3.0 (Harvey, Liu & Zhu 2016: the hurdle
+     for a new factor after 300+ published ones).
+  3. Double costs: still beats the benchmark's Sharpe at 2x `cost_bps`.
+  4. Robustness: if `variants` (neighbouring parameter settings) are given,
+     >= 70% of them must also beat the benchmark's Sharpe. Variants count
+     toward `trials`.
+  5. Factor alpha (stocks): regressed on Fama-French 5 factors + momentum
+     (Ken French daily library), the alpha's t-stat must be >= 2.0 — a
+     repackaged known factor is not new alpha.
+A gate that cannot be computed (no factor data, too short) is reported as
+"n/a" and does not block, but the email must say so.
+
 The benchmark is buy & hold of `bench` (or T-bill cash when bench is None, i.e.
 a Sharpe-above-zero test). A trial-count note goes in every result: the scan
 must report how many variants it ran, never just the best one.
@@ -40,6 +57,14 @@ BASE_DIR = Path(__file__).resolve().parent
 CACHE = BASE_DIR / "data" / "research" / "cache"
 RESULTS = BASE_DIR / "data" / "research" / "results"
 STRICT, LOOSE, OOS_FRAC = 0.99, 0.90, 0.30
+DSR_MIN, HLZ_T, FACTOR_T, ROBUST_SHARE = 0.95, 3.0, 2.0, 0.70
+# realistic one-way cost per unit of turnover, by asset class (bps)
+COST_BPS = {"stocks": 5.0, "etf": 3.0, "bonds": 3.0, "fx": 2.0,
+            "futures": 2.0, "commodities": 5.0, "crypto": 25.0}
+FF_URLS = {
+    "ff5": "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_daily_CSV.zip",
+    "mom": "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Momentum_Factor_daily_CSV.zip",
+}
 MIN_SHARPE_GAIN = 0.10      # materiality: a near-copy of the benchmark is not an edge
 
 
@@ -211,11 +236,149 @@ def sharpe_confidence(a, b, rf):
     return _phi((s1 - s2) / math.sqrt(var)) if var > 0 else 0.5
 
 
+# ── world-class statistics (2026-11-07) ─────────────────────────────────────
+from statistics import NormalDist as _ND
+
+_EULER = 0.5772156649015329
+
+
+def _moments(x):
+    n, m, sd = len(x), _mean(x), _sd(x)
+    if n < 4 or not sd:
+        return 0.0, 3.0
+    skew = sum(((v - m) / sd) ** 3 for v in x) / n
+    kurt = sum(((v - m) / sd) ** 4 for v in x) / n
+    return skew, kurt
+
+
+def deflated_sharpe(active, trials=1):
+    """Bailey & Lopez de Prado (2014) DSR on per-period returns: the
+    probability the true Sharpe exceeds the best Sharpe expected from
+    `trials` skill-less tries, corrected for skew and fat tails."""
+    n = len(active)
+    sd = _sd(active)
+    if n < 60 or not sd:
+        return None
+    sr = _mean(active) / sd
+    skew, kurt = _moments(active)
+    nd = _ND()
+    t = max(1, int(trials))
+    if t > 1:
+        e_max = ((1 - _EULER) * nd.inv_cdf(1 - 1 / t)
+                 + _EULER * nd.inv_cdf(1 - 1 / (t * math.e)))
+        sr0 = math.sqrt(1 / (n - 1)) * e_max
+    else:
+        sr0 = 0.0
+    denom = 1 - skew * sr + (kurt - 1) / 4 * sr ** 2
+    if denom <= 0:
+        return None
+    return nd.cdf((sr - sr0) * math.sqrt(n - 1) / math.sqrt(denom))
+
+
+def t_stat(x):
+    sd = _sd(x)
+    return _mean(x) / (sd / math.sqrt(len(x))) if sd and len(x) > 1 else 0.0
+
+
+def _solve(a, b):
+    """Gauss-Jordan solve a.x = b (small dense systems)."""
+    n = len(a)
+    m = [row[:] + [b[i]] for i, row in enumerate(a)]
+    for c in range(n):
+        p = max(range(c, n), key=lambda r: abs(m[r][c]))
+        if abs(m[p][c]) < 1e-15:
+            raise ValueError("singular")
+        m[c], m[p] = m[p], m[c]
+        for r in range(n):
+            if r != c:
+                f = m[r][c] / m[c][c]
+                m[r] = [x - f * y for x, y in zip(m[r], m[c])]
+    return [m[i][n] / m[i][i] for i in range(n)]
+
+
+def ols(y, xs):
+    """y = a + sum b_k x_k. Returns (coefs incl. intercept first, t-stats)."""
+    n, k = len(y), len(xs) + 1
+    X = [[1.0] + [x[i] for x in xs] for i in range(n)]
+    xtx = [[sum(X[r][i] * X[r][j] for r in range(n)) for j in range(k)] for i in range(k)]
+    xty = [sum(X[r][i] * y[r] for r in range(n)) for i in range(k)]
+    beta = _solve(xtx, xty)
+    resid = [y[r] - sum(beta[j] * X[r][j] for j in range(k)) for r in range(n)]
+    s2 = sum(e * e for e in resid) / (n - k)
+    inv = [_solve(xtx, [1.0 if i == j else 0.0 for i in range(k)]) for j in range(k)]
+    se = [math.sqrt(max(s2 * inv[j][j], 0.0)) for j in range(k)]
+    return beta, [b / e if e else 0.0 for b, e in zip(beta, se)]
+
+
+def _ff_fetch(url):
+    import io, zipfile
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        z = zipfile.ZipFile(io.BytesIO(r.read()))
+    return z.read(z.namelist()[0]).decode("latin-1")
+
+
+def ff_factors(fetch=None):
+    """{YYYY-MM-DD: {Mkt-RF, SMB, HML, RMW, CMA, Mom}} daily decimals (cached)."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    f = CACHE / "ff5mom.json"
+    if f.exists() and json.loads(f.read_text()).get("asof") == today:
+        return json.loads(f.read_text())["f"]
+    fetch = fetch or _ff_fetch
+    out = {}
+    for key in ("ff5", "mom"):
+        head = None
+        for line in fetch(FF_URLS[key]).splitlines():
+            cells = [c.strip() for c in line.split(",")]
+            if not cells[0]:
+                head = [c for c in cells[1:]]
+                continue
+            if head and cells[0].isdigit() and len(cells[0]) == 8:
+                d = f"{cells[0][:4]}-{cells[0][4:6]}-{cells[0][6:]}"
+                row = out.setdefault(d, {})
+                for h, v in zip(head, cells[1:]):
+                    try:
+                        row[h.strip()] = float(v) / 100
+                    except ValueError:
+                        pass
+            elif head and cells[0] and not cells[0].isdigit():
+                head = None
+    f.write_text(json.dumps({"asof": today, "f": out}))
+    return out
+
+
+def factor_alpha(rets, rf, dates, factors):
+    """Annualised alpha + t-stat of the idea's excess returns on FF5+Mom."""
+    names = ("Mkt-RF", "SMB", "HML", "RMW", "CMA", "Mom")
+    y, cols = [], [[] for _ in names]
+    for r, f, d in zip(rets, rf, dates):
+        row = factors.get(d)
+        if row and all(k in row for k in names):
+            y.append(r - f)
+            for c, k in zip(cols, names):
+                c.append(row[k])
+    if len(y) < 500:
+        return None
+    beta, ts = ols(y, cols)
+    return {"alpha_ann": round(beta[0] * 252, 4), "alpha_t": round(ts[0], 2),
+            "loadings": {k: round(b, 2) for k, b in zip(names, beta[1:])}, "days": len(y)}
+
+
 # ── one call per idea ────────────────────────────────────────────────────────
 
 def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
-             cost_bps=5.0, trials=1, notes="", fetch=None, save=True):
-    """Backtest one idea and write data/research/results/<idea_id>.json."""
+             cost_bps=None, trials=1, notes="", fetch=None, save=True,
+             asset_class=None, variants=None, factors=None, ff_fetch=None):
+    """Backtest one idea and write data/research/results/<idea_id>.json.
+    asset_class sets the default cost (COST_BPS) and turns on the factor-alpha
+    gate for "stocks"; variants = {name: weights_fn} neighbouring settings
+    (robustness gate, counted in trials); factors = "ff5mom" forces/None
+    leaves the factor gate to asset_class."""
+    if cost_bps is None:
+        cost_bps = COST_BPS.get(asset_class or "", 5.0)
+    variants = variants or {}
+    trials = max(int(trials or 1), 1 + len(variants))
     syms = sorted(set(symbols) | ({bench} if bench else set()))
     dates, px = prices(syms, start, fetch)
     rf = tbill(dates, fetch)
@@ -230,6 +393,37 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     oos_ok = oos_s > oos_b and cagr(rets[cut:]) > 0 and material
     verdict = ("PASS" if conf >= STRICT and oos_ok else
                "PROMISING" if conf >= LOOSE and oos_ok else "FAIL")
+    # ── world-class gates ──
+    active = [a - b for a, b in zip(rets, bret)]
+    dsr = deflated_sharpe(active, trials)
+    tval = t_stat(active)
+    r2x, _ = simulate(weights_fn, dates, px, rf, cost_bps * 2)
+    double_ok = sharpe(r2x, rf1) > full_b
+    robust = None
+    if variants:
+        wins = 0
+        for fn in variants.values():
+            vr, _ = simulate(fn, dates, px, rf, cost_bps)
+            wins += sharpe(vr, rf1) > full_b
+        robust = wins / len(variants)
+    fa = None
+    if factors == "ff5mom" or (factors is None and asset_class == "stocks"):
+        try:
+            fa = factor_alpha(rets, rf1, dates[1:], ff_factors(ff_fetch))
+        except Exception as e:  # noqa: BLE001 — reported, never blocks
+            fa = {"error": str(e)[:120]}
+    gates = {
+        "deflated_sharpe": "n/a" if dsr is None else ("ok" if dsr >= DSR_MIN else "FAIL"),
+        "t_stat_3": "ok" if tval >= HLZ_T else "FAIL",
+        "double_costs": "ok" if double_ok else "FAIL",
+        "robustness": "n/a" if robust is None else ("ok" if robust >= ROBUST_SHARE else "FAIL"),
+        "factor_alpha": ("n/a" if not fa or "alpha_t" not in fa
+                         else "ok" if fa["alpha_t"] >= FACTOR_T else "FAIL"),
+    }
+    if verdict == "PASS" and any(v == "FAIL" for v in gates.values()):
+        verdict = "PROMISING" if gates["deflated_sharpe"] != "FAIL" else "FAIL"
+    if verdict == "PROMISING" and gates["deflated_sharpe"] == "FAIL":
+        verdict = "FAIL"
     out = {
         "idea": idea_id, "run": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "period": [dates[0], dates[-1]], "bench": bench or "T-bills",
@@ -242,6 +436,14 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
         "oos_from": dates[cut + 1], "oos_idea_sharpe": round(oos_s, 3),
         "oos_bench_sharpe": round(oos_b, 3), "oos_idea_cagr": round(cagr(rets[cut:]), 4),
         "verdict": verdict,
+        "asset_class": asset_class,
+        "deflated_sharpe": None if dsr is None else round(dsr, 4),
+        "active_t": round(tval, 2),
+        "sharpe_2x_costs": round(sharpe(r2x, rf1), 3),
+        "robust_share": None if robust is None else round(robust, 2),
+        "variants": len(variants),
+        "factor_alpha": fa,
+        "gates": gates,
     }
     if save:
         RESULTS.mkdir(parents=True, exist_ok=True)
