@@ -41,6 +41,18 @@ PASS must ALSO clear every one of these (PROMISING needs gate 1):
 A gate that cannot be computed (no factor data, too short) is reported as
 "n/a" and does not block, but the email must say so.
 
+ORIGINAL RESEARCH SAFEGUARDS (owner 2026-11-07: "why limit to what is
+published — combine or do variations"):
+  * VAULT: data from VAULT_FROM on is hidden from every development run.
+    evaluate(..., vault=True) runs ONE final exam on the full history; each
+    idea gets exactly one (logged in results/vault_log.json; a second
+    attempt raises VaultUsedError). Lab-generated ideas need a vault PASS
+    before they are proposed for paper.
+  * AUTOMATIC TRIALS: every saved run adds 1 + len(variants) to its
+    `family` (default: the idea id) in results/trials.json, and the Deflated
+    Sharpe uses the family's lifetime count — combinations and variations
+    raise their own bar; nothing can under-report it.
+
 The benchmark is buy & hold of `bench` (or T-bill cash when bench is None, i.e.
 a Sharpe-above-zero test). A trial-count note goes in every result: the scan
 must report how many variants it ran, never just the best one.
@@ -58,6 +70,21 @@ CACHE = BASE_DIR / "data" / "research" / "cache"
 RESULTS = BASE_DIR / "data" / "research" / "results"
 STRICT, LOOSE, OOS_FRAC = 0.99, 0.90, 0.30
 DSR_MIN, HLZ_T, FACTOR_T, ROBUST_SHARE = 0.95, 3.0, 2.0, 0.70
+VAULT_FROM = "2024-11-01"     # the last ~2 years: sealed from development
+
+
+class VaultUsedError(Exception):
+    pass
+
+
+def _jload(name, default):
+    f = RESULTS / name
+    return json.loads(f.read_text()) if f.exists() else default
+
+
+def _jsave(name, obj):
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    (RESULTS / name).write_text(json.dumps(obj, indent=1, sort_keys=True))
 # realistic one-way cost per unit of turnover, by asset class (bps)
 COST_BPS = {"stocks": 5.0, "etf": 3.0, "bonds": 3.0, "fx": 2.0,
             "futures": 2.0, "commodities": 5.0, "crypto": 25.0}
@@ -369,7 +396,8 @@ def factor_alpha(rets, rf, dates, factors):
 
 def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
              cost_bps=None, trials=1, notes="", fetch=None, save=True,
-             asset_class=None, variants=None, factors=None, ff_fetch=None):
+             asset_class=None, variants=None, factors=None, ff_fetch=None,
+             family=None, vault=False):
     """Backtest one idea and write data/research/results/<idea_id>.json.
     asset_class sets the default cost (COST_BPS) and turns on the factor-alpha
     gate for "stocks"; variants = {name: weights_fn} neighbouring settings
@@ -378,9 +406,18 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     if cost_bps is None:
         cost_bps = COST_BPS.get(asset_class or "", 5.0)
     variants = variants or {}
-    trials = max(int(trials or 1), 1 + len(variants))
+    family = family or idea_id
+    if vault:
+        vlog = _jload("vault_log.json", {})
+        if family in vlog:
+            raise VaultUsedError(f"{family} already took its vault test on {vlog[family]}")
+    fam = _jload("trials.json", {})
+    trials = max(int(trials or 1), 1 + len(variants), fam.get(family, 0) + 1 + len(variants))
     syms = sorted(set(symbols) | ({bench} if bench else set()))
     dates, px = prices(syms, start, fetch)
+    if not vault:                              # development never sees the vault
+        keep = sum(1 for d in dates if d < VAULT_FROM)
+        dates, px = dates[:keep], {k: v[:keep] for k, v in px.items()}
     rf = tbill(dates, fetch)
     rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps)
     bret = bench_returns(bench, dates, px, rf)
@@ -444,8 +481,16 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
         "variants": len(variants),
         "factor_alpha": fa,
         "gates": gates,
+        "family": family, "vault": ("VAULT TEST (full history, one-time)" if vault
+                                    else f"sealed from {VAULT_FROM}"),
     }
     if save:
+        fam[family] = fam.get(family, 0) + 1 + len(variants)
+        _jsave("trials.json", fam)
+        if vault:
+            vlog = _jload("vault_log.json", {})
+            vlog[family] = out["run"]
+            _jsave("vault_log.json", vlog)
         RESULTS.mkdir(parents=True, exist_ok=True)
         (RESULTS / f"{idea_id}.json").write_text(json.dumps(out, indent=1))
     return out

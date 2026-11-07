@@ -18,8 +18,9 @@ exactly. Changing the rules means editing this file, not the schedule.
 
 > **Supersedes the scheduled prompt** (owner, 2026-11-07): if the prompt that
 > started this run still says "weekly", "~7-14 days", "max 20 ideas", "top
-> 1–5" or "first Saturday", THIS FILE wins: run daily, score ≥10 ideas per
-> asset class, backtest the top ≤2 per class, deep dive on day 1 of the month.
+> 1–5" or "first Saturday", THIS FILE wins: run daily, score ≥10 sourced
+> ideas per asset class PLUS ≥3 original ones (§2b), backtest the top ≤2
+> per class, deep dive on day 1 of the month.
 
 ## 0. World-class protocol (owner 2026-11-07: "match what world class is doing — cost is not a problem")
 
@@ -109,6 +110,30 @@ alt-data, order books). **Quota: ≥10 scored ideas per asset class per day.**
 Never fabricate a source or rule to meet it: if a class truly has fewer than
 10 credible ideas that day, score what exists, say the count plainly in the
 email, and make it up from canon mining the next day.
+
+## 2b. Original research — combinations and variations (owner 2026-11-07)
+
+"Why limit yourself to what is published? You can always combine or do
+variations." Each daily run ALSO designs **≥3 original ideas per asset class**
+(id prefix `L-` for lab-generated), on top of the ≥10 sourced ones:
+  - **combinations** of signals that each have evidence (e.g. trend × carry,
+    value × momentum, a regime filter from one class applied to another);
+  - **variations** of ledger ideas that failed for a stated, fixable reason
+    (the notes say which row and what the fix is);
+  - **conditioning** on regimes the lab has measured itself (negative-GEX
+    days, volatility regime, curve shape, trend state);
+  - **cross-asset** signals (e.g. credit spreads → equities, FX carry → risk).
+Rules that make this safe (enforced in `research_bt.py`):
+  1. **Rationale first:** write the economic reason it should work and the
+     exact rule BEFORE the first run (script header). No reason, no test.
+  2. **One family per hypothesis:** pass `family=` so every variation of the
+     same idea shares one lifetime trial count — the Deflated Sharpe bar
+     rises automatically with every attempt (`results/trials.json`).
+  3. **The vault:** development runs never see data after `VAULT_FROM` (the
+     last ~2 years). A lab idea that passes every gate on development data
+     takes ONE vault test (`vault=True`); only a vault PASS is proposed to
+     Tariq. The vault never opens twice for the same family.
+  4. Same §0 gates and red team as sourced ideas — no shortcuts.
 
 ## 3. De-duplication
 

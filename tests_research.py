@@ -9,6 +9,7 @@ T-bill cash charged, the verdict thresholds, and a ledger the page can read.
 import csv
 from datetime import date
 import math
+import json
 import random
 import sys
 import tempfile
@@ -176,6 +177,36 @@ r = rb.evaluate("T-WC-CRYPTO", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN
                 fetch=fetch, save=False, asset_class="crypto")
 assert r["cost_bps"] == 25.0 and r["factor_alpha"] is None
 ok("per-class costs; factor gate n/a (never blocks) when the factor data cannot be fetched")
+
+# ── 2e. original-research safeguards: vault + automatic trials ──────────────
+print("vault and automatic trials")
+for n in ("trials.json", "vault_log.json"):
+    (rb.RESULTS / n).unlink(missing_ok=True)
+old_vault = rb.VAULT_FROM
+rb.VAULT_FROM = LONG[len(LONG) * 3 // 4]
+dev = rb.evaluate("T-VAULT", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                  start="1990-01-01", fetch=fetch, save=True, family="FAM-X")
+assert dev["period"][1] < rb.VAULT_FROM and dev["vault"].startswith("sealed")
+ok("development runs never see the vault period")
+dev2 = rb.evaluate("T-VAULT-2", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                   start="1990-01-01", fetch=fetch, save=True, family="FAM-X",
+                   variants={"a": lambda i, d, p: {"BETTER": 1.0}})
+assert dev2["trials"] == 3, dev2["trials"]          # 1 earlier + this run's 2
+assert json.loads((rb.RESULTS / "trials.json").read_text())["FAM-X"] == 3
+ok("trials accumulate per family automatically (variants included)")
+v = rb.evaluate("T-VAULT-EXAM", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                start="1990-01-01", fetch=fetch, save=True, family="FAM-X", vault=True)
+assert v["period"][1] >= rb.VAULT_FROM and v["vault"].startswith("VAULT TEST")
+try:
+    rb.evaluate("T-VAULT-AGAIN", lambda i, d, p: {"BETTER": 1.0}, ["BETTER"], "BEN",
+                start="1990-01-01", fetch=fetch, save=True, family="FAM-X", vault=True)
+    raise AssertionError("second vault test allowed")
+except rb.VaultUsedError:
+    pass
+ok("the vault opens exactly once per idea family")
+rb.VAULT_FROM = old_vault
+for n in ("trials.json", "vault_log.json"):
+    (rb.RESULTS / n).unlink(missing_ok=True)
 
 # ── 2c. weekly performance report ───────────────────────────────────────────
 print("performance report")
