@@ -1,0 +1,25 @@
+{
+ "idea": "R-2026-11-07-CORRACC",
+ "run": "2026-11-07T02:51:22+00:00",
+ "period": [
+  "1999-01-04",
+  "2026-11-06"
+ ],
+ "bench": "SPY",
+ "cost_bps": 5.0,
+ "trials": 26,
+ "notes": "out of SPY next day when sector corr20 > 1.13 x corr60 (source's in-sample pick of 26); 1999+",
+ "idea_cagr": 0.0849,
+ "bench_cagr": 0.085,
+ "idea_sharpe": 0.443,
+ "bench_sharpe": 0.416,
+ "idea_maxdd": -0.3441,
+ "bench_maxdd": -0.5519,
+ "turnover_per_year": 12.96,
+ "confidence": 0.6227,
+ "oos_from": "2018-06-28",
+ "oos_idea_sharpe": 0.55,
+ "oos_bench_sharpe": 0.662,
+ "oos_idea_cagr": 0.1086,
+ "verdict": "FAIL"
+}

@@ -1,0 +1,25 @@
+{
+ "idea": "R-2026-11-07-BEST6M",
+ "run": "2026-11-07T02:51:08+00:00",
+ "period": [
+  "1986-01-02",
+  "2026-11-06"
+ ],
+ "bench": "VFINX",
+ "cost_bps": 5.0,
+ "trials": 1,
+ "notes": "S&P 500 Nov-Apr, T-bills May-Oct; 1986+",
+ "idea_cagr": 0.0899,
+ "bench_cagr": 0.1109,
+ "idea_sharpe": 0.492,
+ "bench_sharpe": 0.497,
+ "idea_maxdd": -0.3574,
+ "bench_maxdd": -0.5525,
+ "turnover_per_year": 2.03,
+ "confidence": 0.481,
+ "oos_from": "2014-07-30",
+ "oos_idea_sharpe": 0.405,
+ "oos_bench_sharpe": 0.679,
+ "oos_idea_cagr": 0.0692,
+ "verdict": "FAIL"
+}

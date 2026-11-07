@@ -1,0 +1,25 @@
+{
+ "idea": "R-2026-11-07-PREFOMC",
+ "run": "2026-11-07T02:52:17+00:00",
+ "period": [
+  "2000-01-03",
+  "2026-11-06"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 5.0,
+ "trials": 1,
+ "notes": "SPY from the close before each scheduled FOMC decision to the decision-day close (14:00 exit approximated); 2000+",
+ "idea_cagr": 0.0286,
+ "bench_cagr": 0.0195,
+ "idea_sharpe": 0.274,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.0449,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 15.98,
+ "confidence": 0.9216,
+ "oos_from": "2018-10-16",
+ "oos_idea_sharpe": -0.092,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.0239,
+ "verdict": "FAIL"
+}
