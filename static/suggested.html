@@ -130,8 +130,8 @@ function panel(name,s){
          <button class="danger" onclick="disarmS('${name}')">DISARM</button>
        </div>`
     : `<div class="row">
-         <input id="tail_${name}" placeholder="acct tail">
-         <input id="conf_${name}" placeholder="ARM LIVE" style="width:110px">
+         <input id="tail_${name}" placeholder="acct tail" inputmode="numeric" autocomplete="off">
+         <input id="conf_${name}" placeholder="ARM LIVE" style="width:110px" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false">
          <label class="stat"><input type="checkbox" id="dry_${name}" style="width:auto"> dry</label>
          <button class="primary" onclick="armS('${name}')">ARM</button>
        </div>`;
@@ -210,13 +210,16 @@ async function post(url,body){
     body:JSON.stringify(body||{})});
   const j=await r.json();
   document.getElementById('msg').textContent=j.error?('⚠ '+j.error):'';
+  if(j.error) alert('⚠ '+j.error);   // the msg line can be off-screen on a phone
   return j;
 }
 async function armS(name){
   const tail=(document.getElementById('tail_'+name).value||'').trim();
-  const conf=(document.getElementById('conf_'+name).value||'').trim();
+  // phones capitalise "Arm live" — the words still have to be typed, any case
+  const conf=(document.getElementById('conf_'+name).value||'').trim().replace(/\s+/g,' ').toUpperCase();
   const dry=document.getElementById('dry_'+name).checked;
-  if(!tail||conf!=='ARM LIVE'){document.getElementById('msg').textContent='⚠ '+name+': enter the account tail and type ARM LIVE exactly';return;}
+  if(!tail||conf!=='ARM LIVE'){const m='⚠ '+name+': enter the account tail and type ARM LIVE';
+    document.getElementById('msg').textContent=m; alert(m); return;}
   await post('api/live/arm',{strategy:name,account_tail:tail,confirm:conf,dry_run:dry}); refresh();
 }
 async function disarmS(name){ if(confirm('Disarm '+name+'? Open live positions stay open — close them first if needed.')){await post('api/live/disarm',{strategy:name}); refresh();} }
