@@ -139,6 +139,91 @@ def tbill(dates, fetch=None):
     return out
 
 
+# ── Sharadar: survivorship-free prices + point-in-time fundamentals ──────────
+# Connected 2026-11-07 (owner: Full History Bundle). The key is NEVER in code:
+# in the research environment the network proxy injects the `x-api-key`
+# header for api.sharadar.com; SHARADAR_API_KEY (env) is an optional local
+# override. Delisted names keep their final ticker (SVB -> SIVBQ).
+
+import hashlib as _hl
+import os as _os
+import urllib.parse as _up
+
+SHARADAR = "https://api.sharadar.com/v1.0/data/"
+
+
+def _sh_fetch(table, params):
+    q = dict(params, format="json")
+    req = urllib.request.Request(SHARADAR + table + "?" + _up.urlencode(q),
+                                 headers={"User-Agent": "logicon-research"})
+    k = _os.environ.get("SHARADAR_API_KEY")
+    if k:
+        req.add_header("x-api-key", k)
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return json.loads(r.read()).get("data") or []
+
+
+def sharadar(table, fetch=None, **params):
+    """Rows of a Sharadar table (cached per day per query)."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    tag = _hl.sha1(json.dumps([table, sorted(params.items())]).encode()).hexdigest()[:16]
+    f = CACHE / f"sh_{table}_{tag}.json"
+    if f.exists() and json.loads(f.read_text()).get("asof") == today:
+        return json.loads(f.read_text())["rows"]
+    rows = (fetch or _sh_fetch)(table, dict(params, limit=params.get("limit", 10000)))
+    f.write_text(json.dumps({"asof": today, "rows": rows}))
+    return rows
+
+
+def sharadar_prices(tickers, start="1997-01-01", fetch=None):
+    """Like prices(): adjusted closes (dividends + splits) on the union
+    calendar, from Sharadar SEP — delisted tickers included."""
+    raw = {}
+    for t in tickers:
+        rows = sharadar("stocks", fetch, ticker=t, fields="date,closeadj")
+        raw[t] = {r["date"][:10]: r["closeadj"] for r in rows if r.get("closeadj")}
+    dates = sorted({d for v in raw.values() for d in v if d >= start})
+    return dates, {t: [raw[t].get(d) for d in dates] for t in tickers}
+
+
+def sp500_history(fetch=None, first_year=1970, last_year=None):
+    """Every S&P 500 membership row (snapshots + adds/removes), year by year
+    (the API caps one call at 10,000 rows)."""
+    last_year = last_year or datetime.now(timezone.utc).year
+    rows = []
+    for y in range(first_year, last_year + 1):
+        rows += sharadar("sp500", fetch, **{"from": f"{y}-01-01", "to": f"{y}-12-31"})
+    return rows
+
+
+def sp500_members(asof, rows):
+    """Point-in-time S&P 500 membership on `asof`: the latest snapshot
+    ('historical'/'current') on or before it, then the adds/removes since."""
+    snaps = sorted({r["date"][:10] for r in rows
+                    if r["action"] in ("historical", "current") and r["date"][:10] <= asof})
+    if not snaps:
+        return set()
+    base = snaps[-1]
+    members = {r["ticker"] for r in rows
+               if r["action"] in ("historical", "current") and r["date"][:10] == base}
+    for r in sorted(rows, key=lambda r: r["date"]):
+        d = r["date"][:10]
+        if base < d <= asof:
+            if r["action"] == "added":
+                members.add(r["ticker"])
+            elif r["action"] == "removed":
+                members.discard(r["ticker"])
+    return members
+
+
+def fundamentals_pit(ticker, dimension="ARQ", fetch=None):
+    """Point-in-time fundamentals: rows sorted by `date` (when the number
+    became public). An idea at day D may only use rows with date <= D."""
+    rows = sharadar("fundamentals", fetch, ticker=ticker, dimension=dimension)
+    return sorted(rows, key=lambda r: r.get("date") or "")
+
+
 # ── simulation ───────────────────────────────────────────────────────────────
 
 class LookAheadError(Exception):
@@ -459,7 +544,7 @@ def traits(rets, bret, rf, bench_px=None):
 def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
              cost_bps=None, trials=1, notes="", fetch=None, save=True,
              asset_class=None, variants=None, factors=None, ff_fetch=None,
-             family=None, vault=False):
+             family=None, vault=False, source="yahoo"):
     """Backtest one idea and write data/research/results/<idea_id>.json.
     asset_class sets the default cost (COST_BPS) and turns on the factor-alpha
     gate for "stocks"; variants = {name: weights_fn} neighbouring settings
@@ -476,7 +561,17 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     fam = _jload("trials.json", {})
     trials = max(int(trials or 1), 1 + len(variants), fam.get(family, 0) + 1 + len(variants))
     syms = sorted(set(symbols) | ({bench} if bench else set()))
-    dates, px = prices(syms, start, fetch)
+    if source == "sharadar":
+        # stocks from Sharadar (survivorship-free); a fund/ETF benchmark
+        # still comes from Yahoo and is aligned onto the stock calendar
+        sd, spx = sharadar_prices([x for x in syms if x != bench], start, fetch)
+        if bench:
+            bd, bp = prices([bench], start)
+            bmap = dict(zip(bd, bp[bench]))
+            spx[bench] = [bmap.get(d) for d in sd]
+        dates, px = sd, spx
+    else:
+        dates, px = prices(syms, start, fetch)
     if not vault:                              # development never sees the vault
         keep = sum(1 for d in dates if d < VAULT_FROM)
         dates, px = dates[:keep], {k: v[:keep] for k, v in px.items()}
@@ -544,6 +639,7 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
         "factor_alpha": fa,
         "gates": gates,
         "traits": traits(rets, bret, rf1, px.get(bench) if bench else None),
+        "data_source": source, "survivorship_free": source == "sharadar",
         "family": family, "vault": ("VAULT TEST (full history, one-time)" if vault
                                     else f"sealed from {VAULT_FROM}"),
     }

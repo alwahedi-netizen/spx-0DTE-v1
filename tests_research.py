@@ -252,6 +252,38 @@ mo = pf.monthly(dts, [0.01, 0.02, -0.01])
 assert abs(mo["2020-01"] - (1.01 * 1.02 - 1)) < 1e-12 and abs(mo["2020-02"] + 0.01) < 1e-12
 ok("daily -> monthly compounding")
 
+# ── 2h. Sharadar connector (survivorship-free data, owner 2026-11-07) ──────
+print("Sharadar connector")
+def fake_sh(table, params):
+    if table == "stocks":
+        t = params["ticker"]
+        return [{"date": d, "closeadj": 10.0 + i} for i, d in enumerate(["2020-01-02", "2020-01-03", "2020-01-06"])
+                if not (t == "GONEQ" and d == "2020-01-06")]
+    if table == "sp500":
+        y = params["from"][:4]
+        return {"2019": [{"date": "2019-12-31", "action": "historical", "ticker": "AAA"},
+                         {"date": "2019-12-31", "action": "historical", "ticker": "GONEQ"}],
+                "2020": [{"date": "2020-03-02", "action": "added", "ticker": "NEW"},
+                         {"date": "2020-03-02", "action": "removed", "ticker": "GONEQ"}]}.get(y, [])
+    if table == "fundamentals":
+        return [{"date": "2020-05-01", "calendardate": "2020-03-31"}, {"date": "2020-02-01", "calendardate": "2019-12-31"}]
+    return []
+for _f in rb.CACHE.glob("sh_*.json"):
+    _f.unlink()
+d_, p_ = rb.sharadar_prices(["AAA", "GONEQ"], "2020-01-01", fetch=fake_sh)
+assert d_ == ["2020-01-02", "2020-01-03", "2020-01-06"] and p_["GONEQ"][2] is None and p_["AAA"][2] == 12.0
+ok("Sharadar prices on the union calendar; a delisted name simply stops")
+hist = rb.sp500_history(fake_sh, 2019, 2020)
+assert rb.sp500_members("2020-01-15", hist) == {"AAA", "GONEQ"}
+assert rb.sp500_members("2020-03-02", hist) == {"AAA", "NEW"}
+assert rb.sp500_members("2018-06-30", hist) == set()
+ok("point-in-time S&P 500 membership: snapshot + adds/removes up to the date")
+fr = rb.fundamentals_pit("AAA", fetch=fake_sh)
+assert [r["date"] for r in fr] == ["2020-02-01", "2020-05-01"]
+ok("fundamentals sorted by the date they became public")
+for _f in rb.CACHE.glob("sh_*.json"):
+    _f.unlink()
+
 # ── 2c. weekly performance report ───────────────────────────────────────────
 print("performance report")
 import perf_report as pr

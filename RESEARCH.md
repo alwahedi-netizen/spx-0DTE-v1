@@ -280,6 +280,15 @@ that is the normal outcome.
 
 Connected: Yahoo daily prices (ETFs, indices, FX, crypto, futures fronts),
 ^IRX T-bills, Ken French daily factors (FF5 + momentum, 1926→).
+**Sharadar Full History Bundle (2026-11-07):** survivorship-free US stock
+prices 1997→ incl. delisted names (final tickers, e.g. SVB = SIVBQ), point-
+in-time fundamentals 1993→ (`date` = when public), S&P 500 membership 1970→
+(`sp500_members(asof)` rebuilt 2008-06-30 = 500 names incl. MER, WB1,
+LEHMQ), insiders 2008→, 13F `holdings`. Use `evaluate(..., source="sharadar")`
+for single-stock ideas; universes from `sp500_members` on each rebalance
+date; fundamentals only where `date` <= the decision day. Ideas run this
+way are NOT capped by §0.5 (`survivorship_free: true` in the result).
+The key is never in code: the environment's network secret injects it.
 Gaps that cap what can PASS today: (a) survivorship-free US stocks incl.
 delisted names, (b) point-in-time fundamentals, (c) back-adjusted continuous
 futures with roll history. When a paid source is connected, record it here

@@ -37,6 +37,14 @@ ingredients from the shortlist first.
 | 3 | G-GAPFADE (gap fade) | conditional-edge | 94% confidence near miss — try a regime filter |
 | 3 | G-MOM, I-…-TRENDVAL, I-…-GREENBLATT | data-capped | Strong in the literature; retest on survivorship-free data |
 
+## Data unlocked 2026-11-07 — retest first
+
+Sharadar (survivorship-free + point-in-time) is connected. The ideas capped
+by data go to the FRONT of the queue: **G-MOM** (single-stock momentum —
+its old "pass" was survivorship bias), **I-2026-10-28-TRENDVAL** (value ×
+momentum), **I-2026-11-07-GREENBLATT** (quality-value), and insider
+clusters (I-2026-10-28-INSIDER). Use point-in-time S&P 500 universes.
+
 ## Themes learned so far
 
 1. **Crash protection is cheap and repeatable; outperformance is not.** Trend,
