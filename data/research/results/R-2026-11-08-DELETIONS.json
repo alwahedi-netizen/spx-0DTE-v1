@@ -1,0 +1,70 @@
+{
+ "idea": "R-2026-11-08-DELETIONS",
+ "run": "2026-11-08T18:36:14+00:00",
+ "period": [
+  "1998-01-02",
+  "2024-10-31"
+ ],
+ "bench": "SPY",
+ "cost_bps": 10.0,
+ "trials": 5,
+ "notes": "S&P 500 discretionary deletions (non-M&A/spin/share-class notes), equal weight, held 60 months after removal or until re-added, monthly; SPY when none; 10bp; variants 30/45/75/90 months; Sharadar survivorship-free",
+ "idea_cagr": 0.1037,
+ "bench_cagr": 0.0869,
+ "idea_sharpe": 0.405,
+ "bench_sharpe": 0.423,
+ "idea_maxdd": -0.8419,
+ "bench_maxdd": -0.5519,
+ "turnover_per_year": 2.02,
+ "confidence": 0.4524,
+ "oos_from": "2016-10-13",
+ "oos_idea_sharpe": 0.294,
+ "oos_bench_sharpe": 0.738,
+ "oos_idea_cagr": 0.0653,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.4528,
+ "active_t": 1.07,
+ "sharpe_2x_costs": 0.399,
+ "robust_share": 0.25,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.0268,
+  "alpha_t": 0.77,
+  "loadings": {
+   "Mkt-RF": 1.12,
+   "SMB": 0.87,
+   "HML": 0.33,
+   "RMW": 0.03,
+   "CMA": 0.43,
+   "Mom": -0.36
+  },
+  "days": 6751
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "FAIL"
+ },
+ "traits": {
+  "corr_to_bench": 0.69,
+  "dd_cut": -0.53,
+  "sharpe_ratio_vs_bench": 0.96,
+  "active_sharpe_first_half": 0.55,
+  "active_sharpe_second_half": -0.17,
+  "active_sharpe_bench_uptrend": 0.24,
+  "active_sharpe_bench_downtrend": 0.14,
+  "best_5y_active_sharpe": 1.41,
+  "worst_5y_active_sharpe": -0.71,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "sp500-deletions",
+ "vault": "sealed from 2024-11-01"
+}

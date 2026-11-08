@@ -44,6 +44,16 @@ ingredients from the shortlist first.
 | 3 | R-2026-11-07-HYTREND (high-yield 200-day trend) | conditional-edge, risk-reducer | Red team: the PASS was stale mutual-fund prices; on HYG it is a modest crash cutter (−14% vs −18%) |
 | 3 | L-2026-11-07-CORRSWITCH (risk parity 2× cut to 1× when stock-bond corr > 0) | conditional-edge, risk-reducer | +12.6%/yr vs +7.7%, worst drop −39% vs −55%; held-out lagged |
 | 3 | R-2026-11-07-GPROF, R-2026-11-07-XSMOMSF (gross profitability; momentum — honest data) | conditional-edge | Beat SPY on survivorship-free data but are the known factors (no alpha); correlate 0.78 with each other |
+| 4 | L-2026-11-08-TSYCAL (IEF over the last 3 days of the month OR the 3 days around FOMC, else T-bills) | conditional-edge, risk-reducer | Sharpe 0.92 vs 0.32, worst drop −5% vs −24%, held-out 1.07 vs −0.16, confidence 99.7%; best marginal add to the book (+0.12); fails only DSR/t (too few trading days) |
+| 4 | L-2026-11-07-CARRYPROXY (USO only when its 3-month return beats USL's, else T-bills) | conditional-edge, risk-reducer | +5.5%/yr vs −11.4% (USO), worst drop −45% vs −98%; ETF proxy for oil curve carry |
+| 4 | R-2026-11-08-CMDSKEW (3 lowest-skew of 10 commodity ETFs) | conditional-edge | +4.6%/yr vs −1.5% (DBC), confidence 92%; long-only skew premium |
+| 4 | R-2026-11-08-EQCREDIT (HYG while S&P above its 10-mo SMA, else IEI) | conditional-edge, risk-reducer | Sharpe 0.50 vs 0.34 (AGG) on tradeable ETFs |
+| 4 | R-2026-11-08-MEDIAN (middle-ranked Treasury ETFs by 6-month return) | conditional-edge, risk-reducer | Sharpe 0.44 vs 0.30, worst drop −16% vs −24%; adds +0.03 to the book |
+| 4 | L-2026-11-08-HAVENVOL / HAVENRATES (yen+franc only in high FX vol / falling-yield bears) | diversifier | Flat most of the time; crisis sleeve variants of SAFEHAVEN that sidestep 2022 |
+| 3 | R-2026-11-08-FOMCTSY (IEF only around FOMC decisions) | conditional-edge, risk-reducer | Held-out 0.87 vs −0.16; adds +0.07 to the book; strongest as part of TSYCAL |
+| 3 | R-2026-11-08-ASSETGROW (lowest asset growth, point-in-time S&P 500) | conditional-edge | +10.9%/yr vs +8.7%, beat SPY in the held-out window; no factor alpha (t 0.6 — it is the CMA factor) |
+| 3 | R-2026-11-08-CLENOW (Clenow momentum with a market filter) | conditional-edge, risk-reducer | +11.6%/yr vs +8.7%, worst drop −27% vs −55%; alpha t 1.4 |
+| 3 | L-2026-11-07-CORRDUR (TLT/IEF by stock-bond correlation) | conditional-edge | Worked before 2018, lost after; keep only as a correlation-regime ingredient |
 
 ## Data unlocked 2026-11-07 — retest status
 
@@ -55,8 +65,13 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
   2017-24. FAIL.
 - **GREENBLATT → R-2026-11-07-MAGICSF:** +14.2% vs +7.6%, every world-class
   gate cleared (alpha t 2.8), held-out 2017-24 lost → FAIL, shortlist 3.
-- **Still queued:** insider clusters (I-2026-10-28-INSIDER). The insiders
-  table needs a bulk pull, not per-ticker queries.
+- **Insider clusters (I-2026-10-28-INSIDER): blocked** (2026-11-08). The
+  insiders table holds ~50k rows a month and the API does not filter on
+  `transactioncode`, so per-ticker queries cannot rebuild it. Needs the bulk
+  export (one download) before it can be retested.
+- **Retested 2026-11-08:** asset growth (+10.9% vs +8.7%, no alpha), Clenow
+  momentum (+11.6%, worst drop −27%), residual momentum (+9.7%, no alpha),
+  index deletions (+10.4% but −84% worst drop). All FAIL.
 
 ## Themes learned so far
 
@@ -104,6 +119,22 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
     - spot FX earns no interest in the harness;
     - no FRED rates/CPI, which blocks 6 FX carry/value ideas;
     - no back-adjusted futures, which blocks curve/roll ideas.
+13. **A trend overlay destroys quality-value's alpha** (QVTREND, 2026-11-08).
+    The trend filter cut the worst drop −57% → −33% but return fell from
+    +14.2%/yr to +8.6% and factor alpha from t 2.8 to 0.8: value earns most of
+    its premium in the rebounds right after a crash, exactly when the trend
+    filter is still out. → Do not trend-gate value; size it instead (or pair
+    it with a crisis sleeve held alongside).
+14. **Treasury calendar edges stack** (TSYCAL). End-of-month and FOMC windows
+    are different days; held together they reach Sharpe 0.92 with a 5% worst
+    drop and held up after 2018. They fail t ≥ 3 only because the strategy is
+    in the market only about a quarter of trading days. → The rates book is the place for them.
+15. **The book keeps improving as uncorrelated pieces are added**: 20 series,
+    Sharpe 1.56, 3.2%/yr at 2.0% vol, worst drop −2.9% (11-07: 9 series,
+    Sharpe 1.51). The next step is leverage or sizing, not more signals.
+16. **Crypto rules mostly fail against buy-and-hold** (6 of 6 tonight). Only
+    the BTI trend index improved Sharpe (1.16 vs 0.92, worst drop −54% vs
+    −83%) — theme 10 again: crash protection, not extra return.
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).
@@ -116,15 +147,21 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 | L-CORRSWITCH | CORRACC × RPARL / HFEA | De-risk the levered stock–bond mix when correlations accelerate (the 2022 failure mode) |
 | L-SEASONTREND | BEST6M × DD-TREND | Two independent risk filters agreeing → fewer whipsaws than either alone |
 | L-GAPREGIME | GAPFADE × volatility/GEX regime | Condition the near-miss reversal on the regime where it worked |
-| L-QVTREND | MAGICSF × DD-TREND | Quality-value had alpha but a −57% drop in 2008; a trend overlay should cut that while keeping the alpha |
+| L-QVTREND | MAGICSF × DD-TREND | **Tested 2026-11-08: FAIL** — cut the drop but killed the alpha (theme 13) |
 | L-RATESBOOK | EOMTSY + FOMCUSD + HYTREND(ETF) + SAFEHAVEN | Tonight's book of small uncorrelated rates/FX edges (Sharpe 1.5 at 2.5% vol): size it with risk parity and test it as one sleeve |
-| queued by desks | L-VALTREND (FX), L-CORRDUR (bonds), L-GOLDCRISIS / L-CARRYPROXY (commodities), EQTRENDCREDIT / MEDIAN (bonds) | Next scripts in their asset-class queues (5-per-class cap reached tonight) |
+| done 2026-11-08 | VALTREND, CORRDUR, GOLDCRISIS, CARRYPROXY, EQCREDIT, MEDIAN, SEASONTREND, TSYCAL | All FAIL; CARRYPROXY, EQCREDIT, MEDIAN, TSYCAL shortlisted at 4 |
+| L-QVBOOK | MAGICSF (sized) + SAFEHAVEN/HAVENVOL sleeve | Theme 13: keep value always on and let a crisis sleeve pay in crashes instead of gating it |
+| L-RATESBOOK v2 | TSYCAL + MEDIAN + EQCREDIT + HAVENVOL | Rates/FX book rebuilt from tonight's shortlist, risk-parity sized |
+| queued by desks | NETISS, ACCRUALS, FSCORE (stocks); VIXCORR, SAFEDUR, POLICYMOM (bonds); UEP, VALMOMFX (FX); HAVENBASKET, OILCURVETREND (commodities); BTC52WH (crypto) | Next scripts in each class queue |
+| data unlocks | insider bulk export; Coin Metrics (on-chain); FRED rates (ETFCARRY / FX carry) | Blocked ideas waiting on data |
 
 **First portfolio book (2026-11-07):**
 - **Contents:** the nine series saved tonight, inverse-vol weighted.
 - **Stats:** Sharpe 1.51, 3.8%/yr at 2.5% vol, worst drop −3.6%, 2007-2024 common months.
 - **Adds value at 10%:** EOMTSY (+0.10), HYTREND (+0.08), FOMCUSD (+0.04).
 - **Dilutes the book:** equity momentum and gross profitability (they add equity beta).
+- **Update 2026-11-08:** 20 series, Sharpe 1.56, 3.2%/yr at 2.0% vol, worst
+  drop −2.9%. Best adds at 10%: TSYCAL (+0.12), FOMCTSY (+0.07), MEDIAN (+0.03).
 - **Still to do:** rebuild the older shortlist's series (DD-TREND, VTSPYL, HFEA, RPARL…) so they join the book.
 
 Each runs under the vault and automatic trial counting (RESEARCH.md §2b).
