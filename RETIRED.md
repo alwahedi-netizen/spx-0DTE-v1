@@ -76,6 +76,26 @@ trade history of every retired strategy remains in `data/paper/*.csv`
   structure-level management like the fly family. Don't re-propose
   intraday moving-average filters without a demonstrated loser-size cap.
 
+## MEP — MEIC's put half alone (afternoon ladder, 12:00–14:30)
+- **Live in lab:** 2026-10-15 → 2026-11-06 (retired by owner instruction
+  2026-11-08: "retire MEP · keep MPM, OCB")
+- **Final record:** 57 put spreads / 15 sessions, **−$3,992.50** after
+  simulated fills (−$3,432.50 at mid), PF 0.48, win rate 40%, max drawdown
+  −$4,504.50, best day +$493 / worst day −$1,196 (2026-11-02).
+- **Why it died:** the 2026-10-15 hypothesis was "MEIC's put sides carry
+  the edge; the call sides are drag". It was measured in a grind-up tape,
+  and the pre-registered caveat came true: the late-October / early-
+  November sell-offs (10-22, 10-29, 10-30, 11-02) stopped the put ladder
+  repeatedly, with no call side to offset. MEIC's own put sides lost
+  −$3,584 over the same window. The edge was the full condor's balance,
+  not one half of it.
+- **Kept alive:** MPM (the same put structure, morning slots) and OCB
+  (ORB upside breakouts) stay on paper until each has ~100 trades.
+- **Lesson recorded:** splitting a profitable two-sided structure by the
+  side that "made the money" in one regime selects for that regime. Don't
+  re-propose one-sided MEIC variants without a regime gate tested in a
+  down tape.
+
 ---
 
 *Registry created 2026-09-29. Successors added the same day: MNG (MEIC

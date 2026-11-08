@@ -108,3 +108,8 @@ pbw:                              # put broken-wing butterfly, 10:15, held to
   width_down: 40                  # file was shadowing the v2 DEFAULTS — every
   min_credit: 0.30                # session logged SKIP/CREDIT ~-5. Zero v1 trades.
   contracts: 1
+
+mep:                              # MEIC's put half alone, afternoon slots
+  enabled: false                  # RETIRED 2026-11-08 by owner (see RETIRED.md).
+                                  # Listed here so this file can never shadow
+                                  # the retired DEFAULTS back on.

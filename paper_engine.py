@@ -146,7 +146,10 @@ DEFAULTS = {
     # risk measured in a grind-up tape — a down regime is exactly what
     # the test must survive before any live talk.
     "mep": {
-        "enabled": True,
+        "enabled": False,         # RETIRED 2026-11-08 by owner: 57 put spreads
+                                  # / 15 sessions, -$3,992.50 after simulated
+                                  # fills (-$3,432.50 at mid), PF 0.48, max
+                                  # drawdown -$4,504.50. See RETIRED.md.
         "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
         "sides": ["PUT"], "wing_width": 30,
         "side_credit": 1.50, "min_side_credit": 1.25, "stop_mult": 2.0,

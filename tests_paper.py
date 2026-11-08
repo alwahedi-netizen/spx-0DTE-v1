@@ -530,8 +530,10 @@ def test_config_file():
 def test_new_systems():
     print("MEP / MPM / OCB")
     cfg = pe.load_config()
-    for k in ("mep", "mpm", "ocb"):
+    for k in ("mpm", "ocb"):                 # kept on paper (owner 2026-11-08)
         assert cfg[k]["enabled"], k
+    assert cfg["mep"]["enabled"] is False    # RETIRED 2026-11-08 (owner)
+    assert pe.load_config(path="/nonexistent")["mep"]["enabled"] is False
     assert cfg["mep"]["sides"] == ["PUT"] and cfg["mpm"]["sides"] == ["PUT"]
     assert cfg["mep"]["slots"] == cfg["meic"]["slots"]       # clean A/B
     assert cfg["mpm"]["slots"] == ["10:00", "10:30", "11:00"]
