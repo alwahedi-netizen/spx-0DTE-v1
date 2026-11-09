@@ -1,0 +1,58 @@
+{
+ "idea": "L-2026-11-08-BTC52WH",
+ "run": "2026-11-09T18:29:23+00:00",
+ "period": [
+  "2015-01-01",
+  "2024-10-31"
+ ],
+ "bench": "BTC-USD",
+ "cost_bps": 25.0,
+ "trials": 7,
+ "notes": "lab original (George-Hwang anchor, time-series): BTC only while close >= 75% of its 365-day closing high, Sunday decision, T-bills otherwise; warm-up holds BTC (neutral); 25bp; vault sealed from 2024-11",
+ "idea_cagr": 0.4449,
+ "bench_cagr": 0.4617,
+ "idea_sharpe": 1.033,
+ "bench_sharpe": 0.919,
+ "idea_maxdd": -0.582,
+ "bench_maxdd": -0.834,
+ "turnover_per_year": 2.18,
+ "confidence": 0.7249,
+ "oos_from": "2021-11-19",
+ "oos_idea_sharpe": 0.601,
+ "oos_bench_sharpe": 0.251,
+ "oos_idea_cagr": 0.1866,
+ "verdict": "FAIL",
+ "asset_class": "crypto",
+ "deflated_sharpe": 0.0127,
+ "active_t": -0.85,
+ "sharpe_2x_costs": 1.02,
+ "robust_share": 0.75,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.74,
+  "dd_cut": 0.3,
+  "sharpe_ratio_vs_bench": 1.12,
+  "active_sharpe_first_half": -0.25,
+  "active_sharpe_second_half": -0.2,
+  "active_sharpe_bench_uptrend": -0.25,
+  "active_sharpe_bench_downtrend": -0.24,
+  "best_5y_active_sharpe": 0.04,
+  "worst_5y_active_sharpe": -0.56,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "btc-52wh",
+ "vault": "sealed from 2024-11-01"
+}

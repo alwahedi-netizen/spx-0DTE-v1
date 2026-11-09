@@ -1,0 +1,70 @@
+{
+ "idea": "L-2026-11-09-QVBOOK",
+ "run": "2026-11-09T18:47:26+00:00",
+ "period": [
+  "2000-01-03",
+  "2024-10-31"
+ ],
+ "bench": "SPY",
+ "cost_bps": 5.0,
+ "trials": 15,
+ "notes": "Lab original: MAGICSF book always 100% + FXY/FXF 25%/25% overlay while SPY < 10-month SMA (theme 13: hedge alongside, never gate value); Sharadar survivorship-free (FXY/FXF from the funds table); family GREENBLATT",
+ "idea_cagr": 0.1444,
+ "bench_cagr": 0.0758,
+ "idea_sharpe": 0.657,
+ "bench_sharpe": 0.382,
+ "idea_maxdd": -0.5644,
+ "bench_maxdd": -0.5519,
+ "turnover_per_year": 6.84,
+ "confidence": 0.9981,
+ "oos_from": "2017-05-22",
+ "oos_idea_sharpe": 0.512,
+ "oos_bench_sharpe": 0.688,
+ "oos_idea_cagr": 0.1133,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.9429,
+ "active_t": 3.34,
+ "sharpe_2x_costs": 0.641,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.0484,
+  "alpha_t": 2.87,
+  "loadings": {
+   "Mkt-RF": 0.98,
+   "SMB": 0.16,
+   "HML": -0.08,
+   "RMW": 0.33,
+   "CMA": 0.09,
+   "Mom": -0.2
+  },
+  "days": 6247
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "ok",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "ok"
+ },
+ "traits": {
+  "corr_to_bench": 0.89,
+  "dd_cut": -0.02,
+  "sharpe_ratio_vs_bench": 1.72,
+  "active_sharpe_first_half": 1.31,
+  "active_sharpe_second_half": -0.17,
+  "active_sharpe_bench_uptrend": 0.25,
+  "active_sharpe_bench_downtrend": 1.28,
+  "best_5y_active_sharpe": 2.21,
+  "worst_5y_active_sharpe": -0.57,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "GREENBLATT",
+ "vault": "sealed from 2024-11-01"
+}

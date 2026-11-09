@@ -1,0 +1,70 @@
+{
+ "idea": "R-2026-11-09-BTCQQQGATE",
+ "run": "2026-11-09T18:29:26+00:00",
+ "period": [
+  "2015-01-02",
+  "2024-10-31"
+ ],
+ "bench": "QQQ",
+ "cost_bps": 10.0,
+ "trials": 25,
+ "notes": "QuantConnect 2026: QQQ while BTC > 50d SMA and 20d ROC > 0 (BTC bars dated < today only), else SHY; weekly first trading day, at the close; QQQ/SHY calendar only (no weekend-return loss); bench QQQ; 10bp; factor gate forced; vault sealed from 2024-11",
+ "idea_cagr": 0.1313,
+ "bench_cagr": 0.1798,
+ "idea_sharpe": 0.908,
+ "bench_sharpe": 0.788,
+ "idea_maxdd": -0.1769,
+ "bench_maxdd": -0.3512,
+ "turnover_per_year": 23.15,
+ "confidence": 0.6558,
+ "oos_from": "2021-11-17",
+ "oos_idea_sharpe": 0.259,
+ "oos_bench_sharpe": 0.267,
+ "oos_idea_cagr": 0.0657,
+ "verdict": "FAIL",
+ "asset_class": "crypto",
+ "deflated_sharpe": 0.0014,
+ "active_t": -1.01,
+ "sharpe_2x_costs": 0.72,
+ "robust_share": 0.5,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.0714,
+  "alpha_t": 2.09,
+  "loadings": {
+   "Mkt-RF": 0.31,
+   "SMB": 0.03,
+   "HML": -0.18,
+   "RMW": 0.03,
+   "CMA": -0.08,
+   "Mom": 0.0
+  },
+  "days": 2474
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "ok"
+ },
+ "traits": {
+  "corr_to_bench": 0.56,
+  "dd_cut": 0.5,
+  "sharpe_ratio_vs_bench": 1.15,
+  "active_sharpe_first_half": -0.45,
+  "active_sharpe_second_half": -0.24,
+  "active_sharpe_bench_uptrend": -0.35,
+  "active_sharpe_bench_downtrend": -0.28,
+  "best_5y_active_sharpe": 0.06,
+  "worst_5y_active_sharpe": -0.53,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "btc-signal-equity",
+ "vault": "sealed from 2024-11-01"
+}

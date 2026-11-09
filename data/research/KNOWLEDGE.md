@@ -54,6 +54,12 @@ ingredients from the shortlist first.
 | 3 | R-2026-11-08-ASSETGROW (lowest asset growth, point-in-time S&P 500) | conditional-edge | +10.9%/yr vs +8.7%, beat SPY in the held-out window; no factor alpha (t 0.6 — it is the CMA factor) |
 | 3 | R-2026-11-08-CLENOW (Clenow momentum with a market filter) | conditional-edge, risk-reducer | +11.6%/yr vs +8.7%, worst drop −27% vs −55%; alpha t 1.4 |
 | 3 | L-2026-11-07-CORRDUR (TLT/IEF by stock-bond correlation) | conditional-edge | Worked before 2018, lost after; keep only as a correlation-regime ingredient |
+| 4 | L-2026-11-08-OILCURVETREND (USO only when curve-tight AND above trend) | conditional-edge, risk-reducer, diversifier | +5.7%/yr vs −9.3% (USO), worst drop −28% vs −98%, confidence 96%, corr 0.12 to the book |
+| 4 | R-2026-11-09-CCYCMD (commodity currencies predict commodities, Chen-Rogoff-Rossi) | conditional-edge, diversifier | +4.7%/yr vs +0.6% (DBC), worst drop −35% vs −76%, corr 0.15 to the book |
+| 3 | L-2026-11-08-POLICYMOM (Treasuries by Fed policy direction) | risk-reducer | Sharpe 0.37 vs 0.32, worst drop −14% vs −24% |
+| 3 | L-2026-11-09-FOMCMOVE (short the dollar on FOMC days only when MOVE is high) | conditional-edge, diversifier | Tiny return but the ONLY block tonight that raised the book's Sharpe (+0.05) |
+| 3 | R-2026-11-09-NETISS, R-2026-11-09-ACCRUALS (share issuance; accruals — survivorship-free) | conditional-edge | NETISS +11.5%/yr vs +7.6%, 99.8% confidence, held-out win; both are known factors (alpha t 1.0 / 1.5) |
+| — | HAVENBASKET, HAVENVOTE (variants of the yen/franc crisis sleeve) | diversifier | Same family as HAVENVOL (now 26+ trials); kept under the HAVENVOL row, not new entries |
 
 ## Data unlocked 2026-11-07 — retest status
 
@@ -135,6 +141,27 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 16. **Crypto rules mostly fail against buy-and-hold** (6 of 6 tonight). Only
     the BTI trend index improved Sharpe (1.16 vs 0.92, worst drop −54% vs
     −83%) — theme 10 again: crash protection, not extra return.
+17. **Two harness bugs found 2026-11-09** (reported; not edited by the scan):
+    - **crypto is annualised with 252 days, not 365** — every crypto CAGR in
+      the ledger is understated (BTC 2015-24 shows 46%/yr; the true figure is
+      ~73%). Comparisons against BTC stay fair (both sides scaled alike);
+      absolute crypto figures in earlier digests were too low.
+    - **mixing Yahoo `=X` FX pairs with ETFs adds FX-only dates** (≥691,
+      mostly UK-summer Sundays) on which held ETFs earn nothing — the
+      yen/franc sleeves (SAFEHAVEN, HAVENVOL, HAVENRATES) lose some
+      Friday→Monday moves. Re-run them once the harness is fixed.
+18. **The book is saturating** (2026-11-09). Of nine new series only
+    FOMCMOVE raised the book's Sharpe; adding all nine lowers it 1.56 →
+    1.51. New blocks must be both uncorrelated AND decent on their own.
+    Theme 15 stands: the next gain is sizing/leverage, not more signals.
+19. **Value's problem is the mega-cap era, not crashes** (QVBOOK). Holding
+    MAGICSF always plus a yen/franc hedge kept the alpha (t 2.87, 14.4%/yr)
+    but did not soften 2008 (−56%) and still lost 2017-24. A crisis sleeve
+    held alongside is the right shape, but the FX sleeve is too small to
+    offset an equity crash; size or a different hedge is the open question.
+20. **Investment-style anomalies on honest data are known factors**
+    (NETISS, ACCRUALS, FSCORE, LOW-VOL: alpha t 0.1–1.5). Theme 8 confirmed
+    for the CMA/RMW family.
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).
@@ -150,10 +177,12 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 | L-QVTREND | MAGICSF × DD-TREND | **Tested 2026-11-08: FAIL** — cut the drop but killed the alpha (theme 13) |
 | L-RATESBOOK | EOMTSY + FOMCUSD + HYTREND(ETF) + SAFEHAVEN | Tonight's book of small uncorrelated rates/FX edges (Sharpe 1.5 at 2.5% vol): size it with risk parity and test it as one sleeve |
 | done 2026-11-08 | VALTREND, CORRDUR, GOLDCRISIS, CARRYPROXY, EQCREDIT, MEDIAN, SEASONTREND, TSYCAL | All FAIL; CARRYPROXY, EQCREDIT, MEDIAN, TSYCAL shortlisted at 4 |
-| L-QVBOOK | MAGICSF (sized) + SAFEHAVEN/HAVENVOL sleeve | Theme 13: keep value always on and let a crisis sleeve pay in crashes instead of gating it |
-| L-RATESBOOK v2 | TSYCAL + MEDIAN + EQCREDIT + HAVENVOL | Rates/FX book rebuilt from tonight's shortlist, risk-parity sized |
-| queued by desks | NETISS, ACCRUALS, FSCORE (stocks); VIXCORR, SAFEDUR, POLICYMOM (bonds); UEP, VALMOMFX (FX); HAVENBASKET, OILCURVETREND (commodities); BTC52WH (crypto) | Next scripts in each class queue |
-| data unlocks | insider bulk export; Coin Metrics (on-chain); FRED rates (ETFCARRY / FX carry) | Blocked ideas waiting on data |
+| L-QVBOOK | MAGICSF (always on) + yen/franc sleeve | **Tested 2026-11-09: FAIL** — kept the alpha, but the hedge did not soften 2008 and 2017-24 still lagged (theme 19) |
+| L-RATESBOOK v2 | TSYCAL + MEDIAN + EQCREDIT + HAVENVOL | **Tested 2026-11-09: FAIL** — Sharpe 0.68 vs 0.32, worst drop −10% vs −24%, 98% confidence; low return because cash sleeves keep their budget. Next: a levered variant |
+| done 2026-11-09 | NETISS, ACCRUALS, FSCORE, LOWVOLSF, VIXCORR, SAFEDUR, POLICYMOM, BMP4, UEP, VALMOMFX, HAVENVOTE, DOLVOL, FOMCMOVE, HAVENBASKET, OILCURVETREND, CURVEPAIRS, CMDVALUE, CCYCMD, BTC52WH, MAXMINTREND, BTCQQQGATE, MAJORSXS, BTCTIPP | All FAIL; shortlist adds above |
+| queued by desks | GOLDSHOCK (cmd, 76); EMDOLLAR (74), LOWRISKIG (72), JANHY (70) (bonds); RND (71), LTREV (70), CBOP (69) (stocks); HEDGEUUP (FX); RATESBOOK levered variant | Next scripts in each class queue |
+| harness fixes | crypto 365-day annualisation; FX-date alignment; `rb.sharadar` table param; FX interest | Owner/maintainer call — the scan never edits the harness |
+| data unlocks | insider bulk export; Coin Metrics (on-chain); FRED rates (ETFCARRY / FX carry); EIA inventories; Treasury refunding dates | Blocked ideas waiting on data |
 
 **First portfolio book (2026-11-07):**
 - **Contents:** the nine series saved tonight, inverse-vol weighted.
@@ -162,6 +191,8 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 - **Dilutes the book:** equity momentum and gross profitability (they add equity beta).
 - **Update 2026-11-08:** 20 series, Sharpe 1.56, 3.2%/yr at 2.0% vol, worst
   drop −2.9%. Best adds at 10%: TSYCAL (+0.12), FOMCTSY (+0.07), MEDIAN (+0.03).
+- **Update 2026-11-09:** 29 series → Sharpe 1.51, 2.9%/yr at 1.9% vol, worst
+  drop −2.7% (the 20-series book stays at 1.56). Only FOMCMOVE adds (+0.05).
 - **Still to do:** rebuild the older shortlist's series (DD-TREND, VTSPYL, HFEA, RPARL…) so they join the book.
 
 Each runs under the vault and automatic trial counting (RESEARCH.md §2b).

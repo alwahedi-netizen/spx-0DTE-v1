@@ -1,0 +1,70 @@
+{
+ "idea": "R-2026-11-09-LOWVOLSF",
+ "run": "2026-11-09T18:42:07+00:00",
+ "period": [
+  "2000-01-03",
+  "2024-10-31"
+ ],
+ "bench": "SPY",
+ "cost_bps": 5.0,
+ "trials": 6,
+ "notes": "Retest of G-STK-SUITE LOWVOL on survivorship-free data: 20 lowest 252-day-volatility names of the point-in-time S&P 500, equal weight, quarterly, drift between; SPY warm-up; variants 15/30 names, 126/504-day windows; Blitz-van Vliet 2007; Quanter Lab 2026-08-09",
+ "idea_cagr": 0.0781,
+ "bench_cagr": 0.0758,
+ "idea_sharpe": 0.464,
+ "bench_sharpe": 0.382,
+ "idea_maxdd": -0.3519,
+ "bench_maxdd": -0.5519,
+ "turnover_per_year": 2.14,
+ "confidence": 0.7289,
+ "oos_from": "2017-05-22",
+ "oos_idea_sharpe": 0.494,
+ "oos_bench_sharpe": 0.688,
+ "oos_idea_cagr": 0.0927,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.0616,
+ "active_t": -0.24,
+ "sharpe_2x_costs": 0.456,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.001,
+  "alpha_t": 0.06,
+  "loadings": {
+   "Mkt-RF": 0.67,
+   "SMB": -0.22,
+   "HML": -0.08,
+   "RMW": 0.17,
+   "CMA": 0.35,
+   "Mom": 0.09
+  },
+  "days": 6247
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "FAIL"
+ },
+ "traits": {
+  "corr_to_bench": 0.78,
+  "dd_cut": 0.36,
+  "sharpe_ratio_vs_bench": 1.21,
+  "active_sharpe_first_half": 0.19,
+  "active_sharpe_second_half": -0.29,
+  "active_sharpe_bench_uptrend": -0.1,
+  "active_sharpe_bench_downtrend": 0.02,
+  "best_5y_active_sharpe": 0.37,
+  "worst_5y_active_sharpe": -0.6,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "low-volatility",
+ "vault": "sealed from 2024-11-01"
+}

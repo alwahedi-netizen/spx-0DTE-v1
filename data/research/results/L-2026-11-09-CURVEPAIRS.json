@@ -1,0 +1,58 @@
+{
+ "idea": "L-2026-11-09-CURVEPAIRS",
+ "run": "2026-11-09T18:28:39+00:00",
+ "period": [
+  "2009-12-01",
+  "2024-10-31"
+ ],
+ "bench": "DBC",
+ "cost_bps": 5.0,
+ "trials": 15,
+ "notes": "month-end: 50% USO if USO 63d > USL 63d, 50% UNG if UNG 63d > UNL 63d, else that half in T-bills; bench DBC; varies L-2026-11-07-CARRYPROXY (adds natural gas); lab original; vault sealed",
+ "idea_cagr": -0.0325,
+ "bench_cagr": -0.0008,
+ "idea_sharpe": -0.174,
+ "bench_sharpe": 0.015,
+ "idea_maxdd": -0.5658,
+ "bench_maxdd": -0.6614,
+ "turnover_per_year": 4.39,
+ "confidence": 0.2499,
+ "oos_from": "2020-05-12",
+ "oos_idea_sharpe": -0.021,
+ "oos_bench_sharpe": 0.853,
+ "oos_idea_cagr": -0.0045,
+ "verdict": "FAIL",
+ "asset_class": "commodities",
+ "deflated_sharpe": 0.0073,
+ "active_t": -0.67,
+ "sharpe_2x_costs": -0.187,
+ "robust_share": 0.25,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.41,
+  "dd_cut": 0.14,
+  "sharpe_ratio_vs_bench": -11.46,
+  "active_sharpe_first_half": -0.0,
+  "active_sharpe_second_half": -0.32,
+  "active_sharpe_bench_uptrend": -0.42,
+  "active_sharpe_bench_downtrend": -0.07,
+  "best_5y_active_sharpe": 0.56,
+  "worst_5y_active_sharpe": -0.39,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "L-2026-11-07-CARRYPROXY",
+ "vault": "sealed from 2024-11-01"
+}

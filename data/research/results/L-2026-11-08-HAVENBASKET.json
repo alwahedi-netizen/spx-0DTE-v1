@@ -1,0 +1,57 @@
+{
+ "idea": "L-2026-11-08-HAVENBASKET",
+ "run": "2026-11-09T18:28:36+00:00",
+ "period": [
+  "2006-05-01",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 5.0,
+ "trials": 21,
+ "notes": "month-end: if SPY < 10-month SMA hold GLD/FXY/FXF inverse 63d-vol weights, else T-bills; bench T-bills (crisis sleeve, family yardstick); varies L-2026-11-07-SAFEHAVEN (adds gold); lab original; vault sealed",
+ "idea_cagr": 0.0226,
+ "bench_cagr": 0.0143,
+ "idea_sharpe": 0.184,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.146,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 1.84,
+ "confidence": 0.7852,
+ "oos_from": "2019-04-15",
+ "oos_idea_sharpe": 0.083,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.0265,
+ "verdict": "FAIL",
+ "asset_class": "commodities",
+ "deflated_sharpe": 0.1279,
+ "active_t": 0.79,
+ "sharpe_2x_costs": 0.166,
+ "robust_share": 1.0,
+ "variants": 5,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.03,
+  "dd_cut": -10021.94,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.18,
+  "active_sharpe_second_half": 0.2,
+  "best_5y_active_sharpe": 0.62,
+  "worst_5y_active_sharpe": -0.48,
+  "building_blocks": [
+   "conditional-edge",
+   "diversifier"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "L-fx-safehaven",
+ "vault": "sealed from 2024-11-01"
+}

@@ -1,0 +1,58 @@
+{
+ "idea": "R-2026-11-09-BMP4",
+ "run": "2026-11-09T18:31:00+00:00",
+ "period": [
+  "2006-02-01",
+  "2024-10-31"
+ ],
+ "bench": "IEF",
+ "cost_bps": 3.0,
+ "trials": 10,
+ "notes": "month-start: IEF weight = share of 4 bull signals (10y-3m slope > 0; IEF 12m > T-bills; SPY 12m <= T-bills; DBC 12m <= 0), rest T-bills; bench IEF; 2006+; Baltussen-Martens-Penninga FAJ 2021; varies CTH",
+ "idea_cagr": 0.0297,
+ "bench_cagr": 0.0327,
+ "idea_sharpe": 0.357,
+ "bench_sharpe": 0.288,
+ "idea_maxdd": -0.104,
+ "bench_maxdd": -0.2392,
+ "turnover_per_year": 1.02,
+ "confidence": 0.7603,
+ "oos_from": "2019-03-20",
+ "oos_idea_sharpe": -0.119,
+ "oos_bench_sharpe": -0.252,
+ "oos_idea_cagr": 0.0191,
+ "verdict": "FAIL",
+ "asset_class": "bonds",
+ "deflated_sharpe": 0.0172,
+ "active_t": -0.54,
+ "sharpe_2x_costs": 0.35,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.91,
+  "dd_cut": 0.57,
+  "sharpe_ratio_vs_bench": 1.24,
+  "active_sharpe_first_half": -0.6,
+  "active_sharpe_second_half": 0.18,
+  "active_sharpe_bench_uptrend": -0.19,
+  "active_sharpe_bench_downtrend": -0.04,
+  "best_5y_active_sharpe": 0.49,
+  "worst_5y_active_sharpe": -1.05,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "R-2026-11-09-BMP4",
+ "vault": "sealed from 2024-11-01"
+}
