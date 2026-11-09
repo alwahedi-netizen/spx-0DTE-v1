@@ -141,7 +141,7 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 16. **Crypto rules mostly fail against buy-and-hold** (6 of 6 tonight). Only
     the BTI trend index improved Sharpe (1.16 vs 0.92, worst drop −54% vs
     −83%) — theme 10 again: crash protection, not extra return.
-17. **Two harness bugs found 2026-11-09** (reported; not edited by the scan):
+17. **Two harness bugs found 2026-11-09** (fixed the same night with the owner's go):
     - **crypto is annualised with 252 days, not 365** — every crypto CAGR in
       the ledger is understated (BTC 2015-24 shows 46%/yr; the true figure is
       ~73%). Comparisons against BTC stay fair (both sides scaled alike);
@@ -181,7 +181,7 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 | L-RATESBOOK v2 | TSYCAL + MEDIAN + EQCREDIT + HAVENVOL | **Tested 2026-11-09: FAIL** — Sharpe 0.68 vs 0.32, worst drop −10% vs −24%, 98% confidence; low return because cash sleeves keep their budget. Next: a levered variant |
 | done 2026-11-09 | NETISS, ACCRUALS, FSCORE, LOWVOLSF, VIXCORR, SAFEDUR, POLICYMOM, BMP4, UEP, VALMOMFX, HAVENVOTE, DOLVOL, FOMCMOVE, HAVENBASKET, OILCURVETREND, CURVEPAIRS, CMDVALUE, CCYCMD, BTC52WH, MAXMINTREND, BTCQQQGATE, MAJORSXS, BTCTIPP | All FAIL; shortlist adds above |
 | queued by desks | GOLDSHOCK (cmd, 76); EMDOLLAR (74), LOWRISKIG (72), JANHY (70) (bonds); RND (71), LTREV (70), CBOP (69) (stocks); HEDGEUUP (FX); RATESBOOK levered variant | Next scripts in each class queue |
-| harness fixes | crypto 365-day annualisation; FX-date alignment; `rb.sharadar` table param; FX interest | Owner/maintainer call — the scan never edits the harness |
+| harness fixes | **FIXED 2026-11-09 (owner "fix research tool"):** crypto 365-day annualisation; FX bar dates (+3h); prices carried over gaps. Still open: `rb.sharadar` table param; FX interest | **Next run: re-run every crypto result and the yen/franc sleeves (SAFEHAVEN, HAVENVOL, HAVENRATES, HAVENVOTE, HAVENBASKET, RATESBOOK) as CORRECTIONS — same scripts, then restore results/trials.json so a re-run never counts as a new trial; report every changed figure** |
 | data unlocks | insider bulk export; Coin Metrics (on-chain); FRED rates (ETFCARRY / FX carry); EIA inventories; Treasury refunding dates | Blocked ideas waiting on data |
 
 **First portfolio book (2026-11-07):**
