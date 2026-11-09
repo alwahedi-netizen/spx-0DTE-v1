@@ -106,36 +106,79 @@ def _fetch(sym):
     ts = res["timestamp"]
     adj = (res["indicators"].get("adjclose") or [{}])[0].get("adjclose") \
         or res["indicators"]["quote"][0]["close"]
-    return {datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d"): a
-            for t, a in zip(ts, adj) if a}
+    # +3h: Yahoo stamps FX (and Asia-Pacific) daily bars at the local session
+    # start in UTC — 23:00 UTC the previous day in UK summer time — which put
+    # Monday's FX bar on Sunday (harness fix, owner "fix research tool"
+    # 2026-11-09). US bars (13:30-14:30 UTC) and crypto (00:00 UTC) keep
+    # their date.
+    return {_bar_date(t): a for t, a in zip(ts, adj) if a}
+
+
+def _bar_date(t):
+    """Trading date of a Yahoo daily bar timestamp (see _fetch)."""
+    return datetime.fromtimestamp(t + 3 * 3600, timezone.utc).strftime("%Y-%m-%d")
+
+
+CACHE_VERSION = 2   # 2026-11-09: FX date fix — older cache files are refetched
+
+
+def _ffill_inside(col):
+    """Carry the last price over gaps INSIDE a series (another symbol's
+    holiday or an FX-only date), never before its first or after its last
+    price. Without it a held asset lost the whole move across the gap."""
+    idx = [i for i, v in enumerate(col) if v is not None]
+    if not idx:
+        return col
+    out, last = list(col), None
+    for i in range(idx[0], idx[-1] + 1):
+        if out[i] is None:
+            out[i] = last
+        else:
+            last = out[i]
+    return out
 
 
 def prices(symbols, start="1990-01-01", fetch=None):
-    """Adjusted closes on the union calendar of `symbols` (cached per day)."""
+    """Adjusted closes on the union calendar of `symbols` (cached per day);
+    gaps inside each series carry the last price forward."""
     fetch = fetch or _fetch
     CACHE.mkdir(parents=True, exist_ok=True)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     raw = {}
     for s in symbols:
         f = CACHE / f"{s.replace('^', '_').replace('=', '_')}.json"
-        if f.exists() and json.loads(f.read_text()).get("asof") == today:
-            raw[s] = json.loads(f.read_text())["px"]
+        j = json.loads(f.read_text()) if f.exists() else {}
+        if j.get("asof") == today and j.get("v") == CACHE_VERSION:
+            raw[s] = j["px"]
         else:
             raw[s] = fetch(s)
-            f.write_text(json.dumps({"asof": today, "px": raw[s]}))
+            f.write_text(json.dumps({"asof": today, "v": CACHE_VERSION, "px": raw[s]}))
     dates = sorted({d for v in raw.values() for d in v if d >= start})
-    return dates, {s: [raw[s].get(d) for d in dates] for s in symbols}
+    return dates, {s: _ffill_inside([raw[s].get(d) for d in dates]) for s in symbols}
+
+
+PPY = 252   # periods per year of the calendar under test; set per run
+
+
+def periods_per_year(dates):
+    """365 for a 7-day calendar (crypto), else 252 (harness fix 2026-11-09:
+    crypto was annualised with 252, understating CAGR/Sharpe/turnover)."""
+    if len(dates) < 30:
+        return 252
+    d0, d1 = (datetime.strptime(dates[0], "%Y-%m-%d"), datetime.strptime(dates[-1], "%Y-%m-%d"))
+    per_year = len(dates) / max((d1 - d0).days / 365.25, 1e-9)
+    return 365 if per_year > 300 else 252
 
 
 def tbill(dates, fetch=None):
     """Daily T-bill return per date (13-week ^IRX, carried forward)."""
     d2, p = prices(["^IRX"], "1985-01-01", fetch)
     irx = dict(zip(d2, p["^IRX"]))
-    out, last = [], 0.0
+    out, last, ppy = [], 0.0, periods_per_year(dates)
     for d in dates:
         if irx.get(d) is not None:
             last = irx[d]
-        out.append(last / 100 / 252)
+        out.append(last / 100 / ppy)
     return out
 
 
@@ -304,14 +347,14 @@ def _sd(x):
 def sharpe(rets, rf):
     ex = [r - f for r, f in zip(rets, rf)]
     sd = _sd(ex)
-    return _mean(ex) / sd * math.sqrt(252) if sd else 0.0
+    return _mean(ex) / sd * math.sqrt(PPY) if sd else 0.0
 
 
 def cagr(rets):
     eq = 1.0
     for r in rets:
         eq *= 1 + r
-    yrs = len(rets) / 252
+    yrs = len(rets) / PPY
     return eq ** (1 / yrs) - 1 if yrs > 0 and eq > 0 else -1.0
 
 
@@ -486,7 +529,7 @@ def factor_alpha(rets, rf, dates, factors):
 
 def _sh(x):
     sd = _sd(x)
-    return _mean(x) / sd * math.sqrt(252) if sd and len(x) > 20 else 0.0
+    return _mean(x) / sd * math.sqrt(PPY) if sd and len(x) > 20 else 0.0
 
 
 def _corr(a, b):
@@ -516,8 +559,8 @@ def traits(rets, bret, rf, bench_px=None):
                 (up if bench_px[i] >= sum(w) / len(w) else dn).append(a)
         t["active_sharpe_bench_uptrend"] = round(_sh(up), 2) if len(up) > 250 else None
         t["active_sharpe_bench_downtrend"] = round(_sh(dn), 2) if len(dn) > 250 else None
-    win = 252 * 5
-    if len(active) > win + 252:
+    win = PPY * 5
+    if len(active) > win + PPY:
         rolls = [_sh(active[s:s + win]) for s in range(0, len(active) - win, 63)]
         t["best_5y_active_sharpe"], t["worst_5y_active_sharpe"] = round(max(rolls), 2), round(min(rolls), 2)
     blocks, score = [], 0
@@ -575,6 +618,8 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     if not vault:                              # development never sees the vault
         keep = sum(1 for d in dates if d < VAULT_FROM)
         dates, px = dates[:keep], {k: v[:keep] for k, v in px.items()}
+    global PPY
+    PPY = periods_per_year(dates)
     rf = tbill(dates, fetch)
     rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps)
     bret = bench_returns(bench, dates, px, rf)
@@ -625,7 +670,8 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
         "idea_cagr": round(cagr(rets), 4), "bench_cagr": round(cagr(bret), 4),
         "idea_sharpe": round(full_s, 3), "bench_sharpe": round(full_b, 3),
         "idea_maxdd": round(max_dd(rets), 4), "bench_maxdd": round(max_dd(bret), 4),
-        "turnover_per_year": round(turnover / (len(rets) / 252), 2),
+        "turnover_per_year": round(turnover / (len(rets) / PPY), 2),
+        "periods_per_year": PPY,
         "confidence": round(conf, 4),
         "oos_from": dates[cut + 1], "oos_idea_sharpe": round(oos_s, 3),
         "oos_bench_sharpe": round(oos_b, 3), "oos_idea_cagr": round(cagr(rets[cut:]), 4),
@@ -673,9 +719,10 @@ ALLOC_WIN_SHARE = {10: 0.60, 20: 0.70}
 ALLOC_MIN_WINDOWS = 12      # a horizon needs >= 12 monthly window starts
 
 
-def rolling_windows(rets, bret, years, step=21):
+def rolling_windows(rets, bret, years, step=None):
     """CAGR of idea and benchmark over every `years`-long window (monthly steps)."""
-    n = int(years * 252)
+    n = int(years * PPY)
+    step = step or PPY // 12
     out = []
     for s in range(0, len(rets) - n + 1, step):
         out.append((s, cagr(rets[s:s + n]), cagr(bret[s:s + n])))
@@ -723,6 +770,8 @@ def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
     (ALLOC_WIN_SHARE). The worst calendar year is reported for the owner."""
     syms = sorted(set(symbols) | {bench})
     dates, px = prices(syms, start, fetch)
+    global PPY
+    PPY = periods_per_year(dates)
     rf = tbill(dates, fetch)
     rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps)
     bret = bench_returns(bench, dates, px, rf)
@@ -743,7 +792,7 @@ def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
         "idea_cagr": round(cagr(rets), 4), "bench_cagr": round(cagr(bret), 4),
         "idea_sharpe": round(sharpe(rets, rf1), 3), "bench_sharpe": round(sharpe(bret, rf1), 3),
         "idea_maxdd": round(max_dd(rets), 4), "bench_maxdd": round(max_dd(bret), 4),
-        "turnover_per_year": round(turnover / (len(rets) / 252), 2),
+        "turnover_per_year": round(turnover / (len(rets) / PPY), 2),
         "confidence": round(sharpe_confidence(rets, bret, rf1), 4),
         "years_beating_bench": f"{sum(1 for a, b in years.values() if a > b)}/{len(years)}",
         "worst_year": [worst_y] + years[worst_y],

@@ -323,6 +323,30 @@ for r in rows:
 assert not any(r["asset_class"] == "options" for r in rows)
 ok(f"ideas.csv: {len(rows)} rows, columns, unique ids, valid phases, score = sum, no options")
 
+print("harness fixes 2026-11-09 (owner: fix research tool)")
+from datetime import datetime as _dt, timezone as _tz, timedelta as _td
+_ts = lambda s: int(_dt.strptime(s, "%Y-%m-%d %H:%M").replace(tzinfo=_tz.utc).timestamp())
+assert rb._bar_date(_ts("2024-07-14 23:00")) == "2024-07-15"   # FX bar, UK summer -> Monday
+assert rb._bar_date(_ts("2024-01-15 00:00")) == "2024-01-15"   # FX/crypto midnight UTC
+assert rb._bar_date(_ts("2024-07-15 13:30")) == "2024-07-15"   # US equity bar
+ok("Yahoo FX bars stamped 23:00 UTC land on the trading day, not the Sunday before")
+assert rb._ffill_inside([None, 1.0, None, None, 2.0, None]) == [None, 1.0, 1.0, 1.0, 2.0, None]
+ok("gaps inside a series carry the last price; nothing before the first or after the last")
+_wk = [d.strftime("%Y-%m-%d") for d in (_dt(2020, 1, 1) + _td(days=i) for i in range(1500)) if d.weekday() < 5]
+_7d = [d.strftime("%Y-%m-%d") for d in (_dt(2020, 1, 1) + _td(days=i) for i in range(1500))]
+assert rb.periods_per_year(_wk) == 252 and rb.periods_per_year(_7d) == 365
+_old = rb.PPY
+rb.PPY = 365
+assert abs(rb.cagr([0.001] * 365) - (1.001 ** 365 - 1)) < 1e-9     # one year of crypto days
+rb.PPY = _old
+ok("crypto (7-day calendar) annualises with 365 days, weekday assets with 252")
+# a held ETF across an FX-only date keeps its whole move (was lost before)
+_d = ["2024-07-12", "2024-07-14", "2024-07-15"]
+_px = {"ETF": rb._ffill_inside([100.0, None, 110.0]), "X=X": [1.0, 1.0, 1.0]}
+_r, _ = rb.simulate(lambda i, dates, px: {"ETF": 1.0}, _d, _px, [0.0] * 3, cost_bps=0)
+assert abs((1 + _r[0]) * (1 + _r[1]) - 1.10) < 1e-9
+ok("an ETF held across a currency-only date keeps its Friday->Monday move")
+
 import paper_dashboard as pdash
 cl = pdash.app.test_client()
 j = cl.get("/api/research").get_json()
