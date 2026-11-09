@@ -36,6 +36,10 @@ LAB_META = {   # prefix -> (title, start $ per lane, lane labels)
     "fxlab": ("FX", 10_000.0, {
         "CARRY": "Carry", "CARRY-V": "Carry + trend veto", "TSMOM": "Trend (12-1)", "TR30": "TR30 breakout"}),
 }
+# Owner checked the FX lab's policy-rate table against current central-bank
+# rates and replied "rates confirmed" (2026-11-09, digest decision 4): the
+# values in the table are the verified ones, so they no longer raise a flag.
+FX_RATES_CONFIRMED = "2026-11-09"
 FLAG_WEEK_LOSS = -0.05       # a lane down more than 5% on the week
 FLAG_DRAWDOWN = -0.15        # a lane more than 15% below its peak
 STALE_DAYS = 4               # last mark older than this (calendar days) -> stale
@@ -211,7 +215,7 @@ def build(asof=None, fetch=None):
     if rates and "fxlab" in rep["labs"]:
         seed = {"USD": 4.0, "EUR": 2.15, "JPY": 1.0, "GBP": 3.75, "CHF": 0.25,
                 "CAD": 2.5, "AUD": 3.6, "NZD": 3.0, "SEK": 2.0, "NOK": 4.0}
-        if all(abs(float(r["rate"]) - seed.get(r["ccy"], -1)) < 1e-9 for r in rates):
+        if not FX_RATES_CONFIRMED and all(abs(float(r["rate"]) - seed.get(r["ccy"], -1)) < 1e-9 for r in rates):
             rep["flags"].append("FX: policy rates are still the unverified seed values — the carry lanes rank currencies by them")
     if st and st["book"]["from_peak"] <= FLAG_DRAWDOWN / 3:
         rep["flags"].append(f"Stocks book: {st['book']['from_peak']:.1%} below its peak")

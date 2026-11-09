@@ -158,7 +158,7 @@ def render(d):
     links = " &nbsp;·&nbsp; ".join(f'<a href="{html.escape(l["url"])}" style="color:{BLUE};text-decoration:none">'
                                    f'{_t(l["label"])}</a>' for l in d.get("links") or [])
     out.append(f'<tr><td style="padding:4px 18px 24px;font-size:12px;line-height:1.6;color:{MUTED};'
-               f'text-align:center">{links}<br>Times in UAE (UTC+4). Sent nightly at 22:13 by your research '
+               f'text-align:center">{links}<br>Times in UAE (UTC+4). Sent daily at 07:13 by your research '
                f'assistant.</td></tr>')
     return (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" '
             f'content="width=device-width,initial-scale=1"><title>Daily Digest</title></head>'
