@@ -436,6 +436,37 @@ def test_mng_pbw():
     assert pe.mng_day_ok("unknown") is False and pe.mng_day_ok("") is False
     ok("MNG trades only on a clean negative-GEX tag")
 
+    # regime over HTTP when gex_bridge is absent (Cloudflare container,
+    # owner "fix GEX feed" 2026-11-09): platform.lab -> platform /api/gex
+    import os as _os, paper_data as _pd
+    class _R:
+        def __init__(self, ok, j): self.ok, self._j = ok, j
+        def json(self): return self._j
+    calls = []
+    def _get(url, params=None, timeout=None):
+        calls.append((url, params)); return _R(True, {"regime": "Negative Gamma"})
+    real_get, real_env = _pd.requests.get, _os.environ.get("LAB_GEX_URL")
+    sys.modules.setdefault("gex_bridge", None)        # import fails like in the container
+    try:
+        _pd.requests.get = _get
+        _os.environ.pop("LAB_GEX_URL", None)
+        assert _pd.gex_sign() == "unknown" and not calls          # no URL: unchanged behaviour
+        _os.environ["LAB_GEX_URL"] = "http://platform.lab/api/gex"
+        assert _pd.gex_sign() == "negative" and calls[-1] == ("http://platform.lab/api/gex", {"symbol": "SPX"})
+        _pd.requests.get = lambda *a, **k: _R(True, {"regime": "Positive Gamma"})
+        assert _pd.gex_sign() == "positive"
+        _pd.requests.get = lambda *a, **k: _R(False, {})
+        assert _pd.gex_sign() == "unknown"                        # platform down: no MNG trade
+        def _boom(*a, **k): raise _pd.requests.RequestException("down")
+        _pd.requests.get = _boom
+        assert _pd.gex_sign() == "unknown"
+    finally:
+        _pd.requests.get = real_get
+        if real_env is None: _os.environ.pop("LAB_GEX_URL", None)
+        else: _os.environ["LAB_GEX_URL"] = real_env
+        if sys.modules.get("gex_bridge") is None: sys.modules.pop("gex_bridge", None)
+    ok("regime read from the platform over HTTP; any failure stays 'unknown'")
+
     def c_(m, delta):
         return {"bid": round(m - 0.05, 2), "ask": round(m + 0.05, 2),
                 "delta": delta}

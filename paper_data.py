@@ -223,17 +223,37 @@ def _wire_platform():
         sys.path.append(str(plat))
 
 
+def _gex_regime_http() -> str:
+    """Regime from the platform over HTTP (Cloudflare container, 2026-11-09:
+    owner "fix GEX feed"). LAB_GEX_URL is the Worker's internal platform.lab
+    host, which forwards GET /api/gex to the platform with a service pass.
+    '' when unset or unreachable."""
+    url = os.environ.get("LAB_GEX_URL", "")
+    if not url:
+        return ""
+    try:
+        r = requests.get(url, params={"symbol": "SPX"}, timeout=30)
+        return str((r.json() or {}).get("regime") or "") if r.ok else ""
+    except Exception:
+        return ""
+
+
 def gex_sign() -> str:
     """'positive' / 'negative' / 'unknown' from the platform's gex_bridge
     (imported read-only from /opt/logicon/combo-trader on the hub, or from
-    PYTHONPATH elsewhere); 'unknown' when unreachable."""
+    PYTHONPATH elsewhere), else from the platform over HTTP (LAB_GEX_URL,
+    the Cloudflare container); 'unknown' when neither answers."""
+    regime = ""
     try:
         _wire_platform()
         from gex_bridge import get_gex
         g = get_gex("SPX") or {}
         regime = str(g.get("regime") or "")
     except BaseException:
-        return "unknown"
+        regime = ""
+    if not regime:
+        regime = _gex_regime_http()
+    regime = regime.lower()
     if "positive" in regime:
         return "positive"
     if "negative" in regime:
