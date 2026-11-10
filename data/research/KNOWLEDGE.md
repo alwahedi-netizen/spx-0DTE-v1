@@ -40,16 +40,16 @@ ingredients from the shortlist first.
 | 4 | L-2026-11-07-CMDTRENDINFL (DBC only above its 10-mo SMA AND TIPS beating Treasuries) | conditional-edge, risk-reducer | Commodities' worst drop −31% vs −76%: inflation regime × trend works as a gate |
 | 3 | R-2026-11-07-MAGICSF (Greenblatt quality-value, survivorship-free) | conditional-edge | Cleared ALL world-class gates incl. factor alpha (t 2.8), +14.2%/yr vs +7.6% 2000-24; failed only the 2017-24 held-out window |
 | 3 | R-2026-11-07-EOMTSY (Treasuries over the last 3 days of the month) | conditional-edge, risk-reducer | Sharpe 0.73 vs 0.32 with 6% worst drop; best marginal add to the book (+0.10 Sharpe at 10%) |
-| 3 | R-2026-11-07-FOMCUSD (short the dollar on FOMC days) | conditional-edge, diversifier | Tiny, uncorrelated (0.16) event edge; adds +0.04 Sharpe to the book |
+| 0 | ~~R-2026-11-07-FOMCUSD~~ | — | **WITHDRAWN 2026-11-10:** Yahoo `=X` values are start-of-day prices, so it measured the day BEFORE each FOMC decision; removed from the book (series moved to series_withdrawn/) |
 | 3 | R-2026-11-07-HYTREND (high-yield 200-day trend) | conditional-edge, risk-reducer | Red team: the PASS was stale mutual-fund prices; on HYG it is a modest crash cutter (−14% vs −18%) |
 | 3 | L-2026-11-07-CORRSWITCH (risk parity 2× cut to 1× when stock-bond corr > 0) | conditional-edge, risk-reducer | +12.6%/yr vs +7.7%, worst drop −39% vs −55%; held-out lagged |
 | 3 | R-2026-11-07-GPROF, R-2026-11-07-XSMOMSF (gross profitability; momentum — honest data) | conditional-edge | Beat SPY on survivorship-free data but are the known factors (no alpha); correlate 0.78 with each other |
 | 4 | L-2026-11-08-TSYCAL (IEF over the last 3 days of the month OR the 3 days around FOMC, else T-bills) | conditional-edge, risk-reducer | Sharpe 0.92 vs 0.32, worst drop −5% vs −24%, held-out 1.07 vs −0.16, confidence 99.7%; best marginal add to the book (+0.12); fails only DSR/t (too few trading days) |
 | 4 | L-2026-11-07-CARRYPROXY (USO only when its 3-month return beats USL's, else T-bills) | conditional-edge, risk-reducer | +5.5%/yr vs −11.4% (USO), worst drop −45% vs −98%; ETF proxy for oil curve carry |
-| 4 | R-2026-11-08-CMDSKEW (3 lowest-skew of 10 commodity ETFs) | conditional-edge | +4.6%/yr vs −1.5% (DBC), confidence 92%; long-only skew premium |
+| 3 | R-2026-11-08-CMDSKEW (3 lowest-skew of 10 commodity ETFs) | conditional-edge | +4.6%/yr vs −1.5% (DBC), confidence 92%; **caveat 2026-11-10:** an independent replication finds the premium only in agriculturals — an ag-only version is the next test |
 | 4 | R-2026-11-08-EQCREDIT (HYG while S&P above its 10-mo SMA, else IEI) | conditional-edge, risk-reducer | Sharpe 0.50 vs 0.34 (AGG) on tradeable ETFs |
 | 4 | R-2026-11-08-MEDIAN (middle-ranked Treasury ETFs by 6-month return) | conditional-edge, risk-reducer | Sharpe 0.44 vs 0.30, worst drop −16% vs −24%; adds +0.03 to the book |
-| 4 | L-2026-11-08-HAVENVOL / HAVENRATES (yen+franc only in high FX vol / falling-yield bears) | diversifier | Flat most of the time; crisis sleeve variants of SAFEHAVEN that sidestep 2022 |
+| 3 | L-2026-11-08-HAVENRATES (yen+franc only in falling-yield bears) | diversifier | Flat most of the time; unchanged by the harness fix. **HAVENVOL dropped to 3→ weak:** after the FX-date fix it earns ~T-bills (Sharpe 0.03, worst drop −29%); the bug had flattered it |
 | 3 | R-2026-11-08-FOMCTSY (IEF only around FOMC decisions) | conditional-edge, risk-reducer | Held-out 0.87 vs −0.16; adds +0.07 to the book; strongest as part of TSYCAL |
 | 3 | R-2026-11-08-ASSETGROW (lowest asset growth, point-in-time S&P 500) | conditional-edge | +10.9%/yr vs +8.7%, beat SPY in the held-out window; no factor alpha (t 0.6 — it is the CMA factor) |
 | 3 | R-2026-11-08-CLENOW (Clenow momentum with a market filter) | conditional-edge, risk-reducer | +11.6%/yr vs +8.7%, worst drop −27% vs −55%; alpha t 1.4 |
@@ -57,7 +57,11 @@ ingredients from the shortlist first.
 | 4 | L-2026-11-08-OILCURVETREND (USO only when curve-tight AND above trend) | conditional-edge, risk-reducer, diversifier | +5.7%/yr vs −9.3% (USO), worst drop −28% vs −98%, confidence 96%, corr 0.12 to the book |
 | 4 | R-2026-11-09-CCYCMD (commodity currencies predict commodities, Chen-Rogoff-Rossi) | conditional-edge, diversifier | +4.7%/yr vs +0.6% (DBC), worst drop −35% vs −76%, corr 0.15 to the book |
 | 3 | L-2026-11-08-POLICYMOM (Treasuries by Fed policy direction) | risk-reducer | Sharpe 0.37 vs 0.32, worst drop −14% vs −24% |
-| 3 | L-2026-11-09-FOMCMOVE (short the dollar on FOMC days only when MOVE is high) | conditional-edge, diversifier | Tiny return but the ONLY block tonight that raised the book's Sharpe (+0.05) |
+| 0 | ~~L-2026-11-09-FOMCMOVE~~ | — | **WITHDRAWN 2026-11-10:** same start-of-day `=X` dating error as FOMCUSD |
+| 4 | L-2026-11-09-CMDBOOK (OILCURVETREND + CCYCMD + CARRYPROXY + CMDSKEW, inverse-vol) | conditional-edge, risk-reducer, diversifier | +6.9%/yr vs +0.1% (DBC), worst drop −28% vs −76%, **99.4% confidence, held-out win**; failed only DSR/t. The best commodity block |
+| 3 | L-2026-11-10-RATESLEV (RATESBOOK v2 levered to IEF's vol, +50bp financing) | conditional-edge | +6.5%/yr vs +3.4% (IEF) at the same worst drop (−24%), **99.3% confidence**; held-out lost money (less than IEF) |
+| 3 | R-2026-11-10-RND (R&D intensity, point-in-time S&P 500) | conditional-edge | +12.8%/yr vs +7.6%, factor alpha t 2.7, held-out win; confidence 94%. Best book add tonight (+0.09) |
+| 3 | L-2026-11-10-CCYCURVE (oil curve gated by commodity currencies) | diversifier | +3.0%/yr vs −11.4% (USO), corr 0.09 to the book |
 | 3 | R-2026-11-09-NETISS, R-2026-11-09-ACCRUALS (share issuance; accruals — survivorship-free) | conditional-edge | NETISS +11.5%/yr vs +7.6%, 99.8% confidence, held-out win; both are known factors (alpha t 1.0 / 1.5) |
 | — | HAVENBASKET, HAVENVOTE (variants of the yen/franc crisis sleeve) | diversifier | Same family as HAVENVOL (now 26+ trials); kept under the HAVENVOL row, not new entries |
 
@@ -162,6 +166,26 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 20. **Investment-style anomalies on honest data are known factors**
     (NETISS, ACCRUALS, FSCORE, LOW-VOL: alpha t 0.1–1.5). Theme 8 confirmed
     for the CMA/RMW family.
+21. **Corrections change conclusions — keep auditing the data layer** (2026-11-10).
+    The 11-09 harness fix raised every crypto figure (BTC 46%→73%/yr) without
+    flipping a verdict, but it LOWERED HAVENVOL (the bug had flattered it), and
+    the FX desk found Yahoo `=X` values are start-of-day prices — the two
+    FOMC dollar trades measured the wrong day and are withdrawn. With them
+    out and HAVENVOL corrected, the book is **Sharpe 1.27** (28 series),
+    not 1.56. Every "best block" claim now needs a data-timing check.
+    Still open in the harness: `=X` start-of-day dating (rules that read a US
+    close and trade `=X` pairs have ~1 day of look-ahead); short legs pay
+    instead of earn the T-bill rate in simulate() (blocks market-neutral
+    designs, ~1.7–3.4%/yr too low); no financing-spread option.
+22. **First harness PASS, broken by the red team** (SLEEVETREND, 2026-11-10).
+    10% BTC (trend-gated) inside a 60/40 fund passed every gate (99.8%,
+    alpha t 2.75) — but a STATIC 10% BTC sleeve did as well. The edge is
+    owning some BTC since 2014, concentrated in 2017; not a rule. →
+    Benchmark crypto sleeves against the static sleeve; sizing BTC is an
+    owner decision, not a research verdict.
+23. **Combining shortlisted blocks works inside an asset class**: CMDBOOK
+    (99.4%, held-out win) and RATESLEV (99.3%) are the two strongest results
+    to date. Both fail only the multiple-testing gates (DSR, t ≥ 3).
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).
@@ -180,8 +204,10 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 | L-QVBOOK | MAGICSF (always on) + yen/franc sleeve | **Tested 2026-11-09: FAIL** — kept the alpha, but the hedge did not soften 2008 and 2017-24 still lagged (theme 19) |
 | L-RATESBOOK v2 | TSYCAL + MEDIAN + EQCREDIT + HAVENVOL | **Tested 2026-11-09: FAIL** — Sharpe 0.68 vs 0.32, worst drop −10% vs −24%, 98% confidence; low return because cash sleeves keep their budget. Next: a levered variant |
 | done 2026-11-09 | NETISS, ACCRUALS, FSCORE, LOWVOLSF, VIXCORR, SAFEDUR, POLICYMOM, BMP4, UEP, VALMOMFX, HAVENVOTE, DOLVOL, FOMCMOVE, HAVENBASKET, OILCURVETREND, CURVEPAIRS, CMDVALUE, CCYCMD, BTC52WH, MAXMINTREND, BTCQQQGATE, MAJORSXS, BTCTIPP | All FAIL; shortlist adds above |
-| queued by desks | GOLDSHOCK (cmd, 76); EMDOLLAR (74), LOWRISKIG (72), JANHY (70) (bonds); RND (71), LTREV (70), CBOP (69) (stocks); HEDGEUUP (FX); RATESBOOK levered variant | Next scripts in each class queue |
-| harness fixes | **FIXED 2026-11-09 (owner "fix research tool"):** crypto 365-day annualisation; FX bar dates (+3h); prices carried over gaps. Still open: `rb.sharadar` table param; FX interest | **Next run: re-run every crypto result and the yen/franc sleeves (SAFEHAVEN, HAVENVOL, HAVENRATES, HAVENVOTE, HAVENBASKET, RATESBOOK) as CORRECTIONS — same scripts, then restore results/trials.json so a re-run never counts as a new trial; report every changed figure** |
+| done 2026-11-10 | RND, CBOP, LTREV, FOMCCYCLE, QVPARITY; RATESLEV, EMDOLLAR, LOWRISKIG, JANHY, YCMOM; HEDGEUUP, PREFOMCDIR, RRWCMD, OECDCARRY, CMDDXY; GOLDSHOCK, CMDBOOK, NGEIADAY, DEMANDVOTE, CCYCURVE; BOLD, BOLDTREND, BTCSLEEVE10H, SLEEVETREND (red-teamed), BTIFLOOR | All FAIL; CMDBOOK 4, RATESLEV/RND/CCYCURVE 3 |
+| queued by desks | VTCREDIT, FFTERM, BONDCARRYX (bonds); CMDBAB, CCYVOLTGT, CMDSKEW ag-only (cmd); BTCVMP, BTCTOM, I-2026-11-07-BTCSLEEVE static control, RPCRYPTO, QQQBTCBRK (crypto); RNDREV (stocks); DOLCARRY, VIXCARRY, GOODCARRY, HEDGECARRY (FX — FRED now reachable, default Python user-agent; OECD rates lag ~2 months; NFCI is revised — look-ahead) | Next scripts |
+| harness fixes (new 2026-11-10) | `=X` start-of-day dating; short-leg T-bill sign in simulate(); financing-spread option | Owner's call — reported in the digest |
+| harness fixes | **FIXED 2026-11-09 (owner "fix research tool"):** crypto 365-day annualisation; FX bar dates (+3h); prices carried over gaps. Still open: `rb.sharadar` table param; FX interest | **DONE 2026-11-10:** 21 results re-run as corrections (trials.json restored); every crypto figure up, no verdict changed; HAVENVOL/HAVENVOTE down; RATESBOOK Sharpe 0.68→0.74 |
 | data unlocks | insider bulk export; Coin Metrics (on-chain); FRED rates (ETFCARRY / FX carry); EIA inventories; Treasury refunding dates | Blocked ideas waiting on data |
 
 **First portfolio book (2026-11-07):**
@@ -193,6 +219,7 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
   drop −2.9%. Best adds at 10%: TSYCAL (+0.12), FOMCTSY (+0.07), MEDIAN (+0.03).
 - **Update 2026-11-09:** 29 series → Sharpe 1.51, 2.9%/yr at 1.9% vol, worst
   drop −2.7% (the 20-series book stays at 1.56). Only FOMCMOVE adds (+0.05).
+- **Correction 2026-11-10:** without the two mis-dated FOMC dollar series and with HAVENVOL corrected, the book is 28 series, **Sharpe 1.27**, 3.2%/yr at 2.5% vol, worst drop −4.4%. Best adds at 10%: RND (+0.09), SLEEVETREND (+0.06, BTC exposure), CBOP (+0.04).
 - **Still to do:** rebuild the older shortlist's series (DD-TREND, VTSPYL, HFEA, RPARL…) so they join the book.
 
 Each runs under the vault and automatic trial counting (RESEARCH.md §2b).

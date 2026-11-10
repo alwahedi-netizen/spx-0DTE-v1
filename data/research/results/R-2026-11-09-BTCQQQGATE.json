@@ -1,6 +1,6 @@
 {
  "idea": "R-2026-11-09-BTCQQQGATE",
- "run": "2026-11-09T18:29:26+00:00",
+ "run": "2026-11-10T03:15:59+00:00",
  "period": [
   "2015-01-02",
   "2024-10-31"
@@ -16,6 +16,7 @@
  "idea_maxdd": -0.1769,
  "bench_maxdd": -0.3512,
  "turnover_per_year": 23.15,
+ "periods_per_year": 252,
  "confidence": 0.6558,
  "oos_from": "2021-11-17",
  "oos_idea_sharpe": 0.259,

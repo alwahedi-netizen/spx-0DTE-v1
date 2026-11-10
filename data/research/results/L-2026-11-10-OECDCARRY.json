@@ -1,0 +1,57 @@
+{
+ "idea": "L-2026-11-10-OECDCARRY",
+ "run": "2026-11-10T03:58:49+00:00",
+ "period": [
+  "2006-06-01",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 2.0,
+ "trials": 15,
+ "notes": "month-end: hold the top-2 CurrencyShares trusts by OECD 3m interbank rate (FRED IR3TIB01, month m-2) among those beating the US rate + 0.40%; 1/2 each, else T-bills; ETFCARRY with true rates",
+ "idea_cagr": 0.0072,
+ "bench_cagr": 0.0141,
+ "idea_sharpe": -0.045,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.3102,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 1.01,
+ "periods_per_year": 252,
+ "confidence": 0.423,
+ "oos_from": "2019-04-25",
+ "oos_idea_sharpe": 0.007,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.0237,
+ "verdict": "FAIL",
+ "asset_class": "fx",
+ "deflated_sharpe": 0.0246,
+ "active_t": -0.19,
+ "sharpe_2x_costs": -0.048,
+ "robust_share": 0.25,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.03,
+  "dd_cut": -21297.05,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": -0.11,
+  "active_sharpe_second_half": 0.18,
+  "best_5y_active_sharpe": 0.6,
+  "worst_5y_active_sharpe": -0.7,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "L-fx-etfcarry",
+ "vault": "sealed from 2024-11-01"
+}

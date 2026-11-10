@@ -1,0 +1,69 @@
+{
+ "idea": "R-2026-11-10-BTCSLEEVE10H",
+ "run": "2026-11-10T03:33:15+00:00",
+ "period": [
+  "2014-09-17",
+  "2024-10-31"
+ ],
+ "bench": "VBINX",
+ "cost_bps": 25.0,
+ "trials": 8,
+ "notes": "Quantpedia 2025 (Belobrad) iteration 1 as 90% VBINX + 10% BTC when BTC's last close (bar dated < today) is a 10-day high, else 100% VBINX; US days only; switch on state change, drift between; bench VBINX (not BTC: 90% traditional book); 25bp; vault sealed from 2024-11",
+ "idea_cagr": 0.0803,
+ "bench_cagr": 0.0805,
+ "idea_sharpe": 0.588,
+ "bench_sharpe": 0.612,
+ "idea_maxdd": -0.2566,
+ "bench_maxdd": -0.2278,
+ "turnover_per_year": 10.13,
+ "periods_per_year": 365,
+ "confidence": 0.3968,
+ "oos_from": "2021-10-18",
+ "oos_idea_sharpe": -0.155,
+ "oos_bench_sharpe": 0.084,
+ "oos_idea_cagr": 0.0115,
+ "verdict": "FAIL",
+ "asset_class": "crypto",
+ "deflated_sharpe": 0.0788,
+ "active_t": 0.05,
+ "sharpe_2x_costs": 0.365,
+ "robust_share": 0.25,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": -0.0003,
+  "alpha_t": -0.02,
+  "loadings": {
+   "Mkt-RF": 0.59,
+   "SMB": 0.03,
+   "HML": -0.05,
+   "RMW": 0.02,
+   "CMA": 0.05,
+   "Mom": -0.02
+  },
+  "days": 2548
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "FAIL"
+ },
+ "traits": {
+  "corr_to_bench": 0.96,
+  "dd_cut": -0.13,
+  "sharpe_ratio_vs_bench": 0.96,
+  "active_sharpe_first_half": 0.34,
+  "active_sharpe_second_half": -0.47,
+  "active_sharpe_bench_uptrend": 0.25,
+  "active_sharpe_bench_downtrend": -1.12,
+  "best_5y_active_sharpe": 0.45,
+  "worst_5y_active_sharpe": -0.43,
+  "building_blocks": [],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "btc-sleeve-6040",
+ "vault": "sealed from 2024-11-01"
+}

@@ -1,0 +1,57 @@
+{
+ "idea": "L-2026-11-10-CMDDXY",
+ "run": "2026-11-10T03:58:49+00:00",
+ "period": [
+  "2006-03-01",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 2.0,
+ "trials": 10,
+ "notes": "FXA 25% + FXC 25% + UUP 50% (commodity vs finished-goods currencies, RRW 2017) only when DBC > its 10-month SMA at month-end, else T-bills",
+ "idea_cagr": 0.0165,
+ "bench_cagr": 0.0146,
+ "idea_sharpe": 0.088,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.0602,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 2.08,
+ "periods_per_year": 252,
+ "confidence": 0.6486,
+ "oos_from": "2019-03-28",
+ "oos_idea_sharpe": 0.022,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.0239,
+ "verdict": "FAIL",
+ "asset_class": "fx",
+ "deflated_sharpe": 0.1169,
+ "active_t": 0.38,
+ "sharpe_2x_costs": 0.072,
+ "robust_share": 0.5,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "FAIL",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.04,
+  "dd_cut": -4131.33,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.19,
+  "active_sharpe_second_half": -0.06,
+  "best_5y_active_sharpe": 0.36,
+  "worst_5y_active_sharpe": -0.45,
+  "building_blocks": [
+   "diversifier"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "L-fx-carryguard",
+ "vault": "sealed from 2024-11-01"
+}

@@ -1,0 +1,59 @@
+{
+ "idea": "L-2026-11-09-BTIFLOOR",
+ "run": "2026-11-10T03:33:15+00:00",
+ "period": [
+  "2015-01-01",
+  "2024-10-31"
+ ],
+ "bench": "BTC-USD",
+ "cost_bps": 25.0,
+ "trials": 18,
+ "notes": "lab original: BTI graded weight x [close >= 75% of 365-day high], Friday UTC close, trade only if the target moves >= 0.25 (no-trade band), weights drift; warm-up holds BTC (neutral); 25bp; vault sealed from 2024-11",
+ "idea_cagr": 0.6234,
+ "bench_cagr": 0.7329,
+ "idea_sharpe": 1.25,
+ "bench_sharpe": 1.117,
+ "idea_maxdd": -0.451,
+ "bench_maxdd": -0.834,
+ "turnover_per_year": 3.71,
+ "periods_per_year": 365,
+ "confidence": 0.7313,
+ "oos_from": "2021-11-19",
+ "oos_idea_sharpe": 0.394,
+ "oos_bench_sharpe": 0.334,
+ "oos_idea_cagr": 0.1129,
+ "verdict": "FAIL",
+ "asset_class": "crypto",
+ "deflated_sharpe": 0.0006,
+ "active_t": -1.43,
+ "sharpe_2x_costs": 1.229,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.77,
+  "dd_cut": 0.46,
+  "sharpe_ratio_vs_bench": 1.12,
+  "active_sharpe_first_half": -0.31,
+  "active_sharpe_second_half": -0.6,
+  "active_sharpe_bench_uptrend": -0.55,
+  "active_sharpe_bench_downtrend": -0.43,
+  "best_5y_active_sharpe": -0.04,
+  "worst_5y_active_sharpe": -0.73,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "btc-bti",
+ "vault": "sealed from 2024-11-01"
+}

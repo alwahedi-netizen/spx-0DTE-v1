@@ -1,13 +1,13 @@
 {
  "idea": "L-2026-11-07-SAFEHAVEN",
- "run": "2026-11-07T18:30:55+00:00",
+ "run": "2026-11-10T03:15:30+00:00",
  "period": [
   "2006-05-01",
   "2024-10-31"
  ],
  "bench": "T-bills",
  "cost_bps": 2.0,
- "trials": 5,
+ "trials": 31,
  "notes": "FXY+FXF 50/50 only when SPY < 10-month SMA, else T-bills; monthly; 2006-05+ (positions from 2007); lab original (DD-TREND x Ranaldo-Soderlind)",
  "idea_cagr": 0.0182,
  "bench_cagr": 0.0143,
@@ -16,6 +16,7 @@
  "idea_maxdd": -0.1586,
  "bench_maxdd": -0.0,
  "turnover_per_year": 1.67,
+ "periods_per_year": 252,
  "confidence": 0.6684,
  "oos_from": "2019-04-15",
  "oos_idea_sharpe": -0.094,
@@ -23,7 +24,7 @@
  "oos_idea_cagr": 0.0182,
  "verdict": "FAIL",
  "asset_class": "fx",
- "deflated_sharpe": 0.2244,
+ "deflated_sharpe": 0.0493,
  "active_t": 0.44,
  "sharpe_2x_costs": 0.095,
  "robust_share": 1.0,

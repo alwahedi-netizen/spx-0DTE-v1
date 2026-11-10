@@ -1,0 +1,71 @@
+{
+ "idea": "L-2026-11-10-QVPARITY",
+ "run": "2026-11-10T03:58:47+00:00",
+ "period": [
+  "2000-01-03",
+  "2024-10-31"
+ ],
+ "bench": "SPY",
+ "cost_bps": 5.0,
+ "trials": 20,
+ "notes": "Lab original: equal-risk MAGICSF book + TLT (63-day inverse vol, monthly), 1.5x gross financed at T-bills (futures-equivalent); book alone until TLT has 63 returns; Sharadar survivorship-free (TLT from the funds table); family GREENBLATT",
+ "idea_cagr": 0.1393,
+ "bench_cagr": 0.0758,
+ "idea_sharpe": 0.784,
+ "bench_sharpe": 0.382,
+ "idea_maxdd": -0.4155,
+ "bench_maxdd": -0.5519,
+ "turnover_per_year": 6.47,
+ "periods_per_year": 252,
+ "confidence": 0.9827,
+ "oos_from": "2017-05-22",
+ "oos_idea_sharpe": 0.328,
+ "oos_bench_sharpe": 0.688,
+ "oos_idea_cagr": 0.065,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.3443,
+ "active_t": 1.5,
+ "sharpe_2x_costs": 0.764,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.0925,
+  "alpha_t": 3.57,
+  "loadings": {
+   "Mkt-RF": 0.45,
+   "SMB": 0.07,
+   "HML": -0.28,
+   "RMW": 0.14,
+   "CMA": 0.02,
+   "Mom": -0.14
+  },
+  "days": 6247
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "ok"
+ },
+ "traits": {
+  "corr_to_bench": 0.55,
+  "dd_cut": 0.25,
+  "sharpe_ratio_vs_bench": 2.05,
+  "active_sharpe_first_half": 0.84,
+  "active_sharpe_second_half": -0.36,
+  "active_sharpe_bench_uptrend": 0.14,
+  "active_sharpe_bench_downtrend": 0.48,
+  "best_5y_active_sharpe": 1.63,
+  "worst_5y_active_sharpe": -0.59,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "GREENBLATT",
+ "vault": "sealed from 2024-11-01"
+}
