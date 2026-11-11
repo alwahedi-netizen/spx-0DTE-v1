@@ -167,6 +167,52 @@ DEFAULTS = {
         "side_credit": 1.50, "min_side_credit": 1.25, "stop_mult": 2.0,
         "take_profit_short": 0.05, "contracts": 1,
     },
+    # ── MEIC 2.0 family (owner 2026-11-11: "go MEIC 2.0") ─────────────────
+    # Five paper variations of MEIC, each changing ONE thing so its record
+    # A/B's cleanly against MEIC on the same days. Codes use "II" (= 2.0)
+    # because journal ids are parsed with [A-Z]+ (a digit would cut the
+    # code short). PAPER ONLY: live_meic.STRATS does not list them, so
+    # they can never be armed without a code change and the owner's go.
+    # Each lane has its OWN risk budget (own_budget): it never draws on the
+    # shared day budget, so paper MEIC — which live MEIC mirrors — is never
+    # starved of a slot by an experiment (see open_stop_risk).
+    #   MIIS — wider stop: 1.5x the condor's credit instead of 1.0x
+    #   MIIE — earlier ladder: 11:00-13:30 instead of 12:00-14:30
+    #   MIIF — farther shorts: $1.00 per side target (min $0.80) not $1.50
+    #   MIIW — wider wings: 50 points instead of 30
+    #   MIIL — same-side lockout: once a side of the day's ladder is
+    #          stopped, no new spreads on that side for the rest of the day
+    #          (journal: post-stop same-side entries -$9,107 over 166 sides)
+    "miis": {
+        "enabled": True, "own_budget": 5000,
+        "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
+        "side_credit": 1.50, "min_side_credit": 1.25, "wing_width": 30,
+        "stop_mult": 1.5, "take_profit_short": 0.05, "contracts": 1,
+    },
+    "miie": {
+        "enabled": True, "own_budget": 5000,
+        "slots": ["11:00", "11:30", "12:00", "12:30", "13:00", "13:30"],
+        "side_credit": 1.50, "min_side_credit": 1.25, "wing_width": 30,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
+    "miif": {
+        "enabled": True, "own_budget": 5000,
+        "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
+        "side_credit": 1.00, "min_side_credit": 0.80, "wing_width": 30,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
+    "miiw": {
+        "enabled": True, "own_budget": 5000,
+        "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
+        "side_credit": 1.50, "min_side_credit": 1.25, "wing_width": 50,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
+    "miil": {
+        "enabled": True, "own_budget": 5000, "same_side_lockout": True,
+        "slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"],
+        "side_credit": 1.50, "min_side_credit": 1.25, "wing_width": 30,
+        "take_profit_short": 0.05, "contracts": 1,
+    },
     # OCB — ORB, upside breakouts only. Evidence: ORB call breakouts
     # +$3,678 / PF 2.45 (11 trades) vs put breakouts -$1,686 / PF 0.63
     # (14). A first breakout DOWN consumes the day (SKIP/SIDE), so OCB's
@@ -469,9 +515,24 @@ def stop_risk(credit: float, stop_level: float, contracts: int) -> float:
     return max(0.0, (stop_level - credit)) * 100 * contracts
 
 
-def open_stop_risk(positions=None) -> float:
+# Paper lanes with their own risk budget (MEIC 2.0 family). Their open
+# risk is invisible to the shared day budget and is checked only against
+# the lane's own_budget.
+ISOLATED_STRATS = ("MIIS", "MIIE", "MIIF", "MIIW", "MIIL")
+CONDOR_LADDERS = ("MEP", "MPM") + ISOLATED_STRATS
+
+
+def open_stop_risk(positions=None, strategy: str = None) -> float:
+    """Stop-loss dollars at risk on open positions. strategy=None sums the
+    SHARED book (everything except ISOLATED_STRATS); strategy="X" sums only
+    X's own positions (for lanes with an own_budget)."""
+    ps = st.open_positions() if positions is None else positions
+    if strategy is None:
+        ps = [p for p in ps if p.get("strategy") not in ISOLATED_STRATS]
+    else:
+        ps = [p for p in ps if p.get("strategy") == strategy]
     total = 0.0
-    for p in (st.open_positions() if positions is None else positions):
+    for p in ps:
         try:
             total += stop_risk(float(p["credit_theo"]), float(p["stop_level"]),
                                int(float(p.get("contracts") or 1)))
@@ -926,6 +987,14 @@ def do_band_entry(cfg: dict, day_row: dict, brow: dict, chain: dict, expiry: str
           f"stop/side {stop_level:.2f} size {size}", flush=True)
 
 
+def stopped_sides_today(d: str, strat: str) -> set:
+    """Sides (PUT/CALL) of strat's positions opened on d that were STOPPED."""
+    pre = f"{d}-{strat}-"
+    return {(p.get("side") or "").upper() for p in st.read("positions")
+            if (p.get("position_id") or "").startswith(pre)
+            and (p.get("exit_reason") or "") == "STOPPED"}
+
+
 def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
                  strat: str = "MEIC"):
     """Symmetric iron condor by per-side credit target; stop per side = the
@@ -938,6 +1007,17 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
     d = day_row["date"]
     spot = spot_of(chain)
     wanted = tuple(s.upper() for s in m.get("sides", ("PUT", "CALL")))
+    locked = stopped_sides_today(d, strat) if m.get("same_side_lockout") else set()
+    full = len(wanted)
+    wanted = tuple(s for s in wanted if s not in locked)
+    if not wanted:
+        st.append("signals", _signal_row(cfg, day_row, action="SKIP",
+                                         skip_reason="LOCKOUT", side="BOTH",
+                                         slot=slot, strategy=strat,
+                                         structure="IRON_CONDOR",
+                                         spot=_fmt(spot), width=m["wing_width"]))
+        print(f"[{slot}] {strat} SKIP/LOCKOUT (both sides stopped today)", flush=True)
+        return
     structure = "IRON_CONDOR" if len(wanted) == 2 else f"{wanted[0]}_SPREAD"
     base = dict(slot=slot, strategy=strat, structure=structure,
                 spot=_fmt(spot), width=m["wing_width"])
@@ -955,9 +1035,17 @@ def do_meic_slot(cfg: dict, day_row: dict, slot: str, chain: dict, expiry: str,
 
     total = sum(x["credit"] for x in sides)
     stop_level = total * float(m.get("stop_mult", 1.0))
+    if len(sides) < full:
+        # a lockout left one side of a condor: keep the condor's management
+        # (stop = 2x this side's credit ~= the condor's total credit)
+        stop_level *= 2.0
     new_risk = sum(stop_risk(x["credit"], stop_level, m["contracts"]) for x in sides)
-    budget = float(day_row.get("risk_budget") or 0)
-    if not risk_ok(open_stop_risk(), new_risk, budget):
+    if m.get("own_budget") is not None:
+        open_risk, budget = open_stop_risk(strategy=strat), float(m["own_budget"])
+    else:
+        open_risk = open_stop_risk()
+        budget = float(day_row.get("risk_budget") or 0)
+    if not risk_ok(open_risk, new_risk, budget):
         st.append("signals", _signal_row(cfg, day_row, action="SKIP",
                                          skip_reason="RISK", side="BOTH", **base))
         print(f"[{slot}] {strat} SKIP/RISK", flush=True)
@@ -1217,6 +1305,8 @@ def do_tracking(cfg: dict, chain: dict, expiry: str):
            "MEP": cfg.get("mep", {}).get("take_profit_short", 0.05),
            "MPM": cfg.get("mpm", {}).get("take_profit_short", 0.05),
            "LATE": cfg.get("late", {}).get("take_profit_short", 0.05)}
+    tps.update({s: cfg.get(s.lower(), {}).get("take_profit_short", 0.05)
+                for s in ISOLATED_STRATS})
     priced = []                              # (position, value, short_mid)
     for p in st.open_positions():
         cmap = contract_map(chain, expiry, p["side"].lower())
@@ -1411,8 +1501,9 @@ def cmd_run(cfg: dict):
                 except pd_.PaperDataError as e:
                     _skip_row(cfg, day_row, "MNG", slot, "DATA", str(e))
 
-        # ── MEP / MPM put-spread ladders (2026-10-15: put-side edge test) ──
-        for pstrat in ("MEP", "MPM"):
+        # ── MEP / MPM put-spread ladders (2026-10-15: put-side edge test)
+        #    and the MEIC 2.0 family condor ladders (2026-11-11) ──
+        for pstrat in CONDOR_LADDERS:
             if not cfg.get(pstrat.lower(), {}).get("enabled"):
                 continue
             for slot in pending_condor_slots(cfg, ds, pstrat):
@@ -1551,7 +1642,7 @@ def cmd_run(cfg: dict):
             pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "LATE")]
         if cfg.get("mng", {}).get("enabled"):
             pending += [at(s, d) for s in pending_condor_slots(cfg, ds, "MNG")]
-        for pstrat in ("MEP", "MPM"):
+        for pstrat in CONDOR_LADDERS:
             if cfg.get(pstrat.lower(), {}).get("enabled"):
                 pending += [at(s, d)
                             for s in pending_condor_slots(cfg, ds, pstrat)]

@@ -9,7 +9,7 @@ stay importable without .env (spec §9).
 
 import sys
 import tempfile
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import paper_engine as pe
@@ -589,6 +589,87 @@ def test_new_systems():
     ok("pending helpers resolve the new strategies; empty day = full schedule")
 
 
+# ── MEIC 2.0 family (owner 2026-11-11: "go MEIC 2.0") ────────────────────────
+def test_meic2():
+    print("MEIC 2.0 family")
+    cfg = pe.load_config()
+    fam = ("MIIS", "MIIE", "MIIF", "MIIW", "MIIL")
+    assert pe.ISOLATED_STRATS == fam
+    for s in fam:
+        m = cfg[s.lower()]
+        assert m["enabled"] and m["own_budget"] == 5000 and m["contracts"] == 1, s
+    meic = cfg["meic"]
+    # each lane changes exactly ONE thing vs MEIC
+    assert cfg["miis"]["stop_mult"] == 1.5 and cfg["miis"]["slots"] == meic["slots"]
+    assert cfg["miie"]["slots"] == ["11:00", "11:30", "12:00", "12:30", "13:00", "13:30"]
+    assert (cfg["miif"]["side_credit"], cfg["miif"]["min_side_credit"]) == (1.00, 0.80)
+    assert cfg["miiw"]["wing_width"] == 50 and cfg["miiw"]["side_credit"] == meic["side_credit"]
+    assert cfg["miil"]["same_side_lockout"] is True and "same_side_lockout" not in meic
+    import live_meic as lm
+    assert not set(fam) & set(lm.STRATS)          # paper only: cannot be armed
+    import re
+    for s in fam:                                 # live's id parser reads the code whole
+        assert re.match(r"\d{4}-\d{2}-\d{2}-([A-Z]+)", f"2026-11-12-{s}-12:00-PUT").group(1) == s
+    ok("five lanes, one change each vs MEIC, paper only, ids parse")
+
+    # isolated risk: the shared book never sees MEIC 2.0 positions
+    ps = [{"strategy": "MEIC", "credit_theo": "1.50", "stop_level": "3.00", "contracts": "1"},
+          {"strategy": "MIIS", "credit_theo": "1.50", "stop_level": "4.50", "contracts": "1"},
+          {"strategy": "MIIL", "credit_theo": "1.50", "stop_level": "3.00", "contracts": "1"}]
+    assert pe.open_stop_risk(ps) == 150.0
+    assert pe.open_stop_risk(ps, strategy="MIIS") == 300.0
+    assert pe.open_stop_risk(ps, strategy="MIIL") == 150.0
+    ok("shared budget excludes MEIC 2.0; each lane sums only its own risk")
+
+    # end to end with stubbed market data: lockout + own budget
+    st.DATA_DIR = Path(tempfile.mkdtemp(prefix="paper_m2_"))
+    d = "2026-11-12"
+    day_row = {"date": d, "risk_budget": "1"}      # shared budget exhausted
+    saved = (pe.spot_of, pe.contract_map, pe.walk_strikes, pe.now_et)
+    try:
+        pe.spot_of = lambda chain: 6000.0
+        pe.contract_map = lambda chain, expiry, side: {}
+        pe.walk_strikes = lambda cmap, side, spot, w, tgt, mn: (
+            {"short_strike": 6050.0 if side == "CALL" else 5950.0,
+             "long_strike": 6080.0 if side == "CALL" else 5920.0,
+             "credit": 1.50, "short_delta": 0.1, "short_mid": 2.0, "long_mid": 0.5}, None)
+        pe.now_et = lambda: datetime(2026, 11, 12, 12, 0, tzinfo=pe.ET)
+        pe.do_meic_slot(cfg, day_row, "12:00", {}, d, strat="MEIC")
+        pe.do_meic_slot(cfg, day_row, "12:00", {}, d, strat="MIIL")
+        sig = {r["strategy"]: r for r in st.read("signals")}
+        assert sig["MEIC"]["skip_reason"] == "RISK"           # shared rail intact
+        assert sig["MIIL"]["action"] == "SELL_CONDOR"         # own budget
+        # stop the PUT side, then the next slot sells the CALL spread only
+        st.update_position(f"{d}-MIIL-12:00-PUT", {"exit_ts": f"{d}T12:20:00",
+                           "exit_reason": "STOPPED", "exit_value_theo": "3.00",
+                           "pnl_theo": "-150"}, allow=st.EXIT_COLS)
+        assert pe.stopped_sides_today(d, "MIIL") == {"PUT"}
+        pe.do_meic_slot(cfg, day_row, "12:30", {}, d, strat="MIIL")
+        r = [x for x in st.read("signals") if x["slot"] == "12:30"][0]
+        assert r["action"] == "SELL_VERTICAL" and r["side"] == "CALL"
+        assert abs(float(r["stop_level"]) - 3.00) < 1e-9     # condor management kept
+        pos = [p for p in st.read("positions") if p["position_id"].startswith(f"{d}-MIIL-12:30")]
+        assert [p["side"] for p in pos] == ["CALL"]
+        st.update_position(f"{d}-MIIL-12:00-CALL", {"exit_ts": f"{d}T12:40:00",
+                           "exit_reason": "STOPPED", "exit_value_theo": "3.00",
+                           "pnl_theo": "-150"}, allow=st.EXIT_COLS)
+        pe.do_meic_slot(cfg, day_row, "13:00", {}, d, strat="MIIL")
+        r = [x for x in st.read("signals") if x["slot"] == "13:00"][0]
+        assert r["action"] == "SKIP" and r["skip_reason"] == "LOCKOUT"
+        # MIIS stop at 1.5x the condor credit
+        pe.do_meic_slot(cfg, day_row, "12:00", {}, d, strat="MIIS")
+        r = [x for x in st.read("signals") if x["strategy"] == "MIIS"][0]
+        assert abs(float(r["stop_level"]) - 4.50) < 1e-9
+        # own budget does bind: a tiny budget skips on RISK
+        tiny = dict(cfg); tiny["miiw"] = dict(cfg["miiw"], own_budget=100)
+        pe.do_meic_slot(tiny, day_row, "12:00", {}, d, strat="MIIW")
+        r = [x for x in st.read("signals") if x["strategy"] == "MIIW"][0]
+        assert r["skip_reason"] == "RISK"
+    finally:
+        pe.spot_of, pe.contract_map, pe.walk_strikes, pe.now_et = saved
+    ok("lockout drops a stopped side, then the day; own budget isolates and binds")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -712,7 +793,7 @@ if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
               test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback, test_config_file,
-              test_new_systems,
+              test_new_systems, test_meic2,
               test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
