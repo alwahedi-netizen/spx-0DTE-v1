@@ -1,13 +1,14 @@
 {
  "idea": "R-2026-11-11-DOLCARRY",
- "run": "2026-11-11T03:28:19+00:00",
+ "run": "2026-11-11T14:17:04+00:00",
  "period": [
   "2007-03-01",
   "2024-10-31"
  ],
  "bench": "T-bills",
  "cost_bps": 2.0,
- "trials": 5,
+ "fin_spread": 0.0,
+ "trials": 10,
  "notes": "Lustig-Roussanov-Verdelhan dollar carry: month-end, AFD = mean OECD 3m rate (9 G10, month m-2) - US; AFD>0 -> UDN, AFD<0 -> UUP; bench T-bills. Variant HUSD = HEDGECARRY basket form (UUP or cash)",
  "idea_cagr": -0.0006,
  "bench_cagr": 0.0126,
@@ -24,7 +25,7 @@
  "oos_idea_cagr": 0.038,
  "verdict": "FAIL",
  "asset_class": "fx",
- "deflated_sharpe": 0.0448,
+ "deflated_sharpe": 0.0188,
  "active_t": -0.51,
  "sharpe_2x_costs": -0.121,
  "robust_share": 0.0,
@@ -39,7 +40,7 @@
  },
  "traits": {
   "corr_to_bench": 0.01,
-  "dd_cut": -21019.37,
+  "dd_cut": -21019.4,
   "sharpe_ratio_vs_bench": null,
   "active_sharpe_first_half": -0.4,
   "active_sharpe_second_half": 0.24,

@@ -205,6 +205,21 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
     (166 sides) and −$5.9k live (89 sides), vs +$10.8k / +$8.2k for all
     others — both halves, both MEIC and MNG, but concentrated in ~5 trend
     days. In-sample; a paper lane would be the honest test (owner decision).
+    → Owner "go MEIC 2.0" (2026-11-11): on paper as lane MIIL, beside MIIS
+    (1.5x stop), MIIE (11:00 ladder), MIIF ($1.00 shorts), MIIW (50 wings).
+28. **Harness fix 2 (2026-11-11) changed no verdict.** Yahoo `=X` values
+    were each day's OPENING price (proved on the SNB 2015-01-15 and euro
+    2025-04-03 jumps) — now relabelled to the day before; short proceeds
+    now earn T-bills (they paid them). 23 affected scripts were re-run as
+    corrections (trials.json restored): all still FAIL. Moved up: TOY
+    (Russell-vs-S&P year-end spread) 53% → 94%, potential 4; FXVALUE 28% →
+    71%; VALMOMFX 17% → 51%; CCYVOLTGT 75% → 82%; HOPTREND 68% → 84%.
+    Moved down: the yen/franc crisis sleeves (HAVENVOL 55% → 33%,
+    HAVENVOTE 51% → 42%, DOLVOL 55% → 34%) — their edge was partly the
+    stale-dating artefact. FOMCUSD / FOMCMOVE stay withdrawn (theme 20).
+    Long/short and FX designs are now fairly priced: retest them before
+    writing off the classes. `fin_spread=` (annual) charges leverage
+    T-bill + spread when a design needs realistic borrowing terms.
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).

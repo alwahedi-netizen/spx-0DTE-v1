@@ -1,25 +1,59 @@
 {
  "idea": "R-2026-11-07-TOY",
- "run": "2026-11-07T02:51:09+00:00",
+ "run": "2026-11-11T14:16:58+00:00",
  "period": [
   "1988-01-04",
-  "2026-11-06"
+  "2024-10-31"
  ],
  "bench": "T-bills",
  "cost_bps": 5.0,
+ "fin_spread": 0.0,
  "trials": 1,
  "notes": "long Russell 2000 / short S&P 500, 20 days either side of year-end; 1988+",
- "idea_cagr": 0.0297,
- "bench_cagr": 0.0301,
- "idea_sharpe": 0.012,
+ "idea_cagr": 0.04,
+ "bench_cagr": 0.0296,
+ "idea_sharpe": 0.255,
  "bench_sharpe": 0.0,
- "idea_maxdd": -0.1494,
+ "idea_maxdd": -0.1411,
  "bench_maxdd": -0.0,
  "turnover_per_year": 4.52,
- "confidence": 0.5294,
- "oos_from": "2015-03-09",
- "oos_idea_sharpe": -0.327,
+ "periods_per_year": 252,
+ "confidence": 0.9392,
+ "oos_from": "2013-10-10",
+ "oos_idea_sharpe": -0.049,
  "oos_bench_sharpe": 0.0,
- "oos_idea_cagr": 0.006,
- "verdict": "FAIL"
+ "oos_idea_cagr": 0.0123,
+ "verdict": "FAIL",
+ "asset_class": null,
+ "deflated_sharpe": 0.9403,
+ "active_t": 1.55,
+ "sharpe_2x_costs": 0.202,
+ "robust_share": null,
+ "variants": 0,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "n/a",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.04,
+  "dd_cut": -9686.13,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.4,
+  "active_sharpe_second_half": 0.11,
+  "best_5y_active_sharpe": 0.88,
+  "worst_5y_active_sharpe": -1.01,
+  "building_blocks": [
+   "conditional-edge",
+   "diversifier"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "R-2026-11-07-TOY",
+ "vault": "sealed from 2024-11-01"
 }
