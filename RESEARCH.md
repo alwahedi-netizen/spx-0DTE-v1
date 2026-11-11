@@ -20,17 +20,20 @@ their Research section is one line: the league table and anything pending.
 **Teams** (one lead agent each, spawned per round; scoreboard in
 `data/research/league.json`):
 
-| Team | Weekly test budget (Nov) | Scope |
+| Team | Weekly test budget (Nov; owner ×5 on 2026-11-11) | Scope |
 |---|---|---|
-| **Options** | 4 | Our proven edge (MEIC is live). Studies on our own journal (`data/paper/positions.csv`, `live/live_trades.csv`, `day.csv`): pre-registered replays and splits, and proposals for paper lanes (MEIC 2.0 family). Paper lanes need the owner's go. |
-| Stocks | 2 | Point-in-time Sharadar only; factor-alpha gate applies |
-| Bonds | 2 | ETFs only for credit; FRED allowed with publish lags |
-| Commodities | 2 | ETFs; no back-adjusted futures |
-| FX | 1 | CurrencyShares / UUP / UDN preferred; `=X` are start-of-day prices |
-| Crypto | 1 | Benchmark sleeves against the STATIC sleeve (theme 22) |
+| **Options** | 20 | Our proven edge (MEIC is live). Studies on our own journal (`data/paper/positions.csv`, `live/live_trades.csv`, `day.csv`): pre-registered replays and splits, and proposals for paper lanes (MEIC 2.0 family). Paper lanes need the owner's go. |
+| Stocks | 10 | Point-in-time Sharadar only; factor-alpha gate applies |
+| Bonds | 10 | ETFs only for credit; FRED allowed with publish lags |
+| Commodities | 10 | ETFs; no back-adjusted futures |
+| FX | 5 | CurrencyShares / UUP / UDN preferred; `=X` are start-of-day prices |
+| Crypto | 5 | Benchmark sleeves against the STATIC sleeve (theme 22) |
 
 A "test" = one `research_bt.evaluate` run (or, for Options, one
 pre-registered journal study). A team may spend fewer, never more.
+60 tests a week in total (owner, 2026-11-11: "starting point is too low,
+multiply by 5"). Volume raises every luck bar, so the family trial counts
+and the one-time vault still decide what is real.
 **Portfolio desk** (not competing; run by the lead): builds and maintains
 ONE Logicon portfolio from survivors and near-misses, runs it forward on
 paper once the owner approves, and reports it monthly.
@@ -63,7 +66,7 @@ Options), on top of the lead's red team for any PASS.
 | Own result withdrawn for a data/timing error | −5 |
 
 **Month end:** the leader gets +50% test budget next month, the last team
-−50% (minimum 1); ties keep their budget. The table goes in the first
+−50% (minimum 5); ties keep their budget. The table goes in the first
 digest of the month. November is a trial season (3 rounds: 14, 21, 28 Nov);
 December is the first full season.
 
