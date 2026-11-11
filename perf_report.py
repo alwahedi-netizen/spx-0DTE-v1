@@ -28,7 +28,8 @@ STOCKS = BASE / "data" / "stocks"
 LAB_META = {   # prefix -> (title, start $ per lane, lane labels)
     "alloclab": ("Allocations", 10_000.0, {
         "HFEA": "Hedgefundie 55/45", "VMSPX15": "Vol-managed S&P 1.5×",
-        "RP2X": "Risk parity 2×", "SPY": "SPY (yardstick)"}),
+        "RP2X": "Risk parity 2×", "SPY": "SPY (yardstick)",
+        "BTC10": "60/40 + 10% Bitcoin", "VTBND": "60/40 (BTC10's yardstick)"}),
     "cryptolab": ("Crypto", 10_000.0, {
         "H5": "5★ sell after 5 days", "H10": "5★ sell after 10 days", "TR30": "TR30 breakout"}),
     "cmdlab": ("Commodities", 10_000.0, {

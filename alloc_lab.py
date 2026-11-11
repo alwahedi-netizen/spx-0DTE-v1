@@ -23,6 +23,17 @@ POST-HOC picks from 10 variants, which is exactly why they are on paper):
                  the latest decade) — on paper as the owner's choice
   Both new lanes keep a cash balance: positive cash earns the T-bill rate,
   borrowed cash (leverage) pays T-bill + 1%/yr — the backtest's terms.
+Added 2026-11-11 (owner "go BTC sleeve paper"; research theme 26):
+  Lane BTC10   — 60/40 world stocks / bonds with a FIXED 10% Bitcoin sleeve:
+                 54% VT, 36% BND, 10% BTC-USD, rebalanced to target on the
+                 first pass of each month. Backtest 2014+ (ETFs): +11.0%/yr
+                 vs +6.3%, Sharpe 0.82 vs 0.47; leans on 2017; BTC can fall
+                 80% (≈ -8% to the lane). A sizing question, not a rule.
+  Lane VTBND   — the same 60/40 without Bitcoin (60% VT, 40% BND, monthly):
+                 BTC10's own yardstick, so the gap is exactly the sleeve.
+  BTC-USD is marked at Yahoo's latest price at the weekday pass (it trades
+  7 days a week; the lab only acts on weekdays, like the backtest's first
+  US trading day of the month).
 
 $10,000 per lane · marks and fills at the day's close (Yahoo adjusted closes,
 so distributions are counted) · 5bp on traded notional · daily pass 16:30 ET
@@ -49,10 +60,13 @@ BASE_DIR = Path(__file__).resolve().parent
 DB = BASE_DIR / "data" / "labs" / "labs.sqlite"
 ET = ZoneInfo("America/New_York")
 
-STATIC = {"HFEA": {"UPRO": 0.55, "TMF": 0.45}, "SPY": {"SPY": 1.0}}
+STATIC = {"HFEA": {"UPRO": 0.55, "TMF": 0.45}, "SPY": {"SPY": 1.0},
+          "BTC10": {"VT": 0.54, "BND": 0.36, "BTC-USD": 0.10},
+          "VTBND": {"VT": 0.60, "BND": 0.40}}
 DYNAMIC = {"VMSPX15": ("SPY",), "RP2X": ("SPY", "TLT", "GLD")}
 LANES = list(STATIC) + list(DYNAMIC)
-REBALANCE = {"HFEA": "quarter", "SPY": None, "VMSPX15": "month", "RP2X": "month"}
+REBALANCE = {"HFEA": "quarter", "SPY": None, "VMSPX15": "month", "RP2X": "month",
+             "BTC10": "month", "VTBND": "month"}
 FINANCED = {"VMSPX15", "RP2X"}          # cash earns T-bills / borrowing pays T-bills + 1%
 VM_LEVER, VM_TARGET_VOL, VM_WIN = 1.5, 0.15, 21
 RP_GROSS, RP_WIN = 2.0, 63

@@ -41,6 +41,9 @@
       <b>RP2X</b> — risk parity at 2×: each month SPY / TLT / GLD weighted by 1 ÷ 63-day volatility, summing to 200%; backtest 2001+
       +14.3%/yr vs +9.4%, Sharpe 0.78 vs 0.47, worst year −33% (failed the 10-yr check: lost the latest decade).
       Leverage is borrowed cash at T-bill + 1%/yr; spare cash earns T-bills.</p>
+    <p class="sub">Added 2026-11-11 (owner "go BTC sleeve paper"): <b>BTC10</b> — a world-stock / bond 60/40 with a fixed 10% in
+      Bitcoin (54% VT, 36% BND, 10% BTC), rebalanced monthly; backtest 2014+ +11.0%/yr vs +6.3%, Sharpe 0.82 vs 0.47, leaning on 2017.
+      Bitcoin can still fall 80% (about −8% to the lane). <b>VTBND</b> is the same 60/40 without Bitcoin — BTC10's yardstick.</p>
   </div>
   <div class="tiles" id="tiles"></div>
   <section class="dk-sec">
@@ -68,7 +71,7 @@ function chart(hist){
   const all = hist.map(h => h.nav), lo = Math.min(...all), hi = Math.max(...all), W = 1000, H = 180, P = 8;
   const x = d => P + (W - 2 * P) * days.indexOf(d) / (days.length - 1);
   const y = v => H - P - (H - 2 * P) * (v - lo) / ((hi - lo) || 1);
-  const col = {HFEA: "#2b5d8a", SPY: "#a8700a", VMSPX15: "#1a7f4b", RP2X: "#8a3fa0"};
+  const col = {HFEA: "#2b5d8a", SPY: "#a8700a", VMSPX15: "#1a7f4b", RP2X: "#8a3fa0", BTC10: "#c2410c", VTBND: "#64748b"};
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` + Object.entries(lanes).map(([k, v]) =>
     `<polyline fill="none" stroke="${col[k] || "#555"}" stroke-width="2" vector-effect="non-scaling-stroke"
       points="${v.map(h => x(h.day) + "," + y(h.nav)).join(" ")}"/>`).join("") + `</svg>
@@ -80,7 +83,7 @@ async function refresh(){
   $("tiles").innerHTML = Object.entries(L).map(([k, d]) => {
     const r = d.ret_pct;
     return `<div class="tile"><div class="v ${r > 0 ? "pos" : r < 0 ? "neg" : ""}">${d.nav == null ? "—" : "$" + fmt(d.nav, 0)}</div>
-      <div class="l">${{HFEA: "HFEA — 55% UPRO / 45% TMF", SPY: "SPY — yardstick", VMSPX15: "VMSPX15 — vol-managed S&P 1.5×", RP2X: "RP2X — risk parity 2×"}[k] || k}</div>
+      <div class="l">${{HFEA: "HFEA — 55% UPRO / 45% TMF", SPY: "SPY — yardstick", VMSPX15: "VMSPX15 — vol-managed S&P 1.5×", RP2X: "RP2X — risk parity 2×", BTC10: "BTC10 — 60/40 + 10% Bitcoin", VTBND: "VTBND — 60/40 yardstick"}[k] || k}</div>
       <div class="m">${r == null ? "starts at the next 16:30 ET pass" : (r >= 0 ? "+" : "") + fmt(r) + "% · since " + (d.started || "").slice(0, 10)}</div></div>`;
   }).join("");
   $("chart").innerHTML = chart(j.nav_history || []);
