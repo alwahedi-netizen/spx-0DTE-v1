@@ -76,6 +76,17 @@ r_lev, _ = rb.simulate(lev, dates, px, rf, cost_bps=0)
 
 assert abs(r_lev[5] - (2 * b[5] - rf[6])) < 1e-9
 ok("leverage above 1x pays T-bill financing")
+r_sp, _ = rb.simulate(lev, dates, px, rf, cost_bps=0, fin_spread=0.01)
+assert abs(r_sp[5] - (r_lev[5] - 0.01 / 252)) < 1e-12
+ok("fin_spread charges borrowed cash T-bill + spread")
+FEED["BBB"] = {d: 50.0 for d in DAYS}
+dates2, px2 = rb.prices(["AAA", "BBB"], "1990-01-01", fetch)
+ls = lambda i, d, p: {"AAA": 1.0, "BBB": -1.0}
+r_ls, _ = rb.simulate(ls, dates2, px2, rf, cost_bps=0)
+assert abs(r_ls[5] - (b[5] + rf[6])) < 1e-9          # long AAA, short flat BBB, +T-bills
+r_sh, _ = rb.simulate(lambda i, d, p: {"BBB": -1.0}, dates2, px2, rf, cost_bps=0)
+assert abs(r_sh[5] - 2 * rf[6]) < 1e-9               # capital + short proceeds earn T-bills
+ok("short proceeds earn T-bills: market-neutral earns, not pays, the cash rate")
 
 # ── 2. statistics + verdicts ────────────────────────────────────────────────
 print("statistics and verdicts")
@@ -330,6 +341,9 @@ assert rb._bar_date(_ts("2024-07-14 23:00")) == "2024-07-15"   # FX bar, UK summ
 assert rb._bar_date(_ts("2024-01-15 00:00")) == "2024-01-15"   # FX/crypto midnight UTC
 assert rb._bar_date(_ts("2024-07-15 13:30")) == "2024-07-15"   # US equity bar
 ok("Yahoo FX bars stamped 23:00 UTC land on the trading day, not the Sunday before")
+_fx = rb._fx_close_dates({"2015-01-14": 1.2008, "2015-01-15": 1.2008, "2015-01-16": 0.9940})
+assert _fx == {"2015-01-14": 1.2008, "2015-01-15": 0.9940}
+ok("=X opening values move to the previous date: the SNB's 2015-01-15 jump lands on 01-15")
 assert rb._ffill_inside([None, 1.0, None, None, 2.0, None]) == [None, 1.0, 1.0, 1.0, 2.0, None]
 ok("gaps inside a series carry the last price; nothing before the first or after the last")
 _wk = [d.strftime("%Y-%m-%d") for d in (_dt(2020, 1, 1) + _td(days=i) for i in range(1500)) if d.weekday() < 5]

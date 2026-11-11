@@ -13,6 +13,12 @@ function can only read index <= i (reading ahead raises LookAheadError). The
 weights decided at close i earn the move from close i to close i+1, charges `cost_bps` on every unit of turnover,
 pays the T-bill rate on uninvested cash (1 - sum of |weights|, never negative),
 and charges the T-bill rate on gross exposure above 1 (financing).
+[Superseded 2026-11-11, "fix research tool 2": cash = 1 - NET weight
+(sum of signed weights). Positive cash earns the T-bill rate — short-sale
+proceeds included, so a market-neutral book earns T-bills on its capital
+instead of paying them — and borrowed cash pays T-bill + fin_spread.
+Yahoo `=X` FX values are each London day's OPENING price; _fetch moves
+each one to the previous bar's date so it is that day's close.]
 
 Verdict (RESEARCH.md §4):
   PASS       confidence >= 99% that the idea's Sharpe beats the benchmark's
@@ -111,7 +117,21 @@ def _fetch(sym):
     # Monday's FX bar on Sunday (harness fix, owner "fix research tool"
     # 2026-11-09). US bars (13:30-14:30 UTC) and crypto (00:00 UTC) keep
     # their date.
-    return {_bar_date(t): a for t, a in zip(ts, adj) if a}
+    out = {_bar_date(t): a for t, a in zip(ts, adj) if a}
+    return _fx_close_dates(out) if sym.endswith("=X") else out
+
+
+def _fx_close_dates(series):
+    """Yahoo `=X` daily values are the price at the START of the London day
+    they are labelled with (open == close on every bar; the SNB's 1.20 floor
+    removal at 09:30 CET on 2015-01-15 only shows in the 01-16 value, the
+    euro's 2025-04-03 tariff jump only in the 04-04 value). Relabel each
+    value to the previous bar's date, which makes it that day's close. The
+    first value is dropped (no earlier bar); the last bar's date ends up
+    without a value until the next one prints ("fix research tool 2",
+    2026-11-11)."""
+    ds = sorted(series)
+    return {ds[k - 1]: series[ds[k]] for k in range(1, len(ds))}
 
 
 def _bar_date(t):
@@ -119,7 +139,8 @@ def _bar_date(t):
     return datetime.fromtimestamp(t + 3 * 3600, timezone.utc).strftime("%Y-%m-%d")
 
 
-CACHE_VERSION = 2   # 2026-11-09: FX date fix — older cache files are refetched
+CACHE_VERSION = 3   # 2026-11-09: FX date fix; 2026-11-11: =X close relabel —
+                    # older cache files are refetched
 
 
 def _ffill_inside(col):
@@ -295,12 +316,16 @@ class _Past:
         return self.col[k]
 
 
-def simulate(weights_fn, dates, px, rf, cost_bps=5.0):
+def simulate(weights_fn, dates, px, rf, cost_bps=5.0, fin_spread=0.0):
     """Daily net returns of the idea. Weights decided at close i earn i -> i+1.
-    The idea sees prices only up to index i (reading ahead raises)."""
+    The idea sees prices only up to index i (reading ahead raises).
+    Cash = 1 - sum of SIGNED weights: positive cash (short proceeds
+    included) earns rf; negative cash (leverage) pays rf + fin_spread
+    (annual, spread over PPY periods)."""
     clock = [0]
     view = {s: _Past(c, clock) for s, c in px.items()}
     rets, turnover, held = [], 0.0, {}
+    spread = fin_spread / periods_per_year(dates) if fin_spread else 0.0
     for i in range(len(dates) - 1):
         clock[0] = i
         new = {s: w for s, w in (weights_fn(i, dates, view) or {}).items() if w}
@@ -311,8 +336,8 @@ def simulate(weights_fn, dates, px, rf, cost_bps=5.0):
             a, b = px[s][i], px[s][i + 1]
             if a and b:
                 r += w * (b / a - 1)
-        gross = sum(abs(w) for w in new.values())
-        r += max(0.0, 1 - gross) * rf[i + 1] - max(0.0, gross - 1) * rf[i + 1]
+        cash = 1.0 - sum(new.values())
+        r += cash * rf[i + 1] if cash >= 0 else cash * (rf[i + 1] + spread)
         r -= t * cost_bps / 1e4
         # holdings drift to close i+1 (the base the next decision trades from)
         held = {}
@@ -587,7 +612,7 @@ def traits(rets, bret, rf, bench_px=None):
 def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
              cost_bps=None, trials=1, notes="", fetch=None, save=True,
              asset_class=None, variants=None, factors=None, ff_fetch=None,
-             family=None, vault=False, source="yahoo"):
+             family=None, vault=False, source="yahoo", fin_spread=0.0):
     """Backtest one idea and write data/research/results/<idea_id>.json.
     asset_class sets the default cost (COST_BPS) and turns on the factor-alpha
     gate for "stocks"; variants = {name: weights_fn} neighbouring settings
@@ -621,7 +646,7 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     global PPY
     PPY = periods_per_year(dates)
     rf = tbill(dates, fetch)
-    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps)
+    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps, fin_spread)
     bret = bench_returns(bench, dates, px, rf)
     rf1 = rf[1:]
     cut = int(len(rets) * (1 - OOS_FRAC))
@@ -636,13 +661,13 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     active = [a - b for a, b in zip(rets, bret)]
     dsr = deflated_sharpe(active, trials)
     tval = t_stat(active)
-    r2x, _ = simulate(weights_fn, dates, px, rf, cost_bps * 2)
+    r2x, _ = simulate(weights_fn, dates, px, rf, cost_bps * 2, fin_spread)
     double_ok = sharpe(r2x, rf1) > full_b
     robust = None
     if variants:
         wins = 0
         for fn in variants.values():
-            vr, _ = simulate(fn, dates, px, rf, cost_bps)
+            vr, _ = simulate(fn, dates, px, rf, cost_bps, fin_spread)
             wins += sharpe(vr, rf1) > full_b
         robust = wins / len(variants)
     fa = None
@@ -666,7 +691,7 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     out = {
         "idea": idea_id, "run": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "period": [dates[0], dates[-1]], "bench": bench or "T-bills",
-        "cost_bps": cost_bps, "trials": trials, "notes": notes,
+        "cost_bps": cost_bps, "fin_spread": fin_spread, "trials": trials, "notes": notes,
         "idea_cagr": round(cagr(rets), 4), "bench_cagr": round(cagr(bret), 4),
         "idea_sharpe": round(full_s, 3), "bench_sharpe": round(full_b, 3),
         "idea_maxdd": round(max_dd(rets), 4), "bench_maxdd": round(max_dd(bret), 4),
@@ -761,7 +786,8 @@ def calendar_years(rets, bret, dates):
 
 
 def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
-                        cost_bps=5.0, trials=1, notes="", fetch=None, save=True):
+                        cost_bps=5.0, trials=1, notes="", fetch=None, save=True,
+                        fin_spread=0.0):
     """Allocation-track verdict: PASS when rolling 10-year AND 20-year windows
     both pass; PROMISING when 10-year passes but 20-year history is too short;
     FAIL otherwise. A window horizon passes when the idea beats the benchmark
@@ -773,7 +799,7 @@ def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
     global PPY
     PPY = periods_per_year(dates)
     rf = tbill(dates, fetch)
-    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps)
+    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps, fin_spread)
     bret = bench_returns(bench, dates, px, rf)
     h10 = horizon_check(rets, bret, dates, 10)
     h20 = horizon_check(rets, bret, dates, 20) if h10["status"] == "PASS" else \
@@ -787,7 +813,7 @@ def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
     out = {
         "idea": idea_id, "track": "allocation",
         "run": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "period": [dates[0], dates[-1]], "bench": bench, "cost_bps": cost_bps,
+        "period": [dates[0], dates[-1]], "bench": bench, "cost_bps": cost_bps, "fin_spread": fin_spread,
         "trials": trials, "notes": notes,
         "idea_cagr": round(cagr(rets), 4), "bench_cagr": round(cagr(bret), 4),
         "idea_sharpe": round(sharpe(rets, rf1), 3), "bench_sharpe": round(sharpe(bret, rf1), 3),
