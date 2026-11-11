@@ -1,1 +1,1 @@
-{"day": "2026-11-11", "halted": {}, "paused": {}, "schwab": {"719": {"ts": "2026-11-11T09:01:07-05:00", "missing": [], "unknown": [], "day_pl": 0, "ok": true}}}
+{"day": "2026-11-11", "halted": {"MNG": true}, "paused": {}, "schwab": {"719": {"ts": "2026-11-11T16:41:15-05:00", "missing": [], "unknown": ["SPXW  261111P07610000", "SPXW  261111C07635000", "SPXW  261111C07650000", "SPXW  261111P07600000", "SPXW  261111C07655000"], "day_pl": 875.0, "ok": false}}}
