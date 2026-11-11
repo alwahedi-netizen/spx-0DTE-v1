@@ -1,0 +1,71 @@
+{
+ "idea": "R-2026-11-11-RDINC",
+ "run": "2026-11-11T03:41:10+00:00",
+ "period": [
+  "2000-01-03",
+  "2024-10-31"
+ ],
+ "bench": "SPY",
+ "cost_bps": 5.0,
+ "trials": 5,
+ "notes": "Eberhart-Maxwell-Siddique R&D increases: point-in-time S&P 500 firms with R&D/sales and R&D/assets >= 5% whose R&D dollars and R&D/assets both rose >= 5% in the latest fiscal year (ARY public before the signal day), equal weight, each June; SPY if < 10 events; variants 3/7.5% thresholds, 3-year cohorts, value-weighted; survivorship-free",
+ "idea_cagr": 0.092,
+ "bench_cagr": 0.0758,
+ "idea_sharpe": 0.408,
+ "bench_sharpe": 0.382,
+ "idea_maxdd": -0.598,
+ "bench_maxdd": -0.5519,
+ "turnover_per_year": 1.72,
+ "periods_per_year": 252,
+ "confidence": 0.5991,
+ "oos_from": "2017-05-22",
+ "oos_idea_sharpe": 0.592,
+ "oos_bench_sharpe": 0.688,
+ "oos_idea_cagr": 0.1401,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.4483,
+ "active_t": 1.06,
+ "sharpe_2x_costs": 0.405,
+ "robust_share": 0.75,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.0445,
+  "alpha_t": 2.07,
+  "loadings": {
+   "Mkt-RF": 1.06,
+   "SMB": -0.03,
+   "HML": -0.36,
+   "RMW": -0.33,
+   "CMA": 0.19,
+   "Mom": -0.11
+  },
+  "days": 6247
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "ok"
+ },
+ "traits": {
+  "corr_to_bench": 0.87,
+  "dd_cut": -0.08,
+  "sharpe_ratio_vs_bench": 1.07,
+  "active_sharpe_first_half": 0.22,
+  "active_sharpe_second_half": 0.22,
+  "active_sharpe_bench_uptrend": 0.22,
+  "active_sharpe_bench_downtrend": 0.26,
+  "best_5y_active_sharpe": 0.67,
+  "worst_5y_active_sharpe": -0.19,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 3
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "rnd-increase",
+ "vault": "sealed from 2024-11-01"
+}

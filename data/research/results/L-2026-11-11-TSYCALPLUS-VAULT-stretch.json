@@ -1,0 +1,21 @@
+{
+ "vault_from": "2024-11-01",
+ "vault_to": "2026-11-10",
+ "days": 507,
+ "idea_total": 0.0387,
+ "ief_total": 0.0402,
+ "active_total": -0.0015,
+ "idea_sharpe": -0.255,
+ "ief_sharpe": -0.326,
+ "criterion_pass": false,
+ "harness_verdict": "PASS",
+ "harness_gates": {
+  "deflated_sharpe": "ok",
+  "t_stat_3": "ok",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "full_cagr": 0.0605,
+ "full_bench_cagr": 0.0339
+}

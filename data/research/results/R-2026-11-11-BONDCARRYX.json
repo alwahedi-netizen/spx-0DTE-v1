@@ -1,0 +1,59 @@
+{
+ "idea": "R-2026-11-11-BONDCARRYX",
+ "run": "2026-11-11T03:29:24+00:00",
+ "period": [
+  "2002-08-01",
+  "2024-10-31"
+ ],
+ "bench": "IEF",
+ "cost_bps": 3.0,
+ "trials": 5,
+ "notes": "first trading day of each month: hold the Treasury ETF (SHY/IEI/IEF/TLT) with the highest 1-year carry + roll-down per unit of duration from the FRED H.15 curve (values dated before the prior trading day); bench IEF; 2002-08+",
+ "idea_cagr": 0.0272,
+ "bench_cagr": 0.0352,
+ "idea_sharpe": 0.192,
+ "bench_sharpe": 0.317,
+ "idea_maxdd": -0.2281,
+ "bench_maxdd": -0.2392,
+ "turnover_per_year": 4.1,
+ "periods_per_year": 252,
+ "confidence": 0.2358,
+ "oos_from": "2018-02-28",
+ "oos_idea_sharpe": 0.115,
+ "oos_bench_sharpe": -0.157,
+ "oos_idea_cagr": 0.0301,
+ "verdict": "FAIL",
+ "asset_class": "bonds",
+ "deflated_sharpe": 0.038,
+ "active_t": -0.58,
+ "sharpe_2x_costs": 0.175,
+ "robust_share": 0.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.66,
+  "dd_cut": 0.05,
+  "sharpe_ratio_vs_bench": 0.61,
+  "active_sharpe_first_half": -0.51,
+  "active_sharpe_second_half": 0.13,
+  "active_sharpe_bench_uptrend": -0.11,
+  "active_sharpe_bench_downtrend": 0.03,
+  "best_5y_active_sharpe": 0.63,
+  "worst_5y_active_sharpe": -1.03,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "R-2026-11-11-BONDCARRYX",
+ "vault": "sealed from 2024-11-01"
+}

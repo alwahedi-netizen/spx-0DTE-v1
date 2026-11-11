@@ -1,0 +1,59 @@
+{
+ "idea": "R-2026-11-11-VTCREDIT",
+ "run": "2026-11-11T03:29:20+00:00",
+ "period": [
+  "2007-04-02",
+  "2024-10-31"
+ ],
+ "bench": "AGG",
+ "cost_bps": 3.0,
+ "trials": 5,
+ "notes": "HYG weight = min(1.5, 6%/sigma), sigma = EWMA (20-day half-life) annualised HYG vol through the prior close, rest T-bills; financing T-bills + 50bp above 1x (script wrapper); bench AGG; 2007-04+",
+ "idea_cagr": 0.0275,
+ "bench_cagr": 0.029,
+ "idea_sharpe": 0.271,
+ "bench_sharpe": 0.324,
+ "idea_maxdd": -0.1612,
+ "bench_maxdd": -0.1843,
+ "turnover_per_year": 3.4,
+ "periods_per_year": 252,
+ "confidence": 0.432,
+ "oos_from": "2019-07-24",
+ "oos_idea_sharpe": 0.089,
+ "oos_bench_sharpe": -0.284,
+ "oos_idea_cagr": 0.0274,
+ "verdict": "FAIL",
+ "asset_class": "bonds",
+ "deflated_sharpe": 0.1057,
+ "active_t": -0.06,
+ "sharpe_2x_costs": 0.254,
+ "robust_share": 0.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.16,
+  "dd_cut": 0.13,
+  "sharpe_ratio_vs_bench": 0.84,
+  "active_sharpe_first_half": -0.32,
+  "active_sharpe_second_half": 0.36,
+  "active_sharpe_bench_uptrend": 0.25,
+  "active_sharpe_bench_downtrend": -0.64,
+  "best_5y_active_sharpe": 0.44,
+  "worst_5y_active_sharpe": -0.44,
+  "building_blocks": [
+   "diversifier"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "R-2026-11-11-VTCREDIT",
+ "vault": "sealed from 2024-11-01"
+}

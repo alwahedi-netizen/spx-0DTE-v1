@@ -186,6 +186,25 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 23. **Combining shortlisted blocks works inside an asset class**: CMDBOOK
     (99.4%, held-out win) and RATESLEV (99.3%) are the two strongest results
     to date. Both fail only the multiple-testing gates (DSR, t ≥ 3).
+24. **Our first vault test failed** (TSYCALPLUS, 2026-11-11). The Treasury
+    calendar overlay passed every harness gate (6.4%/yr vs 3.5%, active t
+    4.2) and survived the red team (beats IEF levered to the same average
+    exposure by 2.6%/yr; FRED yields confirm the effect). On the sealed
+    2024-11 → 2026-11 stretch it returned +3.87% vs IEF +4.02% — the
+    pre-registered criterion (beat IEF) failed by 0.15%. Lesson: a real
+    historical effect (half of it 2008-11) can still be too small to show
+    up in two years net of financing. Family L-TSYCAL's vault is spent.
+25. **Commodity book is fragile to a one-sleeve change** (CMDBOOK2): swapping
+    in the ag-only skew sleeve dropped 6.9%/yr → 4.5%/yr (93%) and the
+    ag-only skew lost money alone. Treat CMDBOOK's 99.4% with caution.
+26. **The static BTC sleeve holds on ETFs too** (I-2026-11-07-BTCSLEEVE):
+    VT/BND 60/40 + 10% BTC: 11.0%/yr vs 6.3%, Sharpe 0.82 vs 0.47, 99.8%;
+    timing rules (trend, vol) add nothing on top. It is a sizing question.
+27. **From the options desk, 2026-11-11 (our own journal):** after a side is
+    stopped, later same-day entries on that SAME side lost −$9.1k on paper
+    (166 sides) and −$5.9k live (89 sides), vs +$10.8k / +$8.2k for all
+    others — both halves, both MEIC and MNG, but concentrated in ~5 trend
+    days. In-sample; a paper lane would be the honest test (owner decision).
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).
@@ -205,7 +224,9 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 | L-RATESBOOK v2 | TSYCAL + MEDIAN + EQCREDIT + HAVENVOL | **Tested 2026-11-09: FAIL** — Sharpe 0.68 vs 0.32, worst drop −10% vs −24%, 98% confidence; low return because cash sleeves keep their budget. Next: a levered variant |
 | done 2026-11-09 | NETISS, ACCRUALS, FSCORE, LOWVOLSF, VIXCORR, SAFEDUR, POLICYMOM, BMP4, UEP, VALMOMFX, HAVENVOTE, DOLVOL, FOMCMOVE, HAVENBASKET, OILCURVETREND, CURVEPAIRS, CMDVALUE, CCYCMD, BTC52WH, MAXMINTREND, BTCQQQGATE, MAJORSXS, BTCTIPP | All FAIL; shortlist adds above |
 | done 2026-11-10 | RND, CBOP, LTREV, FOMCCYCLE, QVPARITY; RATESLEV, EMDOLLAR, LOWRISKIG, JANHY, YCMOM; HEDGEUUP, PREFOMCDIR, RRWCMD, OECDCARRY, CMDDXY; GOLDSHOCK, CMDBOOK, NGEIADAY, DEMANDVOTE, CCYCURVE; BOLD, BOLDTREND, BTCSLEEVE10H, SLEEVETREND (red-teamed), BTIFLOOR | All FAIL; CMDBOOK 4, RATESLEV/RND/CCYCURVE 3 |
-| queued by desks | VTCREDIT, FFTERM, BONDCARRYX (bonds); CMDBAB, CCYVOLTGT, CMDSKEW ag-only (cmd); BTCVMP, BTCTOM, I-2026-11-07-BTCSLEEVE static control, RPCRYPTO, QQQBTCBRK (crypto); RNDREV (stocks); DOLCARRY, VIXCARRY, GOODCARRY, HEDGECARRY (FX — FRED now reachable, default Python user-agent; OECD rates lag ~2 months; NFCI is revised — look-ahead) | Next scripts |
+| done 2026-11-11 | RNDREV, RNDSECT, RNDEAP, INTANGVAL, RDINC; VTCREDIT, FFTERM, BONDCARRYX, CYCLEFAC, TSYCALPLUS (PASS → red team → vault FAIL); GOODCARRY, VIXCARRY, DOLCARRY, LRCARRY, RATEMOM; AGSKEW, CMDBAB, CCYVOLTGT, CMDBOOK2, ETFROLL; BTCSLEEVE (static), BTCVMP, BTCTOM, RPCRYPTO, SLEEVEVOL | All FAIL; every FX carry variant below T-bills even with FRED rates |
+| queued by desks (2026-11-11) | FFDEF, MBSVOL (bonds); CMDTURN, DUALMOMDB, CMDASYM (cmd); BTCDVMP, BTCBEST8 (crypto); RNDQUAL, INTANGMAGIC (stocks) | Lower priority if the owner approves the research reset |
+| queued by desks (older) | VTCREDIT, FFTERM, BONDCARRYX (bonds); CMDBAB, CCYVOLTGT, CMDSKEW ag-only (cmd); BTCVMP, BTCTOM, I-2026-11-07-BTCSLEEVE static control, RPCRYPTO, QQQBTCBRK (crypto); RNDREV (stocks); DOLCARRY, VIXCARRY, GOODCARRY, HEDGECARRY (FX — FRED now reachable, default Python user-agent; OECD rates lag ~2 months; NFCI is revised — look-ahead) | Next scripts |
 | harness fixes (new 2026-11-10) | `=X` start-of-day dating; short-leg T-bill sign in simulate(); financing-spread option | Owner's call — reported in the digest |
 | harness fixes | **FIXED 2026-11-09 (owner "fix research tool"):** crypto 365-day annualisation; FX bar dates (+3h); prices carried over gaps. Still open: `rb.sharadar` table param; FX interest | **DONE 2026-11-10:** 21 results re-run as corrections (trials.json restored); every crypto figure up, no verdict changed; HAVENVOL/HAVENVOTE down; RATESBOOK Sharpe 0.68→0.74 |
 | data unlocks | insider bulk export; Coin Metrics (on-chain); FRED rates (ETFCARRY / FX carry); EIA inventories; Treasury refunding dates | Blocked ideas waiting on data |
