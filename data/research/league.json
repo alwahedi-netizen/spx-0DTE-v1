@@ -1,0 +1,15 @@
+{
+ "started": "2026-11-11",
+ "rule_source": "RESEARCH.md § LEAGUE (owner 2026-11-11)",
+ "season": "2026-11 (trial: rounds 2026-11-14, 2026-11-21, 2026-11-28)",
+ "teams": {
+  "options":     {"budget_per_week": 4, "points": 0, "events": []},
+  "stocks":      {"budget_per_week": 2, "points": 0, "events": []},
+  "bonds":       {"budget_per_week": 2, "points": 0, "events": []},
+  "commodities": {"budget_per_week": 2, "points": 0, "events": []},
+  "fx":          {"budget_per_week": 1, "points": 0, "events": []},
+  "crypto":      {"budget_per_week": 1, "points": 0, "events": []}
+ },
+ "red_team_rotation": ["options", "stocks", "bonds", "commodities", "fx", "crypto"],
+ "rounds": []
+}

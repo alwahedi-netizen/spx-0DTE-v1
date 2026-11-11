@@ -1,27 +1,74 @@
-# RESEARCH.md — the daily strategy-research scan
+# RESEARCH.md — the weekly research league (was: the daily scan)
 
 Owner request (2026-10-28): every week, scan the web for new trading techniques
 that look worth testing, score them, backtest the best, and email Tariq
 (alwahedi@logicon.ae) what to move through the three phases. Asset classes:
-**stocks/ETFs, bonds, FX, futures/commodities, crypto. NOT options** (another
-instance owns options).
+**stocks/ETFs, bonds, FX, futures/commodities, crypto** — and, since the
+2026-11-11 league, **options** as its own team (studies on our own journal).
 
-**DAILY since 2026-11-07** (owner: "at least 10 ideas every day under each
-asset class — world-class quant research"). Quota: **≥10 scored ideas per
-asset class per day** (stocks/ETFs, bonds, FX, futures/commodities, crypto =
-≥50/day). World-class means the FILTER, not the count: every idea needs a
-citable source and an exact rule; nothing is invented or padded; repeats of
-anything in the ledger or RETIRED.md are blocked (§3).
+## LEAGUE — WEEKLY, since 2026-11-14 (owner 2026-11-11: "do a reset and a league same time and move it to weekly instead of daily")
 
-The daily run is a scheduled cloud session. It reads this file and follows it
-exactly. Changing the rules means editing this file, not the schedule.
+**This section overrides everything below it where they disagree.** The
+daily scan (≥10 ideas per class per day, up to 5 tests per class per day,
+2026-11-07 → 11-11) is retired: 129 tests in 5 nights produced no usable
+strategy and the volume itself raised every luck bar (theme 18, 21, 24).
 
-> **Supersedes the scheduled prompt** (owner, 2026-11-07): if the prompt that
-> started this run still says "weekly", "~7-14 days", "max 20 ideas", "top
-> 1–5" or "first Saturday", THIS FILE wins: run daily, score ≥10 sourced
-> ideas per asset class PLUS ≥3 original ones (§2b), test every testable
-> idea ≥40 (up to 5 per class), rate and log learnings for ALL of them
-> (§00), deep dive on day 1 of the month.
+**Rhythm.** One research ROUND per week, run inside the Saturday 07:13 UAE
+digest (after Friday's US close). Weekday digests carry no research desks;
+their Research section is one line: the league table and anything pending.
+
+**Teams** (one lead agent each, spawned per round; scoreboard in
+`data/research/league.json`):
+
+| Team | Weekly test budget (Nov) | Scope |
+|---|---|---|
+| **Options** | 4 | Our proven edge (MEIC is live). Studies on our own journal (`data/paper/positions.csv`, `live/live_trades.csv`, `day.csv`): pre-registered replays and splits, and proposals for paper lanes (MEIC 2.0 family). Paper lanes need the owner's go. |
+| Stocks | 2 | Point-in-time Sharadar only; factor-alpha gate applies |
+| Bonds | 2 | ETFs only for credit; FRED allowed with publish lags |
+| Commodities | 2 | ETFs; no back-adjusted futures |
+| FX | 1 | CurrencyShares / UUP / UDN preferred; `=X` are start-of-day prices |
+| Crypto | 1 | Benchmark sleeves against the STATIC sleeve (theme 22) |
+
+A "test" = one `research_bt.evaluate` run (or, for Options, one
+pre-registered journal study). A team may spend fewer, never more.
+**Portfolio desk** (not competing; run by the lead): builds and maintains
+ONE Logicon portfolio from survivors and near-misses, runs it forward on
+paper once the owner approves, and reports it monthly.
+
+**Quality rules (every team):**
+1. **Replication first:** a sourced idea's first run must reproduce the
+   source's published headline (sign and rough size) on the source's own
+   period/universe before any variant is tried; if it cannot, log
+   "harness/data suspect" and stop.
+2. **Data-timing line** in every script header (which bar dates the signal
+   reads; none on/after the trade day).
+3. Fewer, deeper: ≥10 ideas per team are NOT required; score only what
+   the team would actually test.
+4. All existing gates, family trial counts, red team and the one-time vault
+   (§0, §2b) still apply.
+
+**Cross red team:** every round, each team red-teams the best result of the
+team after it (Options → Stocks → Bonds → Commodities → FX → Crypto →
+Options), on top of the lead's red team for any PASS.
+
+**Scoring** (points in league.json; the lead awards them and writes why):
+
+| Event | Points |
+|---|---|
+| A result survives red team AND its vault test → proposed to the owner | +10 |
+| The owner approves it to paper | +5 |
+| A paper lane from this team beats its benchmark over a calendar month (≥15 sessions) | +5 (−3 if it trails) |
+| A shortlist near-miss (potential ≥4 after red team) | +2 |
+| A genuine error caught in ANOTHER team's work (confirmed by the lead) | +3 |
+| Own result withdrawn for a data/timing error | −5 |
+
+**Month end:** the leader gets +50% test budget next month, the last team
+−50% (minimum 1); ties keep their budget. The table goes in the first
+digest of the month. November is a trial season (3 rounds: 14, 21, 28 Nov);
+December is the first full season.
+
+**Learning stays:** every idea still gets a learnings row and KNOWLEDGE.md
+is still read first and updated last (§00).
 
 ## 00. Learning first (owner 2026-11-07)
 
