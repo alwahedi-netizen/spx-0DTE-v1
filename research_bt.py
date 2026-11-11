@@ -316,6 +316,12 @@ class _Past:
         return self.col[k]
 
 
+def _fin(fin_spread):
+    """Pass fin_spread only when set: some idea scripts replace simulate()
+    with their own 5-argument version (RATESLEV, VTCREDIT)."""
+    return {"fin_spread": fin_spread} if fin_spread else {}
+
+
 def simulate(weights_fn, dates, px, rf, cost_bps=5.0, fin_spread=0.0):
     """Daily net returns of the idea. Weights decided at close i earn i -> i+1.
     The idea sees prices only up to index i (reading ahead raises).
@@ -646,7 +652,7 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     global PPY
     PPY = periods_per_year(dates)
     rf = tbill(dates, fetch)
-    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps, fin_spread)
+    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps, **_fin(fin_spread))
     bret = bench_returns(bench, dates, px, rf)
     rf1 = rf[1:]
     cut = int(len(rets) * (1 - OOS_FRAC))
@@ -661,13 +667,13 @@ def evaluate(idea_id, weights_fn, symbols, bench=None, start="2000-01-01",
     active = [a - b for a, b in zip(rets, bret)]
     dsr = deflated_sharpe(active, trials)
     tval = t_stat(active)
-    r2x, _ = simulate(weights_fn, dates, px, rf, cost_bps * 2, fin_spread)
+    r2x, _ = simulate(weights_fn, dates, px, rf, cost_bps * 2, **_fin(fin_spread))
     double_ok = sharpe(r2x, rf1) > full_b
     robust = None
     if variants:
         wins = 0
         for fn in variants.values():
-            vr, _ = simulate(fn, dates, px, rf, cost_bps, fin_spread)
+            vr, _ = simulate(fn, dates, px, rf, cost_bps, **_fin(fin_spread))
             wins += sharpe(vr, rf1) > full_b
         robust = wins / len(variants)
     fa = None
@@ -799,7 +805,7 @@ def evaluate_allocation(idea_id, weights_fn, symbols, bench, start="1986-01-01",
     global PPY
     PPY = periods_per_year(dates)
     rf = tbill(dates, fetch)
-    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps, fin_spread)
+    rets, turnover = simulate(weights_fn, dates, px, rf, cost_bps, **_fin(fin_spread))
     bret = bench_returns(bench, dates, px, rf)
     h10 = horizon_check(rets, bret, dates, 10)
     h20 = horizon_check(rets, bret, dates, 20) if h10["status"] == "PASS" else \
