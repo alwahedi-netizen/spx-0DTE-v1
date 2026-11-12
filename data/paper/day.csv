@@ -52,3 +52,4 @@ date,status,vix,vix_chg_5d,prior_close,atr20,gex_sign,risk_budget,notes
 2026-11-09,OK,23.08,3.66,7376.86,96.71,unknown,5000.00,
 2026-11-10,OK,21.35,0.20,7549.94,105.50,unknown,5000.00,
 2026-11-11,OK,18.25,-2.58,7520.93,108.07,negative,5000.00,
+2026-11-12,OK,,,,,unknown,5000.00,vix: Schwab auth failed: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2; spx daily: Schwab auth failed: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
