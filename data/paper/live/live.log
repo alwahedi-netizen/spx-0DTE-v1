@@ -7982,3 +7982,13 @@
 [2026-11-12T10:06:28-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
 [2026-11-12T10:06:59-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
 [2026-11-12T10:07:30-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
+[2026-11-12T10:08:01-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
+[2026-11-12T10:08:35-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
+[2026-11-12T10:09:06-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
+[2026-11-12T10:09:37-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
+[2026-11-12T10:10:08-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
+[2026-11-12T10:10:39-05:00] schwab audit …719: edge token endpoint HTTP 502 — check custody at https://trader.sahmi.ae/reauth2
+[2026-11-12T12:00:21-05:00] 2026-11-12-MEIC-12:00-PUT OPEN submitted +1.45 (order 1008651914550)
+[2026-11-12T12:00:21-05:00] 2026-11-12-MEIC-12:00-CALL OPEN submitted +1.70 (order 1008651914552)
+[2026-11-12T12:00:52-05:00] 2026-11-12-MEIC-12:00-PUT FILLED @ +1.45 (limit 1.45)
+[2026-11-12T12:00:52-05:00] 2026-11-12-MEIC-12:00-CALL FILLED @ +1.80 (limit 1.70)
