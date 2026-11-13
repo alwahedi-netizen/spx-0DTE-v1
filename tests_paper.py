@@ -670,6 +670,62 @@ def test_meic2():
     ok("lockout drops a stopped side, then the day; own budget isolates and binds")
 
 
+# ── Strike-overlap fix (owner 2026-11-13: "fix overlap rejections") ─────────
+def test_overlap_fix():
+    print("Live strike-overlap fix")
+    import live_meic as lm
+    held = [{"side": "PUT", "status": "OPEN", "short_strike": "7600", "long_strike": "7570"},
+            {"side": "CALL", "status": "OPEN", "short_strike": "7660", "long_strike": "7690"},
+            {"side": "PUT", "status": "CLOSED", "short_strike": "7620", "long_strike": "7590"}]
+    # the 2026-11-11 13:30 case: new put 7630/7600, 7600 already short -> 7595
+    assert lm.overlap_fix("PUT", 7630, 7600, held) == (7595.0, 5.0, None)
+    # calls shift UP; a closed row never blocks; no collision = unchanged
+    assert lm.overlap_fix("CALL", 7630, 7660, held) == (7665.0, 5.0, None)
+    assert lm.overlap_fix("PUT", 7650, 7620, held) == (7620.0, 0.0, None)
+    assert lm.overlap_fix("PUT", 7640, 7610, held) == (7610.0, 0.0, None)
+    # the reverse case (selling a strike we hold long) cannot be fixed
+    assert lm.overlap_fix("PUT", 7570, 7540, held)[2] == "short-on-held-long"
+    crowd = held + [{"side": "PUT", "status": "OPEN", "short_strike": "7595", "long_strike": "7565"},
+                    {"side": "PUT", "status": "OPEN", "short_strike": "7590", "long_strike": "7560"}]
+    assert lm.overlap_fix("PUT", 7630, 7600, crowd)[2] == "no-free-strike"
+    assert lm.OVERLAP_SHIFT == {"MNG"}          # rehearsal first; MEIC after a clean week
+    ok("collisions move the long 5 pts further out; closed rows ignored; unfixable flagged")
+
+    class Br:
+        def __init__(self): self.orders = []
+        def place(self, o): self.orders.append(o); return "dry-1"
+    lm_log, lm.log = lm.log, (lambda m: None)
+    try:
+        p = {"position_id": "2026-11-11-MNG-13:30-PUT", "strategy": "MNG", "side": "PUT",
+             "short_strike": "7630.0", "long_strike": "7600.0", "credit_theo": "1.75",
+             "signal_ts": "2026-11-11T13:30:05-05:00"}
+        b, ledger = Br(), {}
+        lm._open_side(b, ledger, p, "2026-11-11", held_rows=held)
+        legs = b.orders[0]["orderLegCollection"]
+        assert legs[1]["instrument"]["symbol"].endswith("P07595000"), legs[1]
+        r = ledger[p["position_id"]]
+        assert r["long_strike"] == "7595.0" and r["shift"] == "5" and r["status"] == "OPENING"
+        # MEIC is not enabled yet: it sends the original strikes, as before
+        b2, l2 = Br(), {}
+        lm._open_side(b2, l2, dict(p, position_id="2026-11-11-MEIC-13:30-PUT", strategy="MEIC"),
+                      "2026-11-11", held_rows=held)
+        assert b2.orders[0]["orderLegCollection"][1]["instrument"]["symbol"].endswith("P07600000")
+        assert l2["2026-11-11-MEIC-13:30-PUT"]["shift"] == ""
+        # an enabled strategy skips the unfixable case without sending
+        b3, l3 = Br(), {}
+        lm._open_side(b3, l3, dict(p, short_strike="7570.0", long_strike="7540.0"),
+                      "2026-11-11", held_rows=held)
+        assert not b3.orders and l3[p["position_id"]]["status"] == "SKIPPED"
+        # legacy call (no held rows) is unchanged
+        b4, l4 = Br(), {}
+        lm._open_side(b4, l4, p, "2026-11-11")
+        assert b4.orders[0]["orderLegCollection"][1]["instrument"]["symbol"].endswith("P07600000")
+    finally:
+        lm.log = lm_log
+    assert "shift" in lm.LEDGER_COLS
+    ok("MNG rehearsal sends the shifted long and records it; MEIC unchanged until enabled")
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_env_fallback():
     print("Shared .env fallback")
@@ -793,7 +849,7 @@ if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
               test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback, test_config_file,
-              test_new_systems, test_meic2,
+              test_new_systems, test_meic2, test_overlap_fix,
               test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")

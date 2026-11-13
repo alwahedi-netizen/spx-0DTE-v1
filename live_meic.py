@@ -82,10 +82,28 @@ FEE_PER_LEG = 1.18       # all-in commission + index/regulatory fees, measured
                          # gross -365.00 over 20 legs). Expired legs cost 0.
 ORDER_WAIT_S = 240       # per rung on the ladder
 
+# ── Strike-overlap fix (owner 2026-11-13: "fix overlap rejections") ──────────
+# When a new spread's LONG strike is a strike we are already SHORT on the same
+# account (an earlier rung of the ladder), Schwab reads BUY_TO_OPEN as closing
+# that short and rejects the order ("not an opening transaction"). 16 such
+# rejections 2026-09-24..11-12; their paper twins netted +$581 (11 won, 5
+# lost) — 15 of the 16 were this long-on-held-short case. Fix: move the long
+# leg SHIFT_STEP points further out of the money (PUT lower, CALL higher), at
+# most SHIFT_MAX steps, so the order is a plain opening vertical (35 wide
+# instead of 30). The ledger's `shift` column records it; such rows close at
+# market-derived limits (the paper exit price is for the 30-wide twin).
+# The reverse case (short strike = a held long) cannot be fixed by moving the
+# long: enabled strategies skip it, others send it as before.
+# ROLLOUT: rehearse on MNG's dry run first; add "MEIC" after a clean week.
+OVERLAP_SHIFT = {"MNG"}
+SHIFT_STEP = 5.0
+SHIFT_MAX = 2
+HOLDING = ("OPENING", "OPEN", "CLOSING", "STUCK")
+
 LEDGER_COLS = ["position_id", "side", "short_strike", "long_strike", "expiry",
                "qty", "status", "order_id", "credit_limit", "credit_fill",
                "exit_reason", "close_order_id", "close_limit", "close_fill",
-               "pnl_live", "opened_ts", "closed_ts", "note"]
+               "pnl_live", "opened_ts", "closed_ts", "note", "shift"]
 # status: OPENING -> OPEN -> CLOSING -> CLOSED | EXPIRED ; or SKIPPED/FAILED
 
 
@@ -497,14 +515,54 @@ def _assert_orders_allowed(what: str):
                            "(this lab copy is a parallel run, not the live mirror)")
 
 
+def overlap_fix(side: str, short_k: float, long_k: float, held_rows) -> tuple:
+    """Pure. (long_k_to_send, points_shifted, problem). problem is None when
+    the order can be sent; "short-on-held-long" when it cannot be fixed by
+    moving the long leg; "no-free-strike" after SHIFT_MAX steps."""
+    side = side.upper()
+    rows = [r for r in held_rows or []
+            if (r.get("side") or "").upper() == side and r.get("status") in HOLDING]
+    shorts = {float(r["short_strike"]) for r in rows if r.get("short_strike")}
+    longs = {float(r["long_strike"]) for r in rows if r.get("long_strike")}
+    if float(short_k) in longs:
+        return float(long_k), 0.0, "short-on-held-long"
+    step = -SHIFT_STEP if side == "PUT" else SHIFT_STEP
+    k, n = float(long_k), 0
+    while k in shorts:
+        if n == SHIFT_MAX:
+            return float(long_k), 0.0, "no-free-strike"
+        k, n = k + step, n + 1
+    return k, abs(k - float(long_k)), None
+
+
 def _paper_today(ds: str, strats: set) -> list:
     return [p for p in st.read("positions")
             if p.get("strategy") in strats
             and (p.get("signal_ts") or "")[:10] == ds]
 
 
-def _open_side(br, ledger, p, ds):
+def _open_side(br, ledger, p, ds, held_rows=None):
+    """held_rows: today's ledger rows on the SAME broker (account + live/dry
+    mode), for the strike-overlap check. None = no check (legacy callers)."""
     pid = p["position_id"]
+    strat = p.get("strategy") or strat_of(pid)
+    long_k, shift = float(p["long_strike"]), 0.0
+    if held_rows is not None:
+        k2, pts, problem = overlap_fix(p["side"], float(p["short_strike"]), long_k, held_rows)
+        if problem or pts:
+            if strat not in OVERLAP_SHIFT:
+                log(f"{pid} strike overlap ({problem or f'long {long_k:.0f} is a held short'})"
+                    f" — fix not enabled for {strat}; sending as before")
+            elif problem:
+                ledger[pid] = dict.fromkeys(LEDGER_COLS, "")
+                ledger[pid].update(position_id=pid, side=p["side"], status="SKIPPED",
+                                   note=f"strike overlap: {problem}")
+                log(f"{pid} SKIPPED — strike overlap: {problem}")
+                return
+            else:
+                long_k, shift = k2, pts
+                log(f"{pid} long {float(p['long_strike']):.0f} is a held short — "
+                    f"shifted {shift:.0f} pts to {long_k:.0f}")
     credit = float(p["credit_theo"])
     limit = entry_limit(credit)
     if 0 < limit <= 0.05:
@@ -516,7 +574,7 @@ def _open_side(br, ledger, p, ds):
         ledger[pid].update(position_id=pid, status="SKIPPED",
                            note=f"debit {abs(limit):.2f} > cap {MAX_DEBIT}")
         return
-    o = vertical_order(p["side"], float(p["short_strike"]), float(p["long_strike"]),
+    o = vertical_order(p["side"], float(p["short_strike"]), long_k,
                        ds, min(QTY, QTY_MAX), "OPEN", limit)
     try:
         oid = br.place(o)
@@ -527,9 +585,11 @@ def _open_side(br, ledger, p, ds):
         return
     ledger[pid] = dict.fromkeys(LEDGER_COLS, "")
     ledger[pid].update(position_id=pid, side=p["side"], short_strike=p["short_strike"],
-                       long_strike=p["long_strike"], expiry=ds, qty=min(QTY, QTY_MAX),
+                       long_strike=(f"{long_k:.1f}" if shift else p["long_strike"]),
+                       expiry=ds, qty=min(QTY, QTY_MAX),
                        status="OPENING", order_id=oid, credit_limit=f"{limit:.2f}",
-                       opened_ts=_now().isoformat(timespec="seconds"))
+                       opened_ts=_now().isoformat(timespec="seconds"),
+                       shift=(f"{shift:.0f}" if shift else ""))
     log(f"{pid} OPEN submitted {limit:+.2f} (order {oid})")
 
 
@@ -552,7 +612,7 @@ def _poll_opening(br, r):
         log(f"{r['position_id']} open {s} ({why})")
         return
     age = (_now() - datetime.fromisoformat(r["opened_ts"])).total_seconds()
-    if age > ORDER_WAIT_S and not r.get("note"):
+    if age > ORDER_WAIT_S and "repriced" not in (r.get("note") or ""):
         # one reprice, deeper concession
         br.cancel(r["order_id"])
         credit0 = float(r["credit_limit"]) + ENTRY_SLIP
@@ -562,7 +622,7 @@ def _poll_opening(br, r):
                                float(r["long_strike"]), r["expiry"],
                                int(r["qty"]), "OPEN", limit)
             r.update(order_id=br.place(o), credit_limit=f"{limit:.2f}",
-                     note="repriced")
+                     note=((r.get("note") or "") + "|repriced").strip("|"))
             log(f"{r['position_id']} repriced to {limit:+.2f}")
         except Exception as e:
             r.update(status="SKIPPED", note=f"reprice failed: {e}"[:120])
@@ -614,8 +674,9 @@ def _close_side(br, r, reason, exit_theo, rung=0):
         log(f"{r['position_id']} too late to close — leaving to settlement")
         return
     rej = rej_count(r.get("note") or "")
-    if reason in ("HALT", "MANUAL") or rej > 0:
-        # Emergency or retry-after-rejection: price FROM THE MARKET.
+    if reason in ("HALT", "MANUAL") or rej > 0 or (r.get("shift") or ""):
+        # Emergency, retry-after-rejection, or a strike-shifted spread (the
+        # paper exit price is its 30-wide twin's): price FROM THE MARKET.
         v = _spread_value(br, r)
         if v is None:
             v = exit_theo if exit_theo else (1.0 if credit_pos else -1.0)
@@ -845,8 +906,10 @@ def sync_once() -> dict:
         for a in acts:
             if a[0] == "open":
                 p = a[1]
-                _open_side(br_for(p.get("strategy") or strat_of(p["position_id"])),
-                           ledger, p, ds)
+                b = br_for(p.get("strategy") or strat_of(p["position_id"]))
+                same_br = [r for r in ledger.values()
+                           if br_for_pid(r["position_id"]) is b]
+                _open_side(b, ledger, p, ds, held_rows=same_br)
             elif a[0] == "close":
                 _, pid, reason, exit_theo = a
                 _close_side(br_for_pid(pid), ledger[pid], reason, exit_theo)
