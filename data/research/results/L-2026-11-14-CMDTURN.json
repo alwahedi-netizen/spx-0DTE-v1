@@ -1,0 +1,61 @@
+{
+ "idea": "L-2026-11-14-CMDTURN",
+ "run": "2026-11-14T03:28:47+00:00",
+ "period": [
+  "2006-02-06",
+  "2024-10-31"
+ ],
+ "bench": "DBC",
+ "cost_bps": 5.0,
+ "fin_spread": 0.0,
+ "trials": 5,
+ "notes": "month-end: DBC weight = 0.5*1[12m return > 0] + 0.5*1[1m return > 0] (bull 1, correction/rebound 0.5, bear 0), rest T-bills; bench DBC; 5bp; lab variation of DD-TREND using Goulding-Harvey-Mazzoleni JFE 2023's static intermediate blend (GHM's futures headline not reproducible here); promotes I-2026-11-11-CMDTURN",
+ "idea_cagr": 0.0327,
+ "bench_cagr": 0.0042,
+ "idea_sharpe": 0.208,
+ "bench_sharpe": 0.044,
+ "idea_maxdd": -0.461,
+ "bench_maxdd": -0.7636,
+ "turnover_per_year": 3.53,
+ "periods_per_year": 252,
+ "confidence": 0.8394,
+ "oos_from": "2019-03-21",
+ "oos_idea_sharpe": 0.521,
+ "oos_bench_sharpe": 0.348,
+ "oos_idea_cagr": 0.088,
+ "verdict": "FAIL",
+ "asset_class": "commodities",
+ "deflated_sharpe": 0.2526,
+ "active_t": 0.53,
+ "sharpe_2x_costs": 0.193,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.74,
+  "dd_cut": 0.4,
+  "sharpe_ratio_vs_bench": 4.74,
+  "active_sharpe_first_half": 0.15,
+  "active_sharpe_second_half": 0.09,
+  "active_sharpe_bench_uptrend": 0.07,
+  "active_sharpe_bench_downtrend": 0.17,
+  "best_5y_active_sharpe": 0.96,
+  "worst_5y_active_sharpe": -0.51,
+  "building_blocks": [
+   "conditional-edge",
+   "risk-reducer"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "cmd-turning-points",
+ "vault": "sealed from 2024-11-01"
+}

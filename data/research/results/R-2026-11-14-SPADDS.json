@@ -1,0 +1,71 @@
+{
+ "idea": "R-2026-11-14-SPADDS",
+ "run": "2026-11-14T03:37:25+00:00",
+ "period": [
+  "1998-01-02",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 5.0,
+ "fin_spread": 0.0,
+ "trials": 5,
+ "notes": "Bennett-Stulz-Wang S&P 500 additions: long SPY (Sharadar SFP) / short equal-weight basket of stocks announced as additions in the last 12 months (announcement <= dates[i-1]), dollar-neutral, bench T-bills; variants hold 6/9/15/18m; borrow fees not charged (~0.4%/yr); replication harness/data suspect (2008-17 mean 0.0017/month vs paper +0.63..0.73%)",
+ "idea_cagr": 0.0202,
+ "bench_cagr": 0.0201,
+ "idea_sharpe": 0.058,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.4191,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 6.14,
+ "periods_per_year": 252,
+ "confidence": 0.6178,
+ "oos_from": "2016-10-13",
+ "oos_idea_sharpe": 0.262,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.0452,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.186,
+ "active_t": 0.3,
+ "sharpe_2x_costs": 0.031,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": -0.0016,
+  "alpha_t": -0.08,
+  "loadings": {
+   "Mkt-RF": -0.08,
+   "SMB": -0.26,
+   "HML": 0.06,
+   "RMW": 0.24,
+   "CMA": 0.37,
+   "Mom": -0.01
+  },
+  "days": 6751
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "FAIL"
+ },
+ "traits": {
+  "corr_to_bench": 0.02,
+  "dd_cut": -28775.41,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": -0.13,
+  "active_sharpe_second_half": 0.28,
+  "best_5y_active_sharpe": 0.7,
+  "worst_5y_active_sharpe": -0.88,
+  "building_blocks": [
+   "conditional-edge",
+   "diversifier"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "sp500-additions",
+ "vault": "sealed from 2024-11-01"
+}

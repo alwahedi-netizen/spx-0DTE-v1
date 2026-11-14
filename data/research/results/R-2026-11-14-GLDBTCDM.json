@@ -1,0 +1,58 @@
+{
+ "idea": "R-2026-11-14-GLDBTCDM",
+ "run": "2026-11-14T03:24:04+00:00",
+ "period": [
+  "2018-12-31",
+  "2024-10-31"
+ ],
+ "bench": "BTC-USD",
+ "cost_bps": 25.0,
+ "fin_spread": 0.0,
+ "trials": 1,
+ "notes": "REPLICATION of Quantpedia 2026 gold/BTC dual momentum: weekly (Wednesday US close) composite of 4/8/12-week rules (hold the better of BTC/GLD if its X-week return > 0, else cash), thirds; returns read on bars dated the day before; bench BTC-USD; T-bills on cash; 25bp; window 2018-12-31 -> vault (source to 2026-04); replication = CAGR >= BTC + 9%/yr and higher Sharpe",
+ "idea_cagr": 0.5453,
+ "bench_cagr": 0.6523,
+ "idea_sharpe": 1.126,
+ "bench_sharpe": 1.066,
+ "idea_maxdd": -0.4628,
+ "bench_maxdd": -0.7663,
+ "turnover_per_year": 13.4,
+ "periods_per_year": 365,
+ "confidence": 0.5904,
+ "oos_from": "2023-01-31",
+ "oos_idea_sharpe": 0.81,
+ "oos_bench_sharpe": 1.459,
+ "oos_idea_cagr": 0.3281,
+ "verdict": "FAIL",
+ "asset_class": "crypto",
+ "deflated_sharpe": 0.1384,
+ "active_t": -1.09,
+ "sharpe_2x_costs": 1.052,
+ "robust_share": null,
+ "variants": 0,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "n/a",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.8,
+  "dd_cut": 0.4,
+  "sharpe_ratio_vs_bench": 1.06,
+  "active_sharpe_first_half": -0.61,
+  "active_sharpe_second_half": -0.29,
+  "active_sharpe_bench_uptrend": -0.16,
+  "active_sharpe_bench_downtrend": -0.72,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "btc-gold-dualmom",
+ "vault": "sealed from 2024-11-01"
+}

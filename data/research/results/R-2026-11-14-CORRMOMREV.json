@@ -1,0 +1,59 @@
+{
+ "idea": "R-2026-11-14-CORRMOMREV",
+ "run": "2026-11-14T03:28:46+00:00",
+ "period": [
+  "2007-01-05",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 5.0,
+ "fin_spread": 0.0,
+ "trials": 5,
+ "notes": "month-end: DBA/DBB/DBE/DBP; if mean pairwise corr(20d) > corr(250d) long 2 best / short 2 worst by 252-day return, else long 2 worst / short 2 best; +-0.5 each, net 0, T-bills on capital and short proceeds; bench T-bills; 5bp; replication (sign only) of Pauchlyova/Quantpedia 2024 vs control R-2026-11-14-CORRMOMCTL; promotes I-2026-11-11-CORRMOMREV",
+ "idea_cagr": 0.1341,
+ "bench_cagr": 0.0129,
+ "idea_sharpe": 0.708,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.2819,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 27.11,
+ "periods_per_year": 252,
+ "confidence": 0.9986,
+ "oos_from": "2019-06-28",
+ "oos_idea_sharpe": 0.818,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.1786,
+ "verdict": "PROMISING",
+ "asset_class": "commodities",
+ "deflated_sharpe": 0.9634,
+ "active_t": 2.99,
+ "sharpe_2x_costs": 0.633,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "ok",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": -0.01,
+  "dd_cut": -19353.24,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.63,
+  "active_sharpe_second_half": 0.79,
+  "best_5y_active_sharpe": 1.33,
+  "worst_5y_active_sharpe": -0.08,
+  "building_blocks": [
+   "conditional-edge",
+   "diversifier"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "cmd-corr-momrev",
+ "vault": "sealed from 2024-11-01"
+}

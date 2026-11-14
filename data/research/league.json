@@ -10,8 +10,19 @@
   },
   "stocks": {
    "budget_per_week": 10,
-   "points": 0,
-   "events": []
+   "points": 5,
+   "events": [
+    {
+     "round": "2026-11-14",
+     "points": 3,
+     "why": "Error caught in Bonds' MACROANN: replication gate stricter than the source; the effect did replicate (t 1.78) \u2014 re-logged as 'replicated, reversed since 2002'"
+    },
+    {
+     "round": "2026-11-14",
+     "points": 2,
+     "why": "Near-miss STKBOOK: potential 4 after red team (alpha ~3%/yr t 3.4 net of the equal-weight tilt; failed only deflated Sharpe 0.947)"
+    }
+   ]
   },
   "bonds": {
    "budget_per_week": 10,
@@ -20,8 +31,19 @@
   },
   "commodities": {
    "budget_per_week": 10,
-   "points": 0,
-   "events": []
+   "points": 5,
+   "events": [
+    {
+     "round": "2026-11-14",
+     "points": 3,
+     "why": "Error caught in FX's STYLE3FX: the value leg was not the source's (Century) value series; replication claim corrected"
+    },
+    {
+     "round": "2026-11-14",
+     "points": 2,
+     "why": "Near-miss CORRMOMREV: 99.86%, fails only t>=3 (2.99); red team survives with caveats; best diversifier yet (+0.14 book Sharpe)"
+    }
+   ]
   },
   "fx": {
    "budget_per_week": 5,
@@ -30,8 +52,14 @@
   },
   "crypto": {
    "budget_per_week": 5,
-   "points": 0,
-   "events": []
+   "points": 3,
+   "events": [
+    {
+     "round": "2026-11-14",
+     "points": 3,
+     "why": "Error caught while red-teaming Options: 13 live MEIC rows (09-23/24) booked without fees"
+    }
+   ]
   }
  },
  "red_team_rotation": [
@@ -42,6 +70,33 @@
   "fx",
   "crypto"
  ],
- "rounds": [],
+ "rounds": [
+  {
+   "date": "2026-11-14",
+   "tests": {
+    "options": 11,
+    "stocks": 4,
+    "bonds": 3,
+    "commodities": 6,
+    "fx": 4,
+    "crypto": 3
+   },
+   "harness_pass": 0,
+   "vault_tests": 0,
+   "near_misses": [
+    "L-2026-11-14-STKBOOK",
+    "R-2026-11-14-CORRMOMREV"
+   ],
+   "errors_caught": 3,
+   "table": {
+    "options": 0,
+    "stocks": 5,
+    "bonds": 0,
+    "commodities": 5,
+    "fx": 0,
+    "crypto": 3
+   }
+  }
+ ],
  "budget_note": "owner 2026-11-11: multiply by 5 (was 4/2/2/2/1/1); month-end minimum 5"
 }

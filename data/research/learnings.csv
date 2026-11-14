@@ -510,3 +510,38 @@ I-2026-11-11-SURVMOM,crypto,,UNTESTED,,,Never in the survivor sample; only in tr
 I-2026-11-11-SIZEVOLMOM,crypto,,UNTESTED,,,Large liquid coins in trending markets,Small/illiquid coins (reversal); costs at weekly turnover,"Liquidity decides the sign of short-horizon crypto predictability; our tradeable crypto (BTC, ETH) is on the momentum side","L-2026-11-08-BTC52WH, I-2026-11-11-CRYPTOREV1M",If a liquid multi-coin venue (CME micro ETH/BTC + spot ETFs for more coins) appears,2026-11-11
 I-2026-11-11-SESSIONREV,crypto,,UNTESTED,,,In-sample full-period search over 25 combinations,Out of sample for BTC (source's chronological holdout),"Another intraday crypto edge that does not survive its own holdout; session effects belong to execution (when to trade), not signals","I-2026-11-08-IBITNIGHT (overnight premium), execution timing of any BTC lane",If intraday data and 24h execution are connected,2026-11-11
 I-2026-11-11-NCOMULTI,crypto,,UNTESTED,,,Small multi-asset universes where clustering keeps BTC's weight tiny and diversification high,Regime-conditioned versions (the paper's own negative result); estimation noise in 5-asset covariances,"Independent evidence that regime layers on small books add turnover, not return — the same lesson as the lab's BTC gates vs static sleeves (theme 22)","L-2026-11-07-RPCRYPTO (inverse-vol alternative), R-2026-10-28-RPARL",If RPCRYPTO's static book (the bench) proves a useful book member: NCO is the more diversified weighting to compare,2026-11-11
+R-2026-11-14-BITWISEREBAL,crypto,btc-sleeve-rebal,FAIL,3,,,,"FAIL: 8.7%/yr vs BENCH-VTBND6040Q@2020Q1 3.4%, Sharpe 0.677 vs 0.278, conf 96.6%, trials 4",,,2026-11-14
+I-2026-11-14-SLEEVEANNUAL,crypto,btc-sleeve-rebal,FAIL,3,,BTC bubbles (2017),Ex-2017: 11.1% vs 9.5%,"A yearly-reset sleeve wins by letting BTC drift up (avg 12.7%), i.e. it is a sizing choice, not a schedule edge",BTC10 paper lane,Never as a timing rule,2026-11-14
+R-2026-11-14-GLDBTCDM,crypto,btc-gold-dualmom,FAIL,1,,,,"FAIL: 54.5%/yr vs BTC-USD 65.2%, Sharpe 1.126 vs 1.066, conf 59.0%, trials 1",,,2026-11-14
+I-2026-11-14-SLEEVEDM,crypto,,NOT RUN,,,,,NOT RUN: replication of the source failed or missing,,,2026-11-14
+R-2026-11-14-AUCTION,bonds,R-2026-11-14-AUCTION,FAIL,0,,,,"FAIL: 1.9%/yr vs IEF 3.5%, Sharpe 0.113 vs 0.317, conf 16.9%, trials 5",,,2026-11-14
+R-2026-11-14-KKLSEAS,bonds,R-2026-11-14-KKLSEAS,FAIL,0,,,,"FAIL: 2.8%/yr vs IEF 3.5%, Sharpe 0.279 vs 0.317, conf 38.5%, trials 5",,,2026-11-14
+R-2026-11-14-MACROANN,bonds,,NOT RUN (replicated; reversed since 2002),0,,1969-1993 (published period),2002-2024: jobs-day excess -5.2bp,"Set the replication gate to the source's own significance, not t>=2 — we nearly mislabelled a real replication as a data fault",,Never: reversed since 2002,2026-11-14
+L-2026-11-14-MBSVOL,bonds,L-2026-11-14-MBSVOL,FAIL,1,,,,"FAIL: 2.9%/yr vs AGG 2.9%, Sharpe 0.295 vs 0.324, conf 43.4%, trials 5",,,2026-11-14
+R-2026-11-14-VMEFX,fx,fx-value,FAIL,3,,,,"FAIL: 1.7%/yr vs T-bills 1.6%, Sharpe 0.07 vs 0.0, conf 62.8%, trials 35",,,2026-11-14
+R-2026-11-14-STYLE3FX,fx,fx-multistyle,FAIL,3,diversifier,,G10 FX style premia ~0 2009-2024 (AQR's own series),"G10 FX styles cannot clear t>=3 over 15 years; spend FX budget on crisis sleeves and diversifiers, and check each leg against its own source series",,If a longer FX history (pre-2009) becomes available,2026-11-14
+L-2026-11-14-DOLHAVEN,fx,L-fx-safehaven,FAIL,0,,,,"FAIL: 0.6%/yr vs T-bills 1.3%, Sharpe -0.106 vs 0.0, conf 32.8%, trials 47",,,2026-11-14
+L-2026-11-14-HAVENSPLIT,fx,L-fx-safehaven,FAIL,4,,,,"FAIL: 2.0%/yr vs T-bills 1.3%, Sharpe 0.165 vs 0.0, conf 75.6%, trials 52",,,2026-11-14
+O-2026-11-14-GEXOOS,options,O-GEXREGIME,FAIL,,,,,"FAIL: journal study, confirm P 0.7901 vs required 0.9",,,2026-11-14
+O-2026-11-14-DAILYSTOP,options,O-DAILYSTOP,FAIL,,,,,"FAIL: journal study, confirm P 0.7781 vs required 0.95",,,2026-11-14
+O-2026-11-14-HALTVALUE,options,O-DAILYSTOP,FAIL,,,,,FAIL: journal study,,,2026-11-14
+O-2026-11-14-LIVEDRIFT,options,O-LIVEDRIFT,PASS (measurement),2,,Filled sides,Counting rejected/unfilled sides,"Live MEIC execution beats paper on filled sides; the costly gap is SKIPPED sides (rejections, unfilled reprices) — fix fills, not limits",overlap fix rehearsal (MNG),After the overlap fix is live on MEIC,2026-11-14
+O-2026-11-14-MISSEDFILLS,options,O-LIVEDRIFT,FAIL,,,,,FAIL: journal study,,,2026-11-14
+O-2026-11-14-ENTRYSLOT,options,O-ENTRYTIME,FAIL,,,,,"FAIL: journal study, confirm P 0.1044 vs required 0.9",,,2026-11-14
+O-2026-11-14-VIXLEVEL,options,O-VOLREGIME,FAIL,,,,,FAIL: journal study,,,2026-11-14
+O-2026-11-14-VIXCHG,options,O-VOLREGIME,FAIL,,,,,"FAIL: journal study, confirm P 0.6647 vs required 0.967",,,2026-11-14
+O-2026-11-14-VRPGATE,options,O-VOLREGIME,FAIL,1,,,,"FAIL: journal study, confirm P 0.9638 vs required 0.967 | Red team (Crypto): not a near miss — the develop sign is the opposite (-$111/day).",,,2026-11-14
+O-2026-11-14-MORNMOVE,options,O-TRENDDAY,FAIL,,,,,"FAIL: journal study, confirm P 0.1412 vs required 0.9",,,2026-11-14
+O-2026-11-14-STOPVSHOLD,options,O-SIDESTOP,FAIL,1,,,,"FAIL: journal study, confirm P 0.8983 vs required 0.9 | Red team (Crypto): settlement prices correct; the gain is lumpy (P 0.85 without the best day) and the worst hold day is -$15.9k.",,,2026-11-14
+R-2026-11-14-CORRMOMCTL,commodities,cmd-xs-momentum,FAIL,4,,,,"FAIL: 2.4%/yr vs T-bills 1.3%, Sharpe 0.15 vs 0.0, conf 73.6%, trials 7",,,2026-11-14
+R-2026-11-14-CORRMOMREV,commodities,cmd-corr-momrev,PROMISING (near-miss),4,"conditional-edge, diversifier",Commodity sectors trend together (short corr > long corr) -> momentum; otherwise reversal,2024; any year without an energy/metals trend; fitted windows,A correlation switch between momentum and reversal is real on 4 DB sectors but its published setting is the best of every grid — treat as Sharpe ~0.4 and size as a diversifier,"Logicon book (corr 0.03, +0.14 Sharpe at 10%)",Fresh out-of-sample months; borrow costs on DB short legs,2026-11-14
+R-2026-11-14-DUALMOMDB,commodities,cmd-xs-momentum,FAIL,4,,,,"FAIL: 5.4%/yr vs DBC 0.4%, Sharpe 0.395 vs 0.051, conf 95.6%, trials 19",,,2026-11-14
+L-2026-11-14-CMDTURN,commodities,cmd-turning-points,FAIL,4,,,,"FAIL: 3.3%/yr vs DBC 0.4%, Sharpe 0.208 vs 0.044, conf 83.9%, trials 5",,,2026-11-14
+L-2026-11-14-HEDGEPRESS,commodities,cmd-hedging-pressure,FAIL,2,,,,"FAIL: -0.3%/yr vs DBC -1.5%, Sharpe -0.019 vs -0.081, conf 60.3%, trials 5",,,2026-11-14
+L-2026-11-14-CMDBOOK3,commodities,L-2026-11-09-CMDBOOK,FAIL,4,,,,"FAIL: 6.6%/yr vs DBC 0.1%, Sharpe 0.468 vs 0.038, conf 98.5%, trials 15",,,2026-11-14
+R-2026-11-14-SPADDS,stocks,sp500-additions,FAIL,4,,,,"FAIL: 2.0%/yr vs T-bills 2.0%, Sharpe 0.058 vs 0.0, conf 61.8%, trials 5",,,2026-11-14
+I-2026-11-14-SPADDSBETA,stocks,,,,,,,None: ,,,2026-11-14
+R-2026-11-14-DIVMONTH,stocks,dividend-month,FAIL,1,,,,"FAIL: 1.4%/yr vs T-bills 2.0%, Sharpe -0.166 vs 0.0, conf 19.6%, trials 5",,,2026-11-14
+I-2026-11-14-DIVMONTHLO,stocks,,,,,,,None: ,,,2026-11-14
+L-2026-11-14-RNDQUAL,stocks,rnd-intensity,FAIL,3,,,,"FAIL: 13.4%/yr vs SPY 7.6%, Sharpe 0.593 vs 0.382, conf 98.3%, trials 25",,,2026-11-14
+L-2026-11-14-STKBOOK,stocks,stk-composite,FAIL (near-miss),4,conditional-edge,Value/investment-tilted markets (2000-02),Mega-cap growth decades (2009-16 vs equal weight ~0),Four point-in-time stock sleeves beat SPY by ~4%/yr but a third is the equal-weight tilt; judge stock books against an EW-or-blend benchmark,an EW/SPY blend benchmark,When the equal-weight-adjusted t clears 2 since 2017,2026-11-14

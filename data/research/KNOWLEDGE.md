@@ -41,6 +41,8 @@ ingredients from the shortlist first.
 | 3 | R-2026-11-07-MAGICSF (Greenblatt quality-value, survivorship-free) | conditional-edge | Cleared ALL world-class gates incl. factor alpha (t 2.8), +14.2%/yr vs +7.6% 2000-24; failed only the 2017-24 held-out window |
 | 3 | R-2026-11-07-EOMTSY (Treasuries over the last 3 days of the month) | conditional-edge, risk-reducer | Sharpe 0.73 vs 0.32 with 6% worst drop; best marginal add to the book (+0.10 Sharpe at 10%) |
 | 0 | ~~R-2026-11-07-FOMCUSD~~ | — | **WITHDRAWN 2026-11-10:** Yahoo `=X` values are start-of-day prices, so it measured the day BEFORE each FOMC decision; removed from the book (series moved to series_withdrawn/) |
+| 4 | R-2026-11-14-CORRMOMREV (commodity correlation-switched momentum/reversal, long/short DB sectors) | diversifier, conditional-edge | League round 1: 99.86%, fails only t >= 3; corr 0.03 to the book, +0.14 book Sharpe at 10%; fitted setting (honest Sharpe ~0.4) |
+| 4 | L-2026-11-14-STKBOOK (4 point-in-time stock sleeves) | conditional-edge | League round 1: fails only deflated Sharpe 0.947; alpha ~3%/yr t 3.4 net of the equal-weight tilt; lowers the book Sharpe (corr 0.63) |
 | 3 | R-2026-11-07-HYTREND (high-yield 200-day trend) | conditional-edge, risk-reducer | Red team: the PASS was stale mutual-fund prices; on HYG it is a modest crash cutter (−14% vs −18%) |
 | 3 | L-2026-11-07-CORRSWITCH (risk parity 2× cut to 1× when stock-bond corr > 0) | conditional-edge, risk-reducer | +12.6%/yr vs +7.7%, worst drop −39% vs −55%; held-out lagged |
 | 3 | R-2026-11-07-GPROF, R-2026-11-07-XSMOMSF (gross profitability; momentum — honest data) | conditional-edge | Beat SPY on survivorship-free data but are the known factors (no alpha); correlate 0.78 with each other |
@@ -220,6 +222,42 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
     Long/short and FX designs are now fairly priced: retest them before
     writing off the classes. `fin_spread=` (annual) charges leverage
     T-bill + spread when a design needs realistic borrowing terms.
+29. **League round 1 (2026-11-14): 31 tests, no harness PASS, two
+    near-misses that survived their red teams.** CORRMOMREV (commodity
+    sectors: momentum when short-term correlation exceeds long-term, else
+    reversal; long/short DBA/DBB/DBE/DBP) — 99.86%, fails only t >= 3
+    (2.99); the published setting is the best of every grid (honest Sharpe
+    ~0.3-0.45), but it is the strongest DIVERSIFIER found so far: corr 0.03
+    to the book, +0.14 book Sharpe at 10%. STKBOOK (4 point-in-time stock
+    sleeves: R&D, quality-value, net issuance, cash profitability) — fails
+    only deflated Sharpe (0.947, 55 trials); a third of its edge over SPY is
+    the equal-weight tilt; it LOWERS the book Sharpe (corr 0.63). → Judge
+    stock books against an equal-weight/SPY blend; judge long/short
+    commodity ideas on book value, not alone.
+30. **Yahoo `=X` FX "close" is ~19:00 ET (London midnight), 3 h after the
+    US close** (Commodities red team, 2026-11-14). Even after fix 2, a rule
+    that reads an FX bar dated i and trades a US-listed asset at close i
+    peeks ~3 h ahead: cross-asset rules must read FX bars dated BEFORE the
+    trade day. FRED euro-area and UK 3-month rates end 2026-01 (EUR/GBP
+    drop out of any carry ranking from ~2026-09 — a vault-run trap).
+31. **G10 FX style premia are ~zero 2009-2024 on AQR's own published
+    series** (value -0.10/+0.15, momentum -0.10, carry 0.28, multi-style
+    0.19 Sharpe): no G10 FX style can clear t >= 3 over our window. FX
+    budget belongs to crisis sleeves and diversifiers, and every leg of a
+    multi-style must be checked against ITS source series (STYLE3FX's value
+    leg was not).
+32. **Our own journal (Options team, 2026-11-14):** live MEIC beats its paper
+    twin on FILLED sides (+$8.7/side, CI 5-11) — the real-money gap is
+    SKIPPED sides (rejections, unfilled reprices: paper twins +$2,214 in the
+    confirm half). The GEX split that created MNG did not confirm out of
+    sample at the required level (P 0.79); VIX level/change and the vol-risk-
+    premium gate did not confirm; holding stopped sides to settlement makes
+    more on average but with -$8.6k to -$15.9k days. Data fix owed: 13 live
+    rows (09-23/24) carry gross P&L without fees.
+33. **Replication gates must match the source's own significance.** Bonds'
+    MACROANN was labelled "harness/data suspect" under a t >= 2 gate although
+    it reproduced the paper (+10.3bp, t 1.78; source t 1.5-2.5) — it has
+    simply reversed since 2002 (-5.2bp). Rule 1 is "sign and rough size".
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).
