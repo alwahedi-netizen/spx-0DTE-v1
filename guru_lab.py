@@ -218,12 +218,52 @@ def ensure_prices(needs, today=None, log=None):
     return len(todo)
 
 
-def load_px(syms):
+def calendar():
+    """The trading calendar = the benchmark's days (oldest -> newest)."""
+    with _cache() as c:
+        return [r[0] for r in c.execute("SELECT day FROM px WHERE sym=? ORDER BY day", (BENCH,))]
+
+
+def load_px(syms, days):
+    """{sym: (i0, array('d'), last)} aligned to `days`: arr[k] is the close on
+    days[i0 + k] (NaN where the stock has no bar), last = index of its final
+    real bar. Compact on purpose: the lab container is small and also runs
+    the live MEIC loop (300 MB of dicts on the first build was too much)."""
+    from array import array
+    pos = {d: i for i, d in enumerate(days)}
     out = {}
     with _cache() as c:
         for s in syms:
-            rows = c.execute("SELECT day, adj FROM px WHERE sym=? ORDER BY day", (s,)).fetchall()
-            out[s] = ([r[0] for r in rows], [r[1] for r in rows])
+            rows = [(pos[d], v) for d, v in c.execute(
+                "SELECT day, adj FROM px WHERE sym=? ORDER BY day", (s,)) if d in pos and v]
+            if not rows:
+                continue
+            i0, last = rows[0][0], rows[-1][0]
+            arr = array("d", [math.nan]) * (last - i0 + 1)
+            for i, v in rows:
+                arr[i - i0] = v
+            out[s] = (i0, arr, last)
+    return out
+
+
+def _align(px, days):
+    """Tests / callers may pass {sym: (dates, closes)}; turn it into load_px's form."""
+    from array import array
+    pos = {d: i for i, d in enumerate(days)}
+    out = {}
+    for s, v in px.items():
+        if len(v) == 3:
+            out[s] = v
+            continue
+        ds, cl = v
+        rows = [(pos[d], x) for d, x in zip(ds, cl) if d in pos and x]
+        if not rows:
+            continue
+        i0, last = rows[0][0], rows[-1][0]
+        arr = array("d", [math.nan]) * (last - i0 + 1)
+        for i, x in rows:
+            arr[i - i0] = x
+        out[s] = (i0, arr, last)
     return out
 
 
@@ -297,71 +337,84 @@ def sr_schedule(c, key):
 
 # ── simulation ──────────────────────────────────────────────────────────────
 
-def simulate(schedule, px, days, cost=COST, start_nav=START_NAV):
-    """schedule: [(known_day, {sym: weight}, label)] sorted; px: {sym: (days, closes)};
-    days: the trading calendar (benchmark days). Rebalance at the close of the
-    first calendar day >= known_day. Returns {days, nav, rebal: [...], gains_by_day}.
-    A symbol without a close on a day keeps its last close; after its final
-    bar it is sold to cash at that close (taken over / delisted)."""
-    if not schedule:
+def simulate(schedule, px, days, cost=COST, start_nav=START_NAV, gains_from=None):
+    """schedule: [(known_day, {sym: weight}, label)] sorted; px: load_px form
+    (or {sym: (dates, closes)}); days: the trading calendar. Rebalance at the
+    close of the first calendar day >= known_day. A symbol without a close on
+    a day keeps its last close; after its final bar it is sold to cash at that
+    close (taken over / delisted) — unless its prices simply end within the
+    last week (a late fetch is not a delisting). gains_from (a day): also add
+    up each stock's $ gain (and costs as "__cost") on the days after it."""
+    if not schedule or not days:
         return None
-    ix = {s: dict(zip(d, cl)) for s, (d, cl) in px.items()}
-    stale = _add(days[-1], -10) if days else ""
-    # a symbol counts as GONE only if its prices stopped well before the
-    # calendar ends (a late fetch is not a delisting)
-    last_day = {s: (d[-1] if d and d[-1] < stale else None) for s, (d, _) in px.items()}
+    syms = {x for _, w, _ in schedule for x in w}
+    px = _align({x: px[x] for x in syms if x in px}, days)
+    n = len(days)
+
+    def price(x, t):
+        v = px.get(x)
+        if v is None or t < v[0] or t > v[2]:
+            return None
+        p = v[1][t - v[0]]
+        return None if p != p else p
+
+    stale = _add(days[-1], -10)
+
+    def gone(x, t):
+        v = px.get(x)
+        return v is not None and t > v[2] and days[v[2]] < stale
+
     first_reb = bisect_left(days, schedule[0][0])
-    if first_reb >= len(days):
+    if first_reb >= n:
         return None
-    qty, cash, nav_hist, out_days, rebals = {}, start_nav, [], [], []
-    last_px = {}
-    pos_gain = []                                   # per day: {sym: $ gain that day}
+    qty, cash, nav_hist, rebals, last_px, gains = {}, start_nav, [], [], {}, {}
+    count = gains_from is not None
     si = 0
-    for t in range(first_reb, len(days)):
+    for t in range(first_reb, n):
         d = days[t]
-        g = {}
-        for s in list(qty):                         # mark
-            p = ix.get(s, {}).get(d)
+        track = count and d > gains_from
+        for x in list(qty):                         # mark
+            p = price(x, t)
             if p is None:
-                if last_day.get(s) and d > last_day[s]:      # gone: to cash at last close
-                    cash += qty[s] * last_px[s]
-                    del qty[s]
+                if gone(x, t):                      # gone: to cash at last close
+                    cash += qty[x] * last_px[x]
+                    del qty[x]
                     continue
-                p = last_px[s]
-            g[s] = qty[s] * (p - last_px[s])
-            last_px[s] = p
-        nav = cash + sum(q * last_px[s] for s, q in qty.items())
+                p = last_px[x]
+            if track:
+                gains[x] = gains.get(x, 0.0) + qty[x] * (p - last_px[x])
+            last_px[x] = p
+        nav = cash + sum(q * last_px[x] for x, q in qty.items())
         while si < len(schedule) and schedule[si][0] <= d:
             known, tgt, label = schedule[si]
             si += 1
             if si < len(schedule) and schedule[si][0] <= d:
                 continue                            # a later quarter is already public
-            usable = {s: w for s, w in tgt.items() if ix.get(s, {}).get(d) is not None}
+            now = {x: price(x, t) for x in tgt}
+            usable = {x: w for x, w in tgt.items() if now[x] is not None}
             tot = sum(usable.values())
-            # size on NAV net of this trade's cost (two passes) so cash never goes below 0
-            want = {s: nav * w / tot / ix[s][d] for s, w in usable.items()} if tot > 0 else {}
-            turn0 = sum(abs(want.get(s, 0.0) - qty.get(s, 0.0)) * ix.get(s, {}).get(d, last_px.get(s, 0))
-                        for s in set(qty) | set(want))
-            want = {s: q * (1 - turn0 * cost / max(nav, 1e-9)) for s, q in want.items()}
-            turn = 0.0
-            for s in set(qty) | set(want):
-                p = ix.get(s, {}).get(d, last_px.get(s))
-                turn += abs(want.get(s, 0.0) - qty.get(s, 0.0)) * p
+            want = {x: nav * w / tot / now[x] for x, w in usable.items()} if tot > 0 else {}
+
+            def turnover(w_):
+                return sum(abs(w_.get(x, 0.0) - qty.get(x, 0.0)) *
+                           (now.get(x) or price(x, t) or last_px.get(x, 0.0)) for x in set(qty) | set(w_))
+            # size on NAV net of this trade's cost so cash never goes below 0
+            want = {x: q * (1 - turnover(want) * cost / max(nav, 1e-9)) for x, q in want.items()}
+            turn = turnover(want)
             fee = turn * cost
-            cash = nav - fee - sum(q * ix[s][d] for s, q in want.items())
-            qty = {s: q for s, q in want.items() if q > 0}
-            for s in qty:
-                last_px[s] = ix[s][d]
-            nav = cash + sum(q * last_px[s] for s, q in qty.items())
+            cash = nav - fee - sum(q * now[x] for x, q in want.items())
+            qty = {x: q for x, q in want.items() if q > 0}
+            for x in qty:
+                last_px[x] = now[x]
+            nav = cash + sum(q * last_px[x] for x, q in qty.items())
             rebals.append({"day": d, "quarter": label, "n": len(qty), "skipped": len(tgt) - len(usable),
                            "turnover_pct": round(turn / max(nav, 1e-9) * 100, 1)})
-            g["__cost"] = -fee
-        out_days.append(d)
+            if track:
+                gains["__cost"] = gains.get("__cost", 0.0) - fee
         nav_hist.append(nav)
-        pos_gain.append(g)
-    hold = {s: q * last_px[s] for s, q in qty.items()}
-    return {"days": out_days, "nav": nav_hist, "rebal": rebals, "gains": pos_gain,
-            "holdings": hold, "cash": cash, "last_px": dict(last_px)}
+    hold = {x: q * last_px[x] for x, q in qty.items()}
+    return {"days": days[first_reb:], "nav": nav_hist, "rebal": rebals, "gains": gains,
+            "holdings": hold, "cash": cash}
 
 
 # ── metrics ─────────────────────────────────────────────────────────────────
@@ -499,16 +552,21 @@ def _sims():
                   for l in lanes}
         paper_since = _state(c, "paper_since")
         last_run = _state(c, "last_run")
-    syms = {BENCH} | {s for sc in scheds.values() for _, w, _ in sc for s in w}
-    px = load_px(syms)
-    bdays, bpx = px[BENCH]
+    syms = {s for sc in scheds.values() for _, w, _ in sc for s in w}
+    bdays = calendar()
+    px = load_px(syms | {BENCH}, bdays)
+    b = px.get(BENCH)
+    bpx = list(b[1]) if b and b[0] == 0 else []
+    if len(bpx) != len(bdays):
+        bdays, bpx = [], []
     sims = {}
     for l in lanes:
         sim = simulate(scheds[l["key"]], px, bdays) if bdays else None
         if sim:
             sim["sched"] = scheds[l["key"]]
         sims[l["key"]] = (l, sim)
-    out = {"lanes": sims, "bdays": bdays, "bpx": bpx, "paper_since": paper_since, "last_run": last_run}
+    out = {"lanes": sims, "bdays": bdays, "bpx": bpx, "px": px,
+           "paper_since": paper_since, "last_run": last_run}
     _MEMO.update(key=ver, sims=out)
     return out
 
@@ -588,10 +646,7 @@ def lane_detail(key, rng="5Y"):
     bn = [b / bench[0] * nav[0] for b in bench]
     dds, (navs, bns, dd_s) = _downsample(days, nav, bn, dd)
     # holdings detail over the window
-    gains = {}
-    for g in sim["gains"][i0 + 1:]:
-        for s, v in g.items():
-            gains[s] = gains.get(s, 0.0) + v
+    gains = simulate(sim["sched"], S["px"], S["bdays"], gains_from=days[0])["gains"]
     total_gain = nav[-1] - nav[0]
     navnow = sim["nav"][-1]
     last_tgt = sim["sched"][-1][1] if sim["sched"] else {}
