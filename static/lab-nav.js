@@ -11,6 +11,7 @@
     { path: "/fx",          label: "FX",            tag: "paper" },
     { path: "/commodities", label: "Commodities",   tag: "paper" },
     { path: "/allocations", label: "Allocations",   tag: "paper" },
+    { path: "/gurus",       label: "Gurus",         tag: "paper" },
     { path: "/research",    label: "Research",      tag: "weekly" },
   ];
   const here = location.pathname.replace(/\/+$/, "") || "/";

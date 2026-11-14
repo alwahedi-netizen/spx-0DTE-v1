@@ -54,6 +54,13 @@ except Exception as _e:        # pragma: no cover — tests_labs.py gates it
     alloc_lab = cmd_lab = crypto_lab = fx_lab = labs_runner = None
     print(f"crypto/fx/commodities labs disabled: {_e!r}", flush=True)
 
+# Gurus lab (owner 2026-11-14): 13F copies + private Stock Rover lists.
+try:
+    import guru_lab
+except Exception as _e:        # pragma: no cover — tests_labs.py gates it
+    guru_lab = None
+    print(f"gurus lab disabled: {_e!r}", flush=True)
+
 BASE_DIR = Path(__file__).resolve().parent
 HOST = os.environ.get("PAPER_HOST", "127.0.0.1")
 PORT = int(os.environ.get("PAPER_PORT", "5250"))
@@ -226,6 +233,55 @@ def commodities_page():
 @app.get("/allocations")
 def allocations_page():
     return send_from_directory(app.static_folder, "alloclab.html")
+
+
+@app.get("/gurus")
+def gurus_page():
+    return send_from_directory(app.static_folder, "gurus.html")
+
+
+def _guru_api(fn):
+    if guru_lab is None:
+        return jsonify({"ok": False, "msg": "gurus lab not loaded"}), 503
+    try:
+        return jsonify(fn())
+    except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)[:200]}), 500
+
+
+_GRANGES = {"1M", "3M", "6M", "YTD", "1Y", "2Y", "3Y", "5Y", "10Y", "ALL"}
+
+
+def _grange():
+    r = (request.args.get("range") or "5Y").upper()
+    return r if r in _GRANGES else "5Y"
+
+
+@app.get("/api/gurus/summary")
+def api_gurus_summary():
+    return _guru_api(lambda: guru_lab.summary(_grange()))
+
+
+@app.get("/api/gurus/lane")
+def api_gurus_lane():
+    return _guru_api(lambda: guru_lab.lane_detail(request.args.get("key", ""), _grange()))
+
+
+@app.post("/api/gurus/run")
+def api_gurus_run():
+    return _guru_api(lambda: guru_lab.daily())
+
+
+@app.post("/api/gurus/sr/save")
+def api_gurus_sr_save():
+    b = request.get_json(force=True, silent=True) or {}
+    return _guru_api(lambda: guru_lab.sr_save(b.get("name"), b.get("text")))
+
+
+@app.post("/api/gurus/sr/delete")
+def api_gurus_sr_delete():
+    b = request.get_json(force=True, silent=True) or {}
+    return _guru_api(lambda: guru_lab.sr_delete(str(b.get("key", ""))))
 
 
 @app.get("/api/state")

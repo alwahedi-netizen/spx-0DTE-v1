@@ -331,7 +331,9 @@ for r in rows:
     if r["score"]:
         parts = sum(int(r[k] or 0) for k in COLS[6:12])
         assert int(r["score"]) == parts, r["id"]
-assert not any(r["asset_class"] == "options" for r in rows)
+# League (2026-11-14): the Options team logs its journal studies here; they
+# are the only options rows allowed (ids O-...).
+assert all(r["id"].startswith("O-") for r in rows if r["asset_class"] == "options")
 ok(f"ideas.csv: {len(rows)} rows, columns, unique ids, valid phases, score = sum, no options")
 
 print("harness fixes 2026-11-09 (owner: fix research tool)")

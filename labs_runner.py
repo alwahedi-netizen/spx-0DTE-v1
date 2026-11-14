@@ -12,6 +12,10 @@ this file only replaces the trader's gex_scheduler hooks:
   FX           snapshot_nav()   17:10 ET, weekdays (TR30 rides this job)
   FX           rebalance()      07:15 ET, first weekday of the month (day <= 3)
   Allocations  daily()          16:30 ET, weekdays (alloc_lab.py, added 2026-10-28)
+  Gurus        daily()          18:00 ET, weekdays (guru_lab.py, added 2026-11-14;
+               runs in its own thread — the first backfill takes minutes; its
+               tables are NOT exported: Stock Rover lists are private and the
+               13F lanes rebuild from the hub)
 
 Every job is idempotent inside its lab (per UTC day / per month), so the
 runner uses windows instead of exact minutes: a restart inside a window
@@ -38,6 +42,10 @@ import alloc_lab
 import cmd_lab
 import crypto_lab
 import fx_lab
+try:
+    import guru_lab
+except Exception:                       # pragma: no cover — tests_labs.py gates it
+    guru_lab = None
 
 ET = ZoneInfo("America/New_York")
 BASE_DIR = Path(__file__).resolve().parent
@@ -70,6 +78,8 @@ def due(now_et: datetime) -> list:
         jobs.append("cmd-daily")
     if _in(hhmm, "17:20", "18:50"):
         jobs.append("crypto-daily")
+    if weekday and _in(hhmm, "18:00", "18:50"):
+        jobs.append("guru-daily")
     return jobs
 
 
@@ -79,6 +89,7 @@ JOBS = {
     "cmd-daily": lambda: cmd_lab.daily(),
     "crypto-daily": lambda: crypto_lab.daily(),
     "alloc-daily": lambda: alloc_lab.daily(),
+    "guru-daily": lambda: guru_lab.daily() if guru_lab else {"msg": "gurus lab not loaded"},
 }
 
 

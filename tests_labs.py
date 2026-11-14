@@ -353,6 +353,63 @@ assert cl.get("/api/alloclab/status").get_json()["ok"]
 assert "allocations" in ov
 ok("/allocations page, its status API and the overview card")
 
+# ── Gurus lab (2026-11-14) ─────────────────────────────────────────────────
+import guru_lab as gl
+_gdir = Path(tempfile.mkdtemp())
+gl.DB, gl.CACHE_DB = _gdir / "labs.sqlite", _gdir / "guru_cache.sqlite"
+assert lr.due(d("2026-10-15T18:10")) == ["fx-nav", "alloc-daily", "cmd-daily", "crypto-daily", "guru-daily"]
+assert "guru-daily" not in lr.due(d("2026-10-17T18:10"))          # Saturday
+ok("gurus pass is due 18:00-18:50 ET on weekdays")
+
+rows = [{"symbol": f"S{i}", "date": "2026-03-31", "type": "SHR", "value": 100 - i} for i in range(30)] + \
+       [{"symbol": "S0", "date": "2026-03-31", "type": "SHR", "value": 50},              # same ticker twice -> summed
+        {"symbol": "OPT", "date": "2026-03-31", "type": "CLL", "value": 999}]            # options ignored
+q = gl.quarter_targets(rows)["2026-03-31"]
+assert len(q) == 25 and q[0][0] == "S0" and abs(sum(w for _, w, _ in q) - 1) < 1e-9 and "OPT" not in dict((s, w) for s, w, _ in q)
+assert gl.known_day("2026-03-31") == "2026-05-16"
+ok("13F -> top 25 common stocks by value, duplicates summed, options out; public 46 days after quarter end")
+
+days = ["2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-11-12"]
+px = {"A": (days, [10, 10, 10, 11, 12, 12]), "B": (days[:4], [20, 20, 20, 20]),        # B stops after 05-19
+      "SPY": (days, [1, 1, 1, 1, 1, 1])}
+sim = gl.simulate([("2026-05-16", {"A": 0.5, "B": 0.5}, "Q1")], px, days, cost=0)
+assert sim["days"][0] == "2026-05-18"                           # first trading day >= public date
+assert abs(sim["nav"][0] - 10000) < 1e-6 and abs(sim["nav"][2] - 10000 * (0.5 * 12 / 10 + 0.5)) < 1e-6
+assert "B" not in sim["holdings"] and sim["cash"] > 4999          # gone stock -> cash at its last close
+ok("simulate: rebalance on the first trading day after the filing is public; a delisted stock turns into cash")
+
+sim2 = gl.simulate([("2026-05-16", {"A": 1.0}, "Q1")], {"A": (days, [10] * 6), "SPY": px["SPY"]}, days)
+assert abs(sim2["nav"][0] - 10000 * (1 - gl.COST)) < 0.01 and sim2["cash"] >= -1e-6
+ok("simulate: 5bp cost on the opening trade")
+
+m = gl.metrics([100, 110, 99, 120], [100, 105, 100, 110])
+assert abs(m["twr"] - 0.2) < 1e-9 and abs(m["bench"] - 0.1) < 1e-9 and abs(m["maxdd"] - (99 / 110 - 1)) < 1e-9
+pt = gl.period_table(["2026-01-30", "2026-02-27", "2026-03-31"], [100, 110, 121], [100, 100, 100], "M")
+assert [r["p"] for r in pt] == ["2026-01", "2026-02", "2026-03"] and abs(pt[1]["r"] - 0.1) < 1e-9
+ok("metrics (return, excess, drawdown) and monthly table")
+
+w = gl.parse_list("Ticker,Company,% of End\nNVDA,NVIDIA,60%\nBRK.B,Berkshire,40%\nCash,Cash,0%")
+assert set(w) == {"NVDA", "BRK-B"} and abs(w["NVDA"] - 0.6) < 1e-9
+w = gl.parse_list("aapl\nmsft 3\nTICKER")
+assert abs(w["AAPL"] - 0.25) < 1e-9 and abs(w["MSFT"] - 0.75) < 1e-9
+assert gl.sr_save("Mid Cap Rockets", "AAPL\nMSFT", today="2026-11-16")["ok"]
+assert not gl.sr_save("", "AAPL")["ok"] and not gl.sr_save("x", "")["ok"]
+ok("Stock Rover paste: export CSV or ticker lines; weights normalised; saved privately")
+
+resp = cl.get("/gurus")
+assert resp.status_code == 200 and b"Gurus Lab" in resp.data and b"lab-nav.js" in resp.data
+j = cl.get("/api/gurus/summary?range=1Y").get_json()
+assert j["ok"] and j["range"] == "1Y" and any(l["group"] == "stockrover" for l in j["lanes"]) and len(j["lanes"]) == 17
+assert cl.get("/api/gurus/lane?key=NOPE").get_json()["ok"] is False
+ok("/gurus page and its summary / lane APIs")
+
+with sqlite3.connect(gl.DB) as c:
+    c.execute("CREATE TABLE IF NOT EXISTS alloclab_state (lane TEXT)")
+_out = Path(tempfile.mkdtemp())
+lr.export(db=gl.DB, out_dir=_out)
+assert not [p for p in _out.iterdir() if p.name.startswith(("srlab", "gurulab"))]
+ok("Stock Rover lists and guru tables never reach the public CSV export")
+
 real = Path(__file__).resolve().parent / "data" / "labs"
 assert not real.exists() or real.stat().st_mtime < START, "tests wrote into data/labs"
 ok("tests never wrote into the real data/labs")
