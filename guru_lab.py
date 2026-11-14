@@ -55,7 +55,10 @@ from zoneinfo import ZoneInfo
 
 BASE_DIR = Path(__file__).resolve().parent
 DB = BASE_DIR / "data" / "labs" / "labs.sqlite"
-CACHE_DB = BASE_DIR / "data" / "labs" / "guru_cache.sqlite"
+# under a cache/ folder: the container's R2 snapshot skips */cache/* (the
+# prices rebuild from the hub in ~5 min; 90 MB in every snapshot was too much)
+CACHE_DB = BASE_DIR / "data" / "labs" / "cache" / "guru_cache.sqlite"
+_LEGACY_CACHE = BASE_DIR / "data" / "labs" / "guru_cache.sqlite"
 ET = ZoneInfo("America/New_York")
 DATA_URL = os.environ.get("LAB_DATA_URL", "http://data.internal")
 
@@ -114,6 +117,12 @@ def _db():
 
 def _cache():
     CACHE_DB.parent.mkdir(parents=True, exist_ok=True)
+    for f in (_LEGACY_CACHE, Path(str(_LEGACY_CACHE) + "-journal"), Path(str(_LEGACY_CACHE) + "-wal")):
+        try:
+            if CACHE_DB.parent.name == "cache" and f.exists():
+                f.unlink()                          # one-time: the first build put it in the snapshot
+        except OSError:
+            pass
     c = sqlite3.connect(CACHE_DB, timeout=30)
     c.executescript(CACHE_SCHEMA)
     return c
