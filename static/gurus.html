@@ -106,7 +106,13 @@ function bars(){
 function setRange(r){ st.range = r; st.det = {}; save(); load(); }
 function setTab(t){ st.tab = t; save(); bars(); render(); }
 function pick(k){ st.key = k; save(); side(); render(); }
-function toggle(k, ev){ ev.stopPropagation(); st.cmp.has(k) ? st.cmp.delete(k) : st.cmp.add(k); save(); if (st.tab === "value") render(); }
+function toggle(k, ev){ ev.stopPropagation(); st.cmp.has(k) ? st.cmp.delete(k) : st.cmp.add(k); save(); render(); }
+const TR_ORDER = ["1M","3M","6M","YTD","1Y","3Y","5Y","10Y"];
+async function cmpDetails(){   // ticked portfolios other than the selected one (up to 7)
+  const keys = [...st.cmp].filter(k => k !== st.key).slice(0, 7);
+  return (await Promise.all(keys.map(detail))).filter(x => x.ok && !x.pending);
+}
+const nm = x => x.lane.person || x.lane.label;
 
 async function load(){
   bars();
@@ -131,7 +137,7 @@ function side(){
       <span class="nm" title="${esc(l.label)}">${esc(l.person || l.label)}</span>
       <span class="r ${cls(l.twr)}">${l.pending ? "…" : pct(l.twr, 0)}</span></div>`;
   const g = j.lanes.filter(l => l.group === "guru"), s = j.lanes.filter(l => l.group === "stockrover");
-  $("side").innerHTML = `<h3>Gurus (13F) · ${st.range}</h3>` + g.map(row).join("") +
+  $("side").innerHTML = `<h3>Gurus (13F) · ${st.range}</h3><div class="mono" style="margin:0 12px 4px;font-size:11px">click a name to open it · tick boxes to compare</div>` + g.map(row).join("") +
     `<h3>Stock Rover portfolios</h3>` + (s.length ? s.map(row).join("") : `<div class="lane mono">none yet — paste one below</div>`) +
     `<h3>Benchmark</h3><div class="lane"><span class="nm">S&amp;P 500 (SPY)</span><span class="r ${cls(j.bench && j.bench.twr)}">${pct(j.bench && j.bench.twr, 0)}</span></div>`;
   $("msel").innerHTML = j.lanes.map(l => `<option value="${l.key}" ${l.key === st.key ? "selected" : ""}>${esc(l.person || l.label)} ${l.pending ? "" : "(" + pct(l.twr, 0) + ")"}</option>`).join("");
@@ -210,26 +216,27 @@ function head(d){
   const m = d.metrics;
   return `<h2>${esc(d.lane.label)}</h2><div class="mono" style="margin:-.3rem 0 .6rem">${d.from} → ${d.to}${d.start > d.from ? "" : ""} · lane started ${d.start}${d.lane.group === "guru" ? " (backtest until " + (d.paper_since || "launch") + ")" : ""}</div>`;
 }
-function reportView(d){
+async function reportView(d){
+  const cmp = await cmpDetails();
   const m = d.metrics, l = d.lane, s = st.sum.lanes.find(x => x.key === l.key) || {};
   const tiles = [[usd(d.value), "Value now (from $10,000)"], [`<span class="${cls(m.twr)}">${pct(m.twr)}</span>`, "Return · " + st.range],
     [`<span class="${cls(m.excess)}">${pct(m.excess)}</span>`, "vs S&P 500 (" + pct(m.bench) + ")"], [`<span class="neg">${pct(m.maxdd)}</span>`, "Max drawdown"],
     [num(m.sharpe), "Sharpe (cash = 0%)"], [String(d.holdings.filter(h => !h.closed).length), "Holdings now"]];
   if (d.next_rebalance) tiles.push([d.next_rebalance, "Next 13F rebalance"]);
-  const tr = Object.entries(d.trailing).map(([k, v]) => `<td class="n ${v ? cls(v.r) : ""}">${v ? pct(v.r) : "—"}</td>`).join("");
-  const tb = Object.entries(d.trailing).map(([k, v]) => `<td class="n">${v ? pct(v.b) : "—"}</td>`).join("");
+  const trow = x => TR_ORDER.map(k => { const v = x.trailing[k]; return `<td class="n ${v ? cls(v.r) : ""}">${v ? pct(v.r) : "—"}</td>`; }).join("");
+  const tb = TR_ORDER.map(k => { const v = d.trailing[k]; return `<td class="n">${v ? pct(v.b) : "—"}</td>`; }).join("");
   const rb = d.rebalances.map(r => `<tr><td>${r.day}</td><td>${esc(r.quarter)}</td><td class="n">${r.n}</td><td class="n">${r.turnover_pct}%</td><td class="n">${r.skipped || ""}</td></tr>`).join("");
   return head(d) + `<div class="tiles">${tiles.map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("")}</div>` +
-    chart([{name: l.person || l.label, color: COLORS[0], days: d.series.days, vals: d.series.nav, w: 2.2},
+    chart([{name: nm(d), color: COLORS[0], days: d.series.days, vals: d.series.nav, w: 2.4},
+           ...cmp.map((x, i) => ({name: nm(x), color: COLORS[(i + 1) % COLORS.length], days: x.series.days, vals: x.series.nav, w: 1.6})),
            {name: "S&P 500", color: "#b3372f", days: d.series.days, vals: d.series.bench}], {mark: d.paper_since}) +
-    `<h2 style="margin-top:1rem">Trailing returns</h2><div class="scroll"><table><thead><tr><th></th>${Object.keys(d.trailing).map(k => `<th class="n">${k}</th>`).join("")}</tr></thead>
-      <tbody><tr><td>${esc(l.person || "Portfolio")}</td>${tr}</tr><tr><td>S&amp;P 500</td>${tb}</tr></tbody></table></div>` +
+    `<h2 style="margin-top:1rem">Trailing returns</h2><div class="scroll"><table><thead><tr><th></th>${TR_ORDER.map(k => `<th class="n">${k}</th>`).join("")}</tr></thead>
+      <tbody><tr><td><b>${esc(nm(d))}</b></td>${trow(d)}</tr>${cmp.map(x => `<tr><td>${esc(nm(x))}</td>${trow(x)}</tr>`).join("")}<tr><td>S&amp;P 500</td>${tb}</tr></tbody></table></div>` +
     (rb ? `<h2 style="margin-top:1rem">Rebalances (latest first)</h2><div class="scroll"><table><thead><tr><th>Day</th><th>${l.group === "guru" ? "13F quarter" : "List of"}</th><th class="n">Stocks</th><th class="n">Turnover</th><th class="n">No price</th></tr></thead><tbody>${rb}</tbody></table></div>` : "");
 }
 async function valueView(d){
-  const keys = [st.key, ...[...st.cmp].filter(k => k !== st.key)].slice(0, 8);
-  const ds = await Promise.all(keys.map(detail));
-  const ser = ds.filter(x => x.ok && !x.pending).map((x, i) => ({name: x.lane.person || x.lane.label, color: COLORS[i % COLORS.length], days: x.series.days, vals: x.series.nav, w: i ? 1.6 : 2.4}));
+  const ds = [d, ...(await cmpDetails())];
+  const ser = ds.map((x, i) => ({name: x.lane.person || x.lane.label, color: COLORS[i % COLORS.length], days: x.series.days, vals: x.series.nav, w: i ? 1.6 : 2.4}));
   ser.push({name: "S&P 500", color: "#b3372f", days: d.series.days, vals: d.series.bench});
   return head(d) + `<p class="mono" style="margin:0 0 6px">Tick the boxes in the list to add portfolios (up to 8). Each line starts at 0% on its first day in the range.</p>` +
     chart(ser, {mark: d.paper_since}) + `<h2 style="margin-top:.8rem">Drawdown — ${esc(d.lane.person || d.lane.label)}</h2>` + ddchart(d.series.days, d.series.dd);
@@ -240,7 +247,7 @@ function riskView(j){
   const f = (k, v) => ["twr","bench","excess","cagr","maxdd","vol"].includes(k) ? `<span class="${["vol","bench"].includes(k) ? "" : cls(v)}">${pct(v)}</span>` : ["corr","beta","sharpe"].includes(k) ? num(v) : k === "label" ? esc(v) : v ?? "—";
   return `<h2>Risk &amp; Reward · ${st.range}</h2><p class="mono" style="margin:0 0 6px">Click a heading to sort. A lane with less history than the range shows its own start in "From". Sharpe uses cash = 0%.</p>
     <div class="scroll"><table><thead><tr>${cols.map(([k, l]) => `<th class="s ${k === "label" || k === "from" ? "" : "n"}" onclick="st.sort='${k}';save();render()">${l}${st.sort === k ? " ▾" : ""}</th>`).join("")}</tr></thead><tbody>` +
-    rows.map(l => `<tr class="${l.key === st.key ? "sel" : ""}" onclick="pick('${l.key}')" style="cursor:pointer">${cols.map(([k]) => `<td class="${k === "label" || k === "from" ? "" : "n"}">${f(k, l[k])}${k === "from" && l.short_history ? " *" : ""}</td>`).join("")}</tr>`).join("") +
+    rows.map(l => `<tr class="${l.key === st.key ? "sel" : ""}" style="${st.cmp.has(l.key) && l.key !== st.key ? "font-weight:700;" : ""}cursor:pointer" onclick="pick('${l.key}')">${cols.map(([k]) => `<td class="${k === "label" || k === "from" ? "" : "n"}">${f(k, l[k])}${k === "from" && l.short_history ? " *" : ""}</td>`).join("")}</tr>`).join("") +
     (j.bench ? `<tr><td><b>S&amp;P 500 (SPY)</b></td><td></td><td class="n">${pct(j.bench.twr)}</td><td></td><td></td><td></td><td class="n">1.00</td><td class="n">1.00</td><td class="n neg">${pct(j.bench.maxdd)}</td><td class="n">${pct(j.bench.vol)}</td><td class="n">${num(j.bench.sharpe)}</td><td></td></tr>` : "") +
     `</tbody></table></div>`;
 }
@@ -266,7 +273,9 @@ function monthView(d){
       return `<tr><td><b>${y}</b></td>${M.map((m, i) => { const v = val(by[y][i]); return `<td style="${heatColor(v)}">${v == null ? "" : (v * 100).toFixed(1) + "%"}</td>`; }).join("")}<td style="${heatColor(yv)}"><b>${yv == null ? "" : (yv * 100).toFixed(1) + "%"}</b></td></tr>`; }).join("") +
     `</tbody></table></div><p class="mono">Whole history of the lane (the range buttons do not cut this table). The first and current months are partial.</p>`;
 }
-function yearView(d){
+async function yearView(d){
+  const cmp = await cmpDetails();
+  const cy = cmp.map(x => Object.fromEntries(x.yearly.map(r => [r.p, r.r])));
   const ys = d.yearly, W = 1000, H = 220, lo = Math.min(0, ...ys.flatMap(r => [r.r, r.b])), hi = Math.max(0, ...ys.flatMap(r => [r.r, r.b]));
   const bw = (W - 60) / ys.length, y = v => 10 + (H - 40) * (hi - v) / ((hi - lo) || 1);
   const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px">` + ys.map((r, i) => {
@@ -275,8 +284,8 @@ function yearView(d){
         <text x="${x0 + bw / 2}" y="${H - 8}" font-size="12" text-anchor="middle" fill="#8a8578">${r.p}</text>`; }).join("") +
     `<line x1="45" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="#999"/></svg>`;
   return head(d) + svg + `<div class="legend"><span style="color:#2b5d8a">■</span> ${esc(d.lane.person || d.lane.label)} &nbsp; <span style="color:#b3372f">■</span> S&amp;P 500</div>
-    <div class="scroll"><table><thead><tr><th>Year</th><th class="n">Portfolio</th><th class="n">S&amp;P 500</th><th class="n">vs S&amp;P</th></tr></thead><tbody>` +
-    ys.slice().reverse().map(r => `<tr><td>${r.p}${r.partial ? " (to date)" : ""}</td><td class="n ${cls(r.r)}">${pct(r.r)}</td><td class="n">${pct(r.b)}</td><td class="n ${cls(r.r - r.b)}">${pct(r.r - r.b)}</td></tr>`).join("") + `</tbody></table></div>`;
+    <div class="scroll"><table><thead><tr><th>Year</th><th class="n">${esc(nm(d))}</th><th class="n">S&amp;P 500</th><th class="n">vs S&amp;P</th>${cmp.map(x => `<th class="n">${esc(nm(x))}</th>`).join("")}</tr></thead><tbody>` +
+    ys.slice().reverse().map(r => `<tr><td>${r.p}${r.partial ? " (to date)" : ""}</td><td class="n ${cls(r.r)}">${pct(r.r)}</td><td class="n">${pct(r.b)}</td><td class="n ${cls(r.r - r.b)}">${pct(r.r - r.b)}</td>${cy.map(m => `<td class="n ${cls(m[r.p])}">${m[r.p] == null ? "—" : pct(m[r.p])}</td>`).join("")}</tr>`).join("") + `</tbody></table></div>`;
 }
 
 // ── Stock Rover lists ───────────────────────────────────────────────────────
