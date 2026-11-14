@@ -536,6 +536,8 @@ def daily():
     """labs_runner entry: run in a thread (the first backfill takes minutes)."""
     if STATE["busy"]:
         return {"ok": True, "msg": "already running: " + STATE["progress"]}
+    STATE.update(busy=True, progress="starting")   # before the thread: no double start
+
     def go():
         with _LOCK:
             STATE.update(busy=True, error=None)
@@ -590,6 +592,11 @@ def _window(S, sim, rng):
 
 def summary(rng="5Y"):
     S = _sims()
+    if not S["bdays"] and not STATE["busy"]:
+        # the price cache is not in the R2 snapshot (by design), so a container
+        # restart empties it: rebuild from the hub on the first visit (~4 min)
+        # instead of waiting for the next weekday 18:00 ET pass
+        daily()
     rows = []
     for key, (l, sim) in S["lanes"].items():
         row = dict(l)
