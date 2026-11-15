@@ -279,6 +279,45 @@ def net_pnl(credit_fill: float, exit_px: float, qty: int, traded_legs: int) -> f
                  - FEE_PER_LEG * traded_legs * qty, 2)
 
 
+# Owner 2026-11-15 "fix fee rows": the first two real-money days (2026-09-23/24)
+# were booked gross — FEE_PER_LEG arrived after them. League round 1 caught it.
+FEE_FIX_IDS = (
+    "2026-09-23-MEIC-12:00-CALL", "2026-09-23-MEIC-12:30-PUT", "2026-09-23-MEIC-12:30-CALL",
+    "2026-09-23-MEIC-13:30-CALL", "2026-09-23-MEIC-14:00-PUT", "2026-09-23-MEIC-14:00-CALL",
+    "2026-09-24-MEIC-12:00-PUT", "2026-09-24-MEIC-12:00-CALL", "2026-09-24-MEIC-12:30-PUT",
+    "2026-09-24-MEIC-12:30-CALL", "2026-09-24-MEIC-13:00-CALL", "2026-09-24-MEIC-14:00-PUT",
+    "2026-09-24-MEIC-14:00-CALL")
+FEE_FIX_NOTE = "fees added 2026-11-15 (owner: fix fee rows)"
+
+
+def fix_fee_rows() -> dict:
+    """One-time, idempotent correction of FEE_FIX_IDS: pnl_live = net_pnl(...)
+    with 4 traded legs for a closed spread, 2 for one that expired (no closing
+    trade). A row is changed only while its pnl_live still equals the gross
+    amount, and it is tagged with FEE_FIX_NOTE, so a rerun is a no-op."""
+    rows = read_ledger()
+    changed, fees = [], 0.0
+    for pid in FEE_FIX_IDS:
+        r = rows.get(pid)
+        if not r or FEE_FIX_NOTE in (r.get("note") or "") or r.get("status") not in ("CLOSED", "EXPIRED"):
+            continue
+        cf = float(r.get("credit_fill") or 0)
+        xf = float(r.get("close_fill") or 0)
+        qty = int(r.get("qty") or 1)
+        gross = round((cf - xf) * 100 * qty, 2)
+        if abs(float(r.get("pnl_live") or 0) - gross) > 0.01:
+            continue                                 # not the gross figure any more: leave it
+        legs = 4 if r["status"] == "CLOSED" else 2
+        net = net_pnl(cf, xf, qty, legs)
+        fees += gross - net
+        r["pnl_live"] = f"{net:.2f}"
+        r["note"] = ((r.get("note") or "") + " | " + FEE_FIX_NOTE).strip(" |")
+        changed.append(pid)
+    if changed:
+        _write_ledger(rows)
+    return {"changed": changed, "fees": round(fees, 2)}
+
+
 def plan_actions(paper_sides: list, ledger: dict, now_iso: str, *,
                  armed_strats: set, paused: set, halted: set) -> list:
     """Pure mirror logic: what to do this cycle.

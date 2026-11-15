@@ -795,6 +795,12 @@ def main():
     threading.Thread(target=_supervisor, daemon=True).start()
     threading.Thread(target=_stocks_supervisor, daemon=True).start()
     threading.Thread(target=_first_backtest, daemon=True).start()
+    try:                                   # one-time ledger correction, before the live loop starts
+        fx = live_meic.fix_fee_rows()
+        if fx["changed"]:
+            print(f"live ledger: fees added to {len(fx['changed'])} rows (${fx['fees']})", flush=True)
+    except Exception as e:
+        print(f"live ledger fee fix skipped: {e}", flush=True)
     # PAPER_LIVE_LOOP=0 -> no MEIC live mirror in this process (the Cloudflare
     # Container parallel run sets it; the hub copy keeps the default "1").
     if os.environ.get("PAPER_LIVE_LOOP", "1") != "0":

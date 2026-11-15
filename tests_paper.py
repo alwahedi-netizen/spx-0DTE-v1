@@ -727,6 +727,42 @@ def test_overlap_fix():
 
 
 # ── shared .env fallback for token refresh ───────────────────────────────────
+def test_fee_fix():
+    print("Live ledger fee correction (2026-11-15)")
+    import live_meic as lm, tempfile, csv
+    from pathlib import Path
+    old = (lm.LIVE_DIR, lm.LEDGER)
+    d = Path(tempfile.mkdtemp()); lm.LIVE_DIR, lm.LEDGER = d, d / "live_trades.csv"
+    try:
+        base = {c: "" for c in lm.LEDGER_COLS}
+        rows = {
+            "2026-09-24-MEIC-12:00-CALL": {**base, "position_id": "2026-09-24-MEIC-12:00-CALL", "qty": "1",
+                                           "status": "CLOSED", "credit_fill": "1.60", "close_fill": "7.60", "pnl_live": "-600.0"},
+            "2026-09-23-MEIC-12:00-CALL": {**base, "position_id": "2026-09-23-MEIC-12:00-CALL", "qty": "1",
+                                           "status": "EXPIRED", "credit_fill": "2.20", "close_fill": "0.00", "pnl_live": "220.0"},
+            "2026-09-23-MEIC-12:30-PUT": {**base, "position_id": "2026-09-23-MEIC-12:30-PUT", "qty": "1",   # already net: untouched
+                                          "status": "EXPIRED", "credit_fill": "1.70", "close_fill": "0.00", "pnl_live": "167.64"},
+            "2026-10-01-MEIC-12:00-PUT": {**base, "position_id": "2026-10-01-MEIC-12:00-PUT", "qty": "1",   # not on the list
+                                          "status": "EXPIRED", "credit_fill": "1.00", "close_fill": "0", "pnl_live": "100.0"}}
+        lm._write_ledger(rows)
+        r = lm.fix_fee_rows()
+        L = lm.read_ledger()
+        assert sorted(r["changed"]) == ["2026-09-23-MEIC-12:00-CALL", "2026-09-24-MEIC-12:00-CALL"]
+        ok("only gross rows on the list change")
+        assert L["2026-09-24-MEIC-12:00-CALL"]["pnl_live"] == "-604.72"
+        ok("closed spread: 4 legs x $1.18")
+        assert L["2026-09-23-MEIC-12:00-CALL"]["pnl_live"] == "217.64"
+        ok("expired spread: 2 legs x $1.18")
+        assert L["2026-09-23-MEIC-12:30-PUT"]["pnl_live"] == "167.64" and L["2026-10-01-MEIC-12:00-PUT"]["pnl_live"] == "100.0"
+        ok("rows already net, or not listed, are left alone")
+        assert lm.FEE_FIX_NOTE in L["2026-09-24-MEIC-12:00-CALL"]["note"] and r["fees"] == 7.08
+        ok("tagged; fees total right")
+        assert lm.fix_fee_rows()["changed"] == []
+        ok("a rerun changes nothing")
+    finally:
+        lm.LIVE_DIR, lm.LEDGER = old
+
+
 def test_env_fallback():
     print("Shared .env fallback")
     import tempfile
@@ -849,7 +885,7 @@ if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
               test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback, test_config_file,
-              test_new_systems, test_meic2, test_overlap_fix,
+              test_new_systems, test_meic2, test_overlap_fix, test_fee_fix,
               test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
