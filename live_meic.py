@@ -98,6 +98,26 @@ ORDER_WAIT_S = 240       # per rung on the ladder
 OVERLAP_SHIFT = {"MNG"}
 SHIFT_STEP = 5.0
 SHIFT_MAX = 2
+
+# ── Stop-exit fix (owner 2026-11-17: "fix stop exits") ───────────────────────
+# 2026-11-16: the MEIC 12:30 put stop sat unfilled at its theo-priced limit
+# for 4 minutes (ORDER_WAIT_S) while SPX fell; the step-up was REJECTED
+# ("oversold/overbought") and the market-priced retry filled at 8.05 vs the
+# paper twin's 3.67 (-$650 vs -$210), which tipped MEIC's daily stop.
+# Two parts:
+#  (a) SAFE REPLACE, all strategies, live now: every "oversold/overbought"
+#      close rejection in the log (11-03, 11-05, 11-09, 11-16) came the second
+#      a replacement was sent right after cancelling the unfilled rung, while
+#      Schwab still held the old order. A step-up now waits until the old
+#      order is confirmed CANCELED (a fill in between is booked instead).
+#  (b) FAST STOPS, rollout set: a STOPPED close is priced from the live market
+#      (never less aggressive than the theo ladder) and re-priced every
+#      STOP_WAIT_S from fresh quotes, up to STOP_REPRICES times.
+# ROLLOUT for (b): rehearse on MNG's dry run, add "MEIC" after review.
+STOP_FAST = {"MNG"}
+STOP_WAIT_S = 30
+STOP_REPRICES = 8
+CANCEL_WAIT_S = 60       # re-send a cancel Schwab hasn't confirmed yet
 HOLDING = ("OPENING", "OPEN", "CLOSING", "STUCK")
 
 LEDGER_COLS = ["position_id", "side", "short_strike", "long_strike", "expiry",
@@ -521,7 +541,10 @@ class Broker:
         return r.json()
 
     def quotes(self, symbols: list) -> dict:
-        if self.dry:
+        # Read-only market data is safe on a rehearsal broker, and the stop-
+        # exit rehearsal needs it to log what it would really have sent. The
+        # accounting-only dry broker (tail "0") never asks.
+        if self.dry and self.tail == "0":
             return {}
         import requests
         r = requests.get(f"{MARKETDATA_BASE}/quotes", headers=self._headers(),
@@ -702,6 +725,11 @@ def _spread_value(br, r):
         return None
 
 
+def _fast_stop(r, reason=None) -> bool:
+    return ((reason or r.get("exit_reason")) == "STOPPED"
+            and strat_of(r["position_id"]) in STOP_FAST)
+
+
 def _close_side(br, r, reason, exit_theo, rung=0):
     credit_pos = _is_credit_row(r)
     # In the final minutes Schwab rejects 0DTE closes ("contract no longer
@@ -722,6 +750,15 @@ def _close_side(br, r, reason, exit_theo, rung=0):
         limit = marketable_close_limit(v, credit_pos)
     else:
         limit = close_limit(exit_theo, rung, credit_pos)
+        if _fast_stop(r, reason):
+            v = _spread_value(br, r)
+            if v is not None:
+                # never less aggressive than the theo ladder (max works for
+                # both signs: pay more on credit, receive less on debit)
+                mkt = marketable_close_limit(v, credit_pos)
+                log(f"{r['position_id']} fast stop rung{rung}: theo limit "
+                    f"{limit:+.2f}, market {v:+.2f} -> {max(limit, mkt):+.2f}")
+                limit = max(limit, mkt)
     o = vertical_order(r["side"], float(r["short_strike"]), float(r["long_strike"]),
                        r["expiry"], int(r["qty"]), "CLOSE", limit)
     try:
@@ -751,6 +788,19 @@ def _poll_closing(br, r):
                  closed_ts=_now().isoformat(timespec="seconds"))
         log(f"{r['position_id']} CLOSED @ {px:+.2f} pnl {pnl:+.0f}")
         return
+    cx = re.search(r"\|cxl@([0-9T:+\-.]+)", r.get("note") or "")
+    if cx and s == "CANCELED":
+        # our own step-up cancel is confirmed: now send the next rung
+        _step_up(br, r)
+        return
+    if cx and s not in ("REJECTED", "EXPIRED"):
+        # still working at Schwab: never send a second close beside it
+        if (_now() - datetime.fromisoformat(cx.group(1))).total_seconds() > CANCEL_WAIT_S:
+            br.cancel(r["close_order_id"])
+            r.update(note=re.sub(r"\|cxl@[^|]*", "", r["note"]) +
+                     f"|cxl@{_now().isoformat(timespec='seconds')}")
+            log(f"{r['position_id']} cancel not confirmed ({s}) — re-sent")
+        return
     if s in ("CANCELED", "REJECTED", "EXPIRED"):
         # Escalate at most twice, then STUCK: never loop rejected orders.
         why = (j.get("statusDescription") or s)[:80]
@@ -764,13 +814,31 @@ def _poll_closing(br, r):
             log(f"{r['position_id']} close {s} ({why}) — retry {n}/3")
         return
     age = (_now() - datetime.fromisoformat(r["closed_ts"])).total_seconds()
-    m = re.search(r"rung(\d)", r.get("note") or "")
-    rung = int(m.group(1)) if m else 0
-    if age > ORDER_WAIT_S and rung < 2:
+    rung = _rung(r)
+    fast = _fast_stop(r)
+    wait, top = (STOP_WAIT_S, STOP_REPRICES) if fast else (ORDER_WAIT_S, 2)
+    if age > wait and rung < top:
+        # cancel first; the replacement goes out only once Schwab confirms
+        # (2026-11-16 lesson: cancel + immediate resend = "oversold" reject)
         br.cancel(r["close_order_id"])
-        exit_theo = (abs(float(r["close_limit"])) - CLOSE_SLIPS[rung]) \
-            * (1 if _is_credit_row(r) else -1)
-        _close_side(br, r, r["exit_reason"], exit_theo, rung + 1)
+        r.update(note=(r.get("note") or "") +
+                 f"|cxl@{_now().isoformat(timespec='seconds')}")
+        log(f"{r['position_id']} close unfilled after {age:.0f}s @ "
+            f"{float(r['close_limit']):+.2f} — cancelling to step up")
+
+
+def _rung(r) -> int:
+    m = re.search(r"rung(\d+)", r.get("note") or "")
+    return int(m.group(1)) if m else 0
+
+
+def _step_up(br, r):
+    """Send the next rung after our cancel is confirmed. Theo is recovered
+    from the last limit (fast stops re-price from fresh quotes anyway)."""
+    rung = _rung(r)
+    exit_theo = (abs(float(r["close_limit"])) - CLOSE_SLIPS[min(rung, 2)]) \
+        * (1 if _is_credit_row(r) else -1)
+    _close_side(br, r, r["exit_reason"], exit_theo, rung + 1)
 
 
 def _absorb_external_closes(br, ledger, missing_pids):

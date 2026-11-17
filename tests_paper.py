@@ -726,6 +726,102 @@ def test_overlap_fix():
     ok("MNG rehearsal sends the shifted long and records it; MEIC unchanged until enabled")
 
 
+def test_stop_exits():
+    print("Live stop exits (safe replace + fast stops)")
+    import live_meic as lm
+    from datetime import timedelta
+    from zoneinfo import ZoneInfo
+    T0 = datetime(2026, 11, 16, 13, 27, 22, tzinfo=ZoneInfo("America/New_York"))
+    clock = {"t": T0}
+
+    class Br:
+        def __init__(self, status="WORKING", value=None):
+            self.orders, self.cancels, self.st, self.value = [], [], status, value
+        def place(self, o): self.orders.append(o); return f"oid{len(self.orders)}"
+        def cancel(self, oid): self.cancels.append(oid)
+        def status(self, oid):
+            return {"status": self.st, "orderActivityCollection": [], "statusDescription": "x"}
+        def quotes(self, syms):
+            if self.value is None: return {}
+            return {syms[0]: {"quote": {"bidPrice": self.value + 1.0, "askPrice": self.value + 1.0}},
+                    syms[1]: {"quote": {"bidPrice": 1.0, "askPrice": 1.0}}}
+
+    def row(pid, reason="STOPPED"):
+        return {"position_id": pid, "side": "PUT", "short_strike": "7410.0", "long_strike": "7380.0",
+                "expiry": "2026-11-16", "qty": "1", "status": "OPEN", "credit_fill": "1.60",
+                "note": "", "shift": "", "exit_reason": reason}
+    saved = lm._now, lm.log
+    lm._now, lm.log = (lambda: clock["t"]), (lambda m: None)
+    try:
+        # MEIC (not in the fast set yet): theo ladder, 240 s per rung, as before
+        b, r = Br(value=8.0), row("2026-11-16-MEIC-12:30-PUT")
+        lm._close_side(b, r, "STOPPED", 3.70)
+        assert r["close_limit"] == "3.80" and r["status"] == "CLOSING"
+        clock["t"] = T0 + timedelta(seconds=60); lm._poll_closing(b, r)
+        assert not b.cancels and len(b.orders) == 1
+        # after 240 s: cancel only -- NO replacement in the same pass
+        clock["t"] = T0 + timedelta(seconds=250); lm._poll_closing(b, r)
+        assert b.cancels == ["oid1"] and len(b.orders) == 1 and "|cxl@" in r["note"]
+        # still working at Schwab: never send a second close beside it
+        clock["t"] = T0 + timedelta(seconds=280); lm._poll_closing(b, r)
+        assert len(b.orders) == 1 and len(b.cancels) == 1
+        # unconfirmed for > 60 s: the cancel is re-sent, still no new order
+        clock["t"] = T0 + timedelta(seconds=320); lm._poll_closing(b, r)
+        assert len(b.orders) == 1 and len(b.cancels) == 2
+        # cancel confirmed: the next rung goes out (theo 3.70 + 0.30)
+        b.st = "CANCELED"; clock["t"] = T0 + timedelta(seconds=330); lm._poll_closing(b, r)
+        assert len(b.orders) == 2 and r["close_limit"] == "4.00" and "cxl" not in r["note"]
+        assert r["note"].startswith("rung1") and r["status"] == "CLOSING"
+        ok("step-up waits for Schwab to confirm the cancel (the 'oversold' rejections)")
+
+        # a fill that lands while the cancel is pending is booked, not replaced
+        b, r = Br(), row("2026-11-16-MEIC-13:00-PUT")
+        clock["t"] = T0; lm._close_side(b, r, "STOPPED", 4.20)
+        clock["t"] = T0 + timedelta(seconds=250); lm._poll_closing(b, r)
+        b.st = "FILLED"; clock["t"] = T0 + timedelta(seconds=260); lm._poll_closing(b, r)
+        assert r["status"] == "CLOSED" and len(b.orders) == 1
+        ok("a fill during the pending cancel is booked once")
+
+        # a genuine rejection after the cancel still uses the capped retry path
+        b, r = Br(), row("2026-11-16-MEIC-13:30-PUT")
+        clock["t"] = T0; lm._close_side(b, r, "STOPPED", 4.20)
+        clock["t"] = T0 + timedelta(seconds=250); lm._poll_closing(b, r)
+        b.st = "REJECTED"; clock["t"] = T0 + timedelta(seconds=260); lm._poll_closing(b, r)
+        assert r["status"] == "OPEN" and lm.rej_count(r["note"]) == 1
+        ok("real rejections keep the 3-strike rule")
+
+        # MNG (fast set): first stop order priced from the market, never below theo
+        assert lm.STOP_FAST == {"MNG"}            # rehearsal first; MEIC after review
+        b, r = Br(value=8.0), row("2026-11-16-MNG-12:30-PUT")
+        clock["t"] = T0; lm._close_side(b, r, "STOPPED", 3.70)
+        assert r["close_limit"] == "9.20", r["close_limit"]      # 8.00 + 15%
+        b2, r2 = Br(value=2.0), row("2026-11-16-MNG-13:00-PUT")
+        lm._close_side(b2, r2, "STOPPED", 3.70)
+        assert r2["close_limit"] == "3.80"         # market below theo: theo wins
+        b3, r3 = Br(value=None), row("2026-11-16-MNG-13:30-PUT")
+        lm._close_side(b3, r3, "STOPPED", 3.70)
+        assert r3["close_limit"] == "3.80"         # no quotes: theo ladder
+        b4, r4 = Br(value=8.0), row("2026-11-16-MNG-14:00-PUT", "TP")
+        lm._close_side(b4, r4, "TP", 0.10)
+        assert r4["close_limit"] == "0.20"         # take-profits stay patient
+        ok("fast stops price from live quotes; TP and quote-less closes unchanged")
+
+        # ...and re-price every 30 s from fresh quotes, up to 8 times
+        clock["t"] = T0 + timedelta(seconds=31); lm._poll_closing(b, r)
+        assert b.cancels == ["oid1"]
+        b.st, b.value = "CANCELED", 9.0
+        clock["t"] = T0 + timedelta(seconds=35); lm._poll_closing(b, r)
+        assert len(b.orders) == 2 and r["close_limit"] == "10.40", r["close_limit"]
+        b.st = "WORKING"
+        r["note"] = "rung8|rejx0"; clock["t"] = T0 + timedelta(seconds=200); lm._poll_closing(b, r)
+        assert len(b.cancels) == 1                 # top rung: left working, no loop
+        b4.st = "WORKING"; clock["t"] = T0 + timedelta(seconds=100); lm._poll_closing(b4, r4)
+        assert not b4.cancels                      # a TP keeps the 240 s rung
+        ok("fast stops step up every 30 s from fresh quotes; capped; TPs keep 240 s")
+    finally:
+        lm._now, lm.log = saved
+
+
 # ── shared .env fallback for token refresh ───────────────────────────────────
 def test_fee_fix():
     print("Live ledger fee correction (2026-11-15)")
@@ -885,7 +981,7 @@ if __name__ == "__main__":
     for t in (test_ema_state, test_strike_walk, test_band, test_containment,
               test_risk_and_stops, test_sim_execution, test_meic_orb, test_fly_late,
               test_flyr, test_live_meic, test_mng_pbw, test_settle_fallback, test_config_file,
-              test_new_systems, test_meic2, test_overlap_fix, test_fee_fix,
+              test_new_systems, test_meic2, test_overlap_fix, test_stop_exits, test_fee_fix,
               test_env_fallback, test_store):
         t()
     print(f"\nALL {PASS} CHECKS PASSED")
