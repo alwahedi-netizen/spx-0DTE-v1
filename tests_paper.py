@@ -753,8 +753,8 @@ def test_stop_exits():
     saved = lm._now, lm.log
     lm._now, lm.log = (lambda: clock["t"]), (lambda m: None)
     try:
-        # MEIC (not in the fast set yet): theo ladder, 240 s per rung, as before
-        b, r = Br(value=8.0), row("2026-11-16-MEIC-12:30-PUT")
+        # a strategy outside the fast set (FLY): theo ladder, 240 s per rung
+        b, r = Br(value=8.0), row("2026-11-16-FLY-12:30-PUT")
         lm._close_side(b, r, "STOPPED", 3.70)
         assert r["close_limit"] == "3.80" and r["status"] == "CLOSING"
         clock["t"] = T0 + timedelta(seconds=60); lm._poll_closing(b, r)
@@ -775,7 +775,7 @@ def test_stop_exits():
         ok("step-up waits for Schwab to confirm the cancel (the 'oversold' rejections)")
 
         # a fill that lands while the cancel is pending is booked, not replaced
-        b, r = Br(), row("2026-11-16-MEIC-13:00-PUT")
+        b, r = Br(), row("2026-11-16-FLY-13:00-PUT")
         clock["t"] = T0; lm._close_side(b, r, "STOPPED", 4.20)
         clock["t"] = T0 + timedelta(seconds=250); lm._poll_closing(b, r)
         b.st = "FILLED"; clock["t"] = T0 + timedelta(seconds=260); lm._poll_closing(b, r)
@@ -783,7 +783,7 @@ def test_stop_exits():
         ok("a fill during the pending cancel is booked once")
 
         # a genuine rejection after the cancel still uses the capped retry path
-        b, r = Br(), row("2026-11-16-MEIC-13:30-PUT")
+        b, r = Br(), row("2026-11-16-FLY-13:30-PUT")
         clock["t"] = T0; lm._close_side(b, r, "STOPPED", 4.20)
         clock["t"] = T0 + timedelta(seconds=250); lm._poll_closing(b, r)
         b.st = "REJECTED"; clock["t"] = T0 + timedelta(seconds=260); lm._poll_closing(b, r)
@@ -791,7 +791,10 @@ def test_stop_exits():
         ok("real rejections keep the 3-strike rule")
 
         # MNG (fast set): first stop order priced from the market, never below theo
-        assert lm.STOP_FAST == {"MNG"}            # rehearsal first; MEIC after review
+        assert lm.STOP_FAST == {"MNG", "MEIC"}    # owner 2026-11-17 "enable fast stops MEIC"
+        bm, rm = Br(value=8.0), row("2026-11-16-MEIC-12:30-PUT")
+        clock["t"] = T0; lm._close_side(bm, rm, "STOPPED", 3.70)
+        assert rm["close_limit"] == "9.20"         # Monday's case: market-priced at once
         b, r = Br(value=8.0), row("2026-11-16-MNG-12:30-PUT")
         clock["t"] = T0; lm._close_side(b, r, "STOPPED", 3.70)
         assert r["close_limit"] == "9.20", r["close_limit"]      # 8.00 + 15%

@@ -113,8 +113,9 @@ SHIFT_MAX = 2
 #  (b) FAST STOPS, rollout set: a STOPPED close is priced from the live market
 #      (never less aggressive than the theo ladder) and re-priced every
 #      STOP_WAIT_S from fresh quotes, up to STOP_REPRICES times.
-# ROLLOUT for (b): rehearse on MNG's dry run, add "MEIC" after review.
-STOP_FAST = {"MNG"}
+# ROLLOUT for (b): MNG dry run 2026-11-17; owner enabled real-money MEIC the
+# same day ("enable fast stops MEIC"), ahead of the planned Friday review.
+STOP_FAST = {"MNG", "MEIC"}
 STOP_WAIT_S = 30
 STOP_REPRICES = 8
 CANCEL_WAIT_S = 60       # re-send a cancel Schwab hasn't confirmed yet
