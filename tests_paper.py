@@ -688,7 +688,7 @@ def test_overlap_fix():
     crowd = held + [{"side": "PUT", "status": "OPEN", "short_strike": "7595", "long_strike": "7565"},
                     {"side": "PUT", "status": "OPEN", "short_strike": "7590", "long_strike": "7560"}]
     assert lm.overlap_fix("PUT", 7630, 7600, crowd)[2] == "no-free-strike"
-    assert lm.OVERLAP_SHIFT == {"MNG"}          # rehearsal first; MEIC after a clean week
+    assert lm.OVERLAP_SHIFT == {"MNG", "MEIC"}  # owner 2026-11-17 "enable overlap fix MEIC"
     ok("collisions move the long 5 pts further out; closed rows ignored; unfixable flagged")
 
     class Br:
@@ -705,12 +705,18 @@ def test_overlap_fix():
         assert legs[1]["instrument"]["symbol"].endswith("P07595000"), legs[1]
         r = ledger[p["position_id"]]
         assert r["long_strike"] == "7595.0" and r["shift"] == "5" and r["status"] == "OPENING"
-        # MEIC is not enabled yet: it sends the original strikes, as before
+        # real-money MEIC now shifts the same way
         b2, l2 = Br(), {}
         lm._open_side(b2, l2, dict(p, position_id="2026-11-11-MEIC-13:30-PUT", strategy="MEIC"),
                       "2026-11-11", held_rows=held)
-        assert b2.orders[0]["orderLegCollection"][1]["instrument"]["symbol"].endswith("P07600000")
-        assert l2["2026-11-11-MEIC-13:30-PUT"]["shift"] == ""
+        assert b2.orders[0]["orderLegCollection"][1]["instrument"]["symbol"].endswith("P07595000")
+        assert l2["2026-11-11-MEIC-13:30-PUT"]["shift"] == "5"
+        # a strategy outside the set (FLY) still sends the original strikes
+        b5, l5 = Br(), {}
+        lm._open_side(b5, l5, dict(p, position_id="2026-11-11-FLY-13:30-PUT", strategy="FLY"),
+                      "2026-11-11", held_rows=held)
+        assert b5.orders[0]["orderLegCollection"][1]["instrument"]["symbol"].endswith("P07600000")
+        assert l5["2026-11-11-FLY-13:30-PUT"]["shift"] == ""
         # an enabled strategy skips the unfixable case without sending
         b3, l3 = Br(), {}
         lm._open_side(b3, l3, dict(p, short_strike="7570.0", long_strike="7540.0"),
@@ -723,7 +729,7 @@ def test_overlap_fix():
     finally:
         lm.log = lm_log
     assert "shift" in lm.LEDGER_COLS
-    ok("MNG rehearsal sends the shifted long and records it; MEIC unchanged until enabled")
+    ok("MNG and MEIC send the shifted long and record it; other strategies unchanged")
 
 
 def test_stop_exits():

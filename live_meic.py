@@ -94,8 +94,9 @@ ORDER_WAIT_S = 240       # per rung on the ladder
 # market-derived limits (the paper exit price is for the 30-wide twin).
 # The reverse case (short strike = a held long) cannot be fixed by moving the
 # long: enabled strategies skip it, others send it as before.
-# ROLLOUT: rehearse on MNG's dry run first; add "MEIC" after a clean week.
-OVERLAP_SHIFT = {"MNG"}
+# ROLLOUT: rehearsed on MNG's dry run from 2026-11-13; owner enabled real-money
+# MEIC 2026-11-17 ("enable overlap fix MEIC").
+OVERLAP_SHIFT = {"MNG", "MEIC"}
 SHIFT_STEP = 5.0
 SHIFT_MAX = 2
 
