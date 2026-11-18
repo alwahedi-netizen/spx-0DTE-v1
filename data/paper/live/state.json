@@ -1,1 +1,1 @@
-{"day": "2026-11-18", "halted": {}, "paused": {}, "schwab": {"719": {"ts": "2026-11-18T08:45:53-05:00", "missing": [], "unknown": [], "day_pl": 0, "ok": true}}}
+{"day": "2026-11-18", "halted": {"MEIC": true}, "paused": {}, "schwab": {"719": {"ts": "2026-11-18T16:41:27-05:00", "missing": [], "unknown": [], "day_pl": 0, "ok": true}}}
