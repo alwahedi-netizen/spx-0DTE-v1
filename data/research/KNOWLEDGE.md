@@ -41,7 +41,9 @@ ingredients from the shortlist first.
 | 3 | R-2026-11-07-MAGICSF (Greenblatt quality-value, survivorship-free) | conditional-edge | Cleared ALL world-class gates incl. factor alpha (t 2.8), +14.2%/yr vs +7.6% 2000-24; failed only the 2017-24 held-out window |
 | 3 | R-2026-11-07-EOMTSY (Treasuries over the last 3 days of the month) | conditional-edge, risk-reducer | Sharpe 0.73 vs 0.32 with 6% worst drop; best marginal add to the book (+0.10 Sharpe at 10%) |
 | 0 | ~~R-2026-11-07-FOMCUSD~~ | — | **WITHDRAWN 2026-11-10:** Yahoo `=X` values are start-of-day prices, so it measured the day BEFORE each FOMC decision; removed from the book (series moved to series_withdrawn/) |
-| 4 | R-2026-11-14-CORRMOMREV (commodity correlation-switched momentum/reversal, long/short DB sectors) | diversifier, conditional-edge | League round 1: 99.86%, fails only t >= 3; corr 0.03 to the book, +0.14 book Sharpe at 10%; fitted setting (honest Sharpe ~0.4) |
+| 4 | R-2026-11-14-CORRMOMREV (commodity correlation-switched momentum/reversal, long/short DB sectors) | diversifier, conditional-edge | League round 1: 99.86%, fails only t >= 3; corr 0.03 to the book, +0.14 book Sharpe at 10%; fitted setting (honest Sharpe ~0.4); round 2: independent 10-ETF check PARTIAL (beats both legs, Sharpe 0.11) — stays 4, vault allowed |
+| 3 | L-2026-11-21-EOMCREDIT (LQD over the last 3 days of the month) | risk-reducer, diversifier | Fails alone (conf 66%) but +0.12 book Sharpe at 10%, worst drop −12% vs −18% (AGG) |
+| 3 | O-2026-11-21-LOCKOUTOOS / MIIL (no new MEIC side after a same-side stop) | conditional-edge | Saved $2.7k in the −9% week, matches the MIIL paper lane; trend-day effect only so far — re-judge after 10+ range days |
 | 4 | L-2026-11-14-STKBOOK (4 point-in-time stock sleeves) | conditional-edge | League round 1: fails only deflated Sharpe 0.947; alpha ~3%/yr t 3.4 net of the equal-weight tilt; lowers the book Sharpe (corr 0.63) |
 | 3 | R-2026-11-07-HYTREND (high-yield 200-day trend) | conditional-edge, risk-reducer | Red team: the PASS was stale mutual-fund prices; on HYG it is a modest crash cutter (−14% vs −18%) |
 | 3 | L-2026-11-07-CORRSWITCH (risk parity 2× cut to 1× when stock-bond corr > 0) | conditional-edge, risk-reducer | +12.6%/yr vs +7.7%, worst drop −39% vs −55%; held-out lagged |
@@ -258,6 +260,38 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
     MACROANN was labelled "harness/data suspect" under a t >= 2 gate although
     it reproduced the paper (+10.3bp, t 1.78; source t 1.5-2.5) — it has
     simply reversed since 2002 (-5.2bp). Rule 1 is "sign and rough size".
+34. **League round 2 (2026-11-21): 17 tests, one harness PASS, one vault
+    test, which failed.** REBALFR (front-running 60/40 rebalancing, long/short
+    SPY vs IEF; Harvey-Mazzoleni-Melone 2025) replicated on ETFs (0.78 vs the
+    paper's 1.11) and passed every gate (7.4%/yr vs T-bills, t 3.23), but it is
+    mostly a next-day SPY-minus-IEF reversal (corr 0.61) that needs market-on-
+    close fills, makes 135% of its P&L on 1% of days, and lost money in the
+    vault (2024-11..2026-11: -2.7% vs T-bills +8.4%). → A pass driven by
+    crisis days needs the vault more than any other; treat stress-day edges
+    as sleeves, never as core.
+35. **Cost models fitted on live fills must drop sides that never really
+    traded** (Crypto red team on Options, 2026-11-21). Nine sides whose live
+    stop never executed (cash-settled, the market came back) turned a ~$1/side
+    stop cost into "-$62" and a statistically-zero MEIC into "+$17k". Real-
+    money MEIC was +$963 over 40 sessions (P 0.57), about -$2.9k without
+    that luck. The SIM fill model (paper's pnl_actual) is the one that
+    calibrates to live (bias ~$2/side).
+36. **MEIC losses come from whipsaw days, and same-side stops cluster on
+    trend days.** Both-sides-stopped ("whipsaw") days carry the net loss
+    (27 of 52 days, -$12.1k net); one-way days are net positive. A same-side
+    lockout (MIIL) saved $2.7k in the -9% week of 11-16..11-20 and matches its
+    counterfactual exactly, but the earlier median day saved $0 and the sign
+    flips under a 1.5x stop. Prior-day loss / prior-day move did not predict
+    bad days (P 0.93 / 0.85, needed 0.95).
+37. **Data quality notes (round 2):** Yahoo `=X` has spike-and-revert bad
+    prints (19 bars move >=4% and reverse, e.g. EURUSD/USDJPY 2008-12-05
+    ~+17%, USDNOK 2020-03-19) and a 2008-07-31..08-26 hole in EUR/JPY/NOK;
+    CPER has two bad prints (2014-12-04, 2015-02-02). A spike filter in the
+    harness is the owner's call. Sharadar's 8-K events give true earnings-
+    release dates from 2004-10; SF3A 13F holder counts start 2013-06.
+    Spin-off premium (McConnell-Sibley-Xu) replicates 2006-13 but is gone
+    since ~2015 (held-out Sharpe 0.08). AQR's TSMOM-FX did not replicate
+    (ours -0.17 vs 0.22; gap in 2010-15 and CHF) even with carry included.
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).
@@ -278,6 +312,7 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 | done 2026-11-09 | NETISS, ACCRUALS, FSCORE, LOWVOLSF, VIXCORR, SAFEDUR, POLICYMOM, BMP4, UEP, VALMOMFX, HAVENVOTE, DOLVOL, FOMCMOVE, HAVENBASKET, OILCURVETREND, CURVEPAIRS, CMDVALUE, CCYCMD, BTC52WH, MAXMINTREND, BTCQQQGATE, MAJORSXS, BTCTIPP | All FAIL; shortlist adds above |
 | done 2026-11-10 | RND, CBOP, LTREV, FOMCCYCLE, QVPARITY; RATESLEV, EMDOLLAR, LOWRISKIG, JANHY, YCMOM; HEDGEUUP, PREFOMCDIR, RRWCMD, OECDCARRY, CMDDXY; GOLDSHOCK, CMDBOOK, NGEIADAY, DEMANDVOTE, CCYCURVE; BOLD, BOLDTREND, BTCSLEEVE10H, SLEEVETREND (red-teamed), BTIFLOOR | All FAIL; CMDBOOK 4, RATESLEV/RND/CCYCURVE 3 |
 | done 2026-11-11 | RNDREV, RNDSECT, RNDEAP, INTANGVAL, RDINC; VTCREDIT, FFTERM, BONDCARRYX, CYCLEFAC, TSYCALPLUS (PASS → red team → vault FAIL); GOODCARRY, VIXCARRY, DOLCARRY, LRCARRY, RATEMOM; AGSKEW, CMDBAB, CCYVOLTGT, CMDBOOK2, ETFROLL; BTCSLEEVE (static), BTCVMP, BTCTOM, RPCRYPTO, SLEEVEVOL | All FAIL; every FX carry variant below T-bills even with FRED rates |
+| done 2026-11-21 (league round 2) | REBALFR (PASS → red team → vault FAIL), EOMCREDIT, TIPSSEAS; CORRMOMSGL; SPINOFF; QQQBTCBRK, QQQBTCOOS, BTCDVMP; ORGCAP and FXTSMOM not run (replication failed); 9 Options journal studies | All FAIL except LOCKOUTOOS (survives with caveats); FAIRMEIC withdrawn (data error). Queue note: CMDSKEW ag-only and CMDBAB were already run 2026-11-11 |
 | queued by desks (2026-11-11) | FFDEF, MBSVOL (bonds); CMDTURN, DUALMOMDB, CMDASYM (cmd); BTCDVMP, BTCBEST8 (crypto); RNDQUAL, INTANGMAGIC (stocks) | Lower priority if the owner approves the research reset |
 | queued by desks (older) | VTCREDIT, FFTERM, BONDCARRYX (bonds); CMDBAB, CCYVOLTGT, CMDSKEW ag-only (cmd); BTCVMP, BTCTOM, I-2026-11-07-BTCSLEEVE static control, RPCRYPTO, QQQBTCBRK (crypto); RNDREV (stocks); DOLCARRY, VIXCARRY, GOODCARRY, HEDGECARRY (FX — FRED now reachable, default Python user-agent; OECD rates lag ~2 months; NFCI is revised — look-ahead) | Next scripts |
 | harness fixes (new 2026-11-10) | `=X` start-of-day dating; short-leg T-bill sign in simulate(); financing-spread option | Owner's call — reported in the digest |

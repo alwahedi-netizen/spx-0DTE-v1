@@ -5,8 +5,14 @@
  "teams": {
   "options": {
    "budget_per_week": 20,
-   "points": 0,
-   "events": []
+   "points": -5,
+   "events": [
+    {
+     "round": "2026-11-21",
+     "points": -5,
+     "why": "Own result withdrawn for a data error: FAIRMEIC (cost fit contaminated by unexecuted stops)"
+    }
+   ]
   },
   "stocks": {
    "budget_per_week": 10,
@@ -26,8 +32,14 @@
   },
   "bonds": {
    "budget_per_week": 10,
-   "points": 0,
-   "events": []
+   "points": 3,
+   "events": [
+    {
+     "round": "2026-11-21",
+     "points": 3,
+     "why": "Error caught in Commodities' CORRMOMSGL: the script runs 50%/50% gross while its header says 100%/100% (CAGR/drawdown at half size); the same check stopped a misapplied 4->3 downgrade of CORRMOMREV"
+    }
+   ]
   },
   "commodities": {
    "budget_per_week": 10,
@@ -52,12 +64,17 @@
   },
   "crypto": {
    "budget_per_week": 5,
-   "points": 3,
+   "points": 6,
    "events": [
     {
      "round": "2026-11-14",
      "points": 3,
      "why": "Error caught while red-teaming Options: 13 live MEIC rows (09-23/24) booked without fees"
+    },
+    {
+     "round": "2026-11-21",
+     "points": 3,
+     "why": "Error caught in Options' FAIRMEIC: its live-fill cost model counted 9 sides whose stops never executed (+$3,876 of luck) as a -$62/side stop cost, turning a zero edge into +$17k"
     }
    ]
   }
@@ -95,6 +112,29 @@
     "commodities": 5,
     "fx": 0,
     "crypto": 3
+   }
+  },
+  {
+   "date": "2026-11-21",
+   "tests": {
+    "options": 9,
+    "stocks": 1,
+    "bonds": 3,
+    "commodities": 1,
+    "fx": 0,
+    "crypto": 3
+   },
+   "harness_pass": 1,
+   "vault_tests": 1,
+   "near_misses": [],
+   "errors_caught": 2,
+   "table": {
+    "options": -5,
+    "stocks": 5,
+    "bonds": 3,
+    "commodities": 5,
+    "fx": 0,
+    "crypto": 6
    }
   }
  ],

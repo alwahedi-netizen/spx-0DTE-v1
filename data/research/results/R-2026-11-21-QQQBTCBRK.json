@@ -1,0 +1,58 @@
+{
+ "idea": "R-2026-11-21-QQQBTCBRK",
+ "run": "2026-11-21T03:26:47+00:00",
+ "period": [
+  "2019-01-01",
+  "2024-10-31"
+ ],
+ "bench": "BENCH-QQQBTC5050M",
+ "cost_bps": 15.0,
+ "fin_spread": 0.0,
+ "trials": 16,
+ "notes": "REPLICATION run of Quantpedia 'Silicon vs Satoshi' (2026-07): variant A w=20 daily at the QQQ close (QQQ if at a 20-day closing high, elif BTC, else T-bills); BTC signal = last bar dated before the US day (honest timestamp); vs static 50/50 QQQ/BTC monthly (synthetic BENCH-QQQBTC5050M); 15bp all legs; variants w 10/15/25/30; source's own window 2019-01 -> vault (in-sample: needs I-2026-11-21-QQQBTCOOS); trials 16 = source grid; vault 2024-11",
+ "idea_cagr": 0.2638,
+ "bench_cagr": 0.4888,
+ "idea_sharpe": 0.949,
+ "bench_sharpe": 1.171,
+ "idea_maxdd": -0.3898,
+ "bench_maxdd": -0.5872,
+ "turnover_per_year": 82.16,
+ "periods_per_year": 365,
+ "confidence": 0.3139,
+ "oos_from": "2023-02-01",
+ "oos_idea_sharpe": 0.349,
+ "oos_bench_sharpe": 1.717,
+ "oos_idea_cagr": 0.1033,
+ "verdict": "FAIL",
+ "asset_class": "crypto",
+ "deflated_sharpe": 0.0009,
+ "active_t": -1.35,
+ "sharpe_2x_costs": 0.466,
+ "robust_share": 0.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "FAIL",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.39,
+  "dd_cut": 0.34,
+  "sharpe_ratio_vs_bench": 0.81,
+  "active_sharpe_first_half": -0.58,
+  "active_sharpe_second_half": -0.54,
+  "active_sharpe_bench_uptrend": -0.52,
+  "active_sharpe_bench_downtrend": -0.57,
+  "building_blocks": [
+   "risk-reducer"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "qqq-btc-breakout",
+ "vault": "sealed from 2024-11-01"
+}

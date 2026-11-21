@@ -1,0 +1,72 @@
+{
+ "idea": "R-2026-11-21-SPINOFF",
+ "run": "2026-11-21T03:40:39+00:00",
+ "period": [
+  "2000-01-03",
+  "2024-10-31"
+ ],
+ "bench": "MDY",
+ "cost_bps": 10.0,
+ "fin_spread": 0.0,
+ "trials": 5,
+ "notes": "McConnell-Sibley-Xu spin-offs: every filtered Sharadar spin-off subsidiary (387 events 1998-vault) bought at its first close on/after the ex date, held 22 months, equal weight re-equalised on entry/exit and monthly; bench MDY; 10bp; variants hold 12/15/27/36m; replication 2006-12-18..2013-12-31 excess vs SPY 1.3945 (source +0.848, gate >= +0.424)",
+ "idea_cagr": 0.1208,
+ "bench_cagr": 0.0947,
+ "idea_sharpe": 0.494,
+ "bench_sharpe": 0.439,
+ "idea_maxdd": -0.6418,
+ "bench_maxdd": -0.5533,
+ "turnover_per_year": 3.33,
+ "periods_per_year": 252,
+ "confidence": 0.6533,
+ "oos_from": "2017-05-22",
+ "oos_idea_sharpe": 0.083,
+ "oos_bench_sharpe": 0.43,
+ "oos_idea_cagr": 0.0023,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.416,
+ "active_t": 0.98,
+ "sharpe_2x_costs": 0.481,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.0638,
+  "alpha_t": 1.93,
+  "loadings": {
+   "Mkt-RF": 0.88,
+   "SMB": 0.59,
+   "HML": 0.11,
+   "RMW": -0.11,
+   "CMA": -0.16,
+   "Mom": -0.18
+  },
+  "days": 6247
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "FAIL"
+ },
+ "traits": {
+  "corr_to_bench": 0.76,
+  "dd_cut": -0.16,
+  "sharpe_ratio_vs_bench": 1.12,
+  "active_sharpe_first_half": 0.43,
+  "active_sharpe_second_half": -0.1,
+  "active_sharpe_bench_uptrend": 0.48,
+  "active_sharpe_bench_downtrend": -0.58,
+  "best_5y_active_sharpe": 1.39,
+  "worst_5y_active_sharpe": -0.74,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 2
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "spinoffs",
+ "vault": "sealed from 2024-11-01"
+}

@@ -1,0 +1,22 @@
+{
+ "vault_from": "2024-11-01",
+ "vault_to": "2026-11-20",
+ "days": 515,
+ "idea_total": -0.0266,
+ "tbill_total": 0.0837,
+ "vault_sharpe_vs_tbills": -0.817,
+ "april_2025_excess": 0.0142,
+ "crit_a": false,
+ "crit_b": true,
+ "criterion_pass": false,
+ "harness_verdict": "FAIL",
+ "harness_gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "full_sharpe": 0.59,
+ "full_cagr": 0.0659
+}
