@@ -118,20 +118,39 @@ def _fetch(sym):
     # 2026-11-09). US bars (13:30-14:30 UTC) and crypto (00:00 UTC) keep
     # their date.
     out = {_bar_date(t): a for t, a in zip(ts, adj) if a}
-    return _fx_close_dates(out) if sym.endswith("=X") else out
+    return _fx_close_dates(out, sym) if sym.endswith("=X") else out
 
 
-def _fx_close_dates(series):
-    """Yahoo `=X` daily values are the price at the START of the London day
-    they are labelled with (open == close on every bar; the SNB's 1.20 floor
-    removal at 09:30 CET on 2015-01-15 only shows in the 01-16 value, the
-    euro's 2025-04-03 tariff jump only in the 04-04 value). Relabel each
-    value to the previous bar's date, which makes it that day's close. The
-    first value is dropped (no earlier bar); the last bar's date ends up
-    without a value until the next one prints ("fix research tool 2",
-    2026-11-11)."""
+# Yahoo changed what an `=X` daily value means on 2010-08-04 (MXN on
+# 2018-04-04): before, the value labelled d is d's CLOSE; from then on it is
+# the price at the START of the London day d. At the switch the same price
+# prints twice (EUR/GBP/JPY/NZD 2010-08-03 == 08-04; MXN 2018-04-03 == 04-04).
+# Verified 2026-11-28 against CurrencyShares ETF closes and FRED noon rates
+# (all 6 ETF pairs: same-day match through 2010-08-03, next-day from 08-04,
+# no other switch 2005-2026; FRED: same-day back to 1996). Owner "yes fix
+# research tool" 2026-11-28 (league round 3, Commodities red team on FX).
+FX_START_OF_DAY_FROM = "2010-08-04"
+FX_START_OF_DAY_BY_SYMBOL = {"MXN=X": "2018-04-04", "USDMXN=X": "2018-04-04"}
+
+
+def _fx_close_dates(series, sym=None):
+    """Make every `=X` value the CLOSE of the date it is labelled with.
+    Values from the start-of-day era (see FX_START_OF_DAY_FROM) are the price
+    at the START of the London day they are labelled with (the SNB's floor
+    removal at 09:30 CET on 2015-01-15 only shows in the 01-16 value): each
+    moves to the previous bar's date. Values before the switch are already
+    closes and keep their date (until 2026-11-28 they were moved too — a
+    one-day look-ahead in every pre-2010 =X study). The first start-of-day
+    value duplicates the last close and is dropped; the last bar's date has
+    no value until the next one prints ("fix research tool 2", 2026-11-11;
+    "fix research tool 3", 2026-11-28)."""
+    sw = FX_START_OF_DAY_BY_SYMBOL.get(sym, FX_START_OF_DAY_FROM)
     ds = sorted(series)
-    return {ds[k - 1]: series[ds[k]] for k in range(1, len(ds))}
+    out = {d: series[d] for d in ds if d < sw}
+    for k in range(1, len(ds)):
+        if ds[k] >= sw and ds[k - 1] not in out:
+            out[ds[k - 1]] = series[ds[k]]
+    return out
 
 
 def _bar_date(t):
@@ -139,7 +158,7 @@ def _bar_date(t):
     return datetime.fromtimestamp(t + 3 * 3600, timezone.utc).strftime("%Y-%m-%d")
 
 
-CACHE_VERSION = 3   # 2026-11-09: FX date fix; 2026-11-11: =X close relabel —
+CACHE_VERSION = 4   # 2026-11-09: FX date fix; 2026-11-11: =X close relabel; 2026-11-28: relabel only from 2010-08-04 —
                     # older cache files are refetched
 
 

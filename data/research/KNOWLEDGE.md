@@ -59,7 +59,7 @@ ingredients from the shortlist first.
 | 3 | R-2026-11-08-CLENOW (Clenow momentum with a market filter) | conditional-edge, risk-reducer | +11.6%/yr vs +8.7%, worst drop −27% vs −55%; alpha t 1.4 |
 | 3 | L-2026-11-07-CORRDUR (TLT/IEF by stock-bond correlation) | conditional-edge | Worked before 2018, lost after; keep only as a correlation-regime ingredient |
 | 4 | L-2026-11-08-OILCURVETREND (USO only when curve-tight AND above trend) | conditional-edge, risk-reducer, diversifier | +5.7%/yr vs −9.3% (USO), worst drop −28% vs −98%, confidence 96%, corr 0.12 to the book |
-| 4 | R-2026-11-09-CCYCMD (commodity currencies predict commodities, Chen-Rogoff-Rossi) | conditional-edge, diversifier | +4.7%/yr vs +0.6% (DBC), worst drop −35% vs −76%, corr 0.15 to the book |
+| 4 | R-2026-11-09-CCYCMD (commodity currencies predict commodities, Chen-Rogoff-Rossi) | conditional-edge, diversifier | +4.7%/yr vs +0.6% (DBC), worst drop −35% vs −76%, corr 0.15 to the book; **2026-11-28 =X fix: 4.9%/yr, conf 92%, worst drop −30%; round 3 CCYDEMAND shows its edge is mostly the dollar** |
 | 3 | L-2026-11-08-POLICYMOM (Treasuries by Fed policy direction) | risk-reducer | Sharpe 0.37 vs 0.32, worst drop −14% vs −24% |
 | 0 | ~~L-2026-11-09-FOMCMOVE~~ | — | **WITHDRAWN 2026-11-10:** same start-of-day `=X` dating error as FOMCUSD |
 | 4 | L-2026-11-09-CMDBOOK (OILCURVETREND + CCYCMD + CARRYPROXY + CMDSKEW, inverse-vol) | conditional-edge, risk-reducer, diversifier | +6.9%/yr vs +0.1% (DBC), worst drop −28% vs −76%, **99.4% confidence, held-out win**; failed only DSR/t. The best commodity block |
@@ -314,8 +314,18 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
     data (FX vs CurrencyShares corr 0.60-0.93 at lag -1 before, 0.92 same-day
     after). Affected: haven sleeves (SAFEHAVEN/HAVEN*), FXVALUE, VALMOMFX,
     TSMOM-FX, FOMCUSD/FOMCMOVE, CCYCMD's FX inputs, FOMCDOL's replication.
-    Until the harness is fixed (owner's call), treat pre-2010 =X results as
-    suspect and prefer CurrencyShares ETFs (2005-06+ / 2006+).
+    **FIXED 2026-11-28 (owner "yes fix research tool"; harness fix 3):**
+    `research_bt.FX_START_OF_DAY_FROM = "2010-08-04"` — values before keep
+    their date, values from then move to the previous bar; the duplicate at
+    the switch is dropped (EUR/GBP/JPY/NZD print the same value 08-03 and
+    08-04). Exception: MXN=X switched on 2018-04-04 (same duplicate marker).
+    USDCLP=X before 2010 is stale (178 repeated values) — avoid. Verified on
+    6 ETF pairs (same-day match in every era after the fix) and FRED noon
+    rates (closes back to 1996). 14 affected results re-run as corrections
+    (trials restored): no verdict changed; the biggest moves were CCYCMD
+    (conf 94.3% -> 91.9%, 5.4% -> 4.9%/yr), CCYDEMAND (67% -> 75%), FXXSMOM,
+    PREFOMCDIR, VMEFX (63% -> 54%); FOMCDOL's replication +8.1bp -> +24.7bp
+    (t 2.51); FXTSMOM still does not replicate (ours -0.16 vs AQR 0.22).
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).

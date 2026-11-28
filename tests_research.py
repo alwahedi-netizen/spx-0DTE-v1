@@ -346,6 +346,17 @@ ok("Yahoo FX bars stamped 23:00 UTC land on the trading day, not the Sunday befo
 _fx = rb._fx_close_dates({"2015-01-14": 1.2008, "2015-01-15": 1.2008, "2015-01-16": 0.9940})
 assert _fx == {"2015-01-14": 1.2008, "2015-01-15": 0.9940}
 ok("=X opening values move to the previous date: the SNB's 2015-01-15 jump lands on 01-15")
+_fx = rb._fx_close_dates({"2010-08-02": 1.3201, "2010-08-03": 1.3220, "2010-08-04": 1.3220,
+                          "2010-08-05": 1.3150, "2010-08-06": 1.3280})
+assert _fx == {"2010-08-02": 1.3201, "2010-08-03": 1.3220, "2010-08-04": 1.3150, "2010-08-05": 1.3280}
+_fx = rb._fx_close_dates({"2008-10-23": 1.2900, "2008-10-24": 1.2600})
+assert _fx == {"2008-10-23": 1.2900, "2008-10-24": 1.2600}
+ok("=X values before 2010-08-04 are already closes and keep their date; the duplicate at the switch is dropped")
+_fx = rb._fx_close_dates({"2016-11-08": 18.30, "2016-11-09": 19.70}, "MXN=X")
+assert _fx == {"2016-11-08": 18.30, "2016-11-09": 19.70}
+_fx = rb._fx_close_dates({"2018-04-03": 18.2233, "2018-04-04": 18.2233, "2018-04-05": 18.0990}, "MXN=X")
+assert _fx == {"2018-04-03": 18.2233, "2018-04-04": 18.0990}
+ok("MXN=X switched on 2018-04-04: the 2016 election-night move stays on 11-09")
 assert rb._ffill_inside([None, 1.0, None, None, 2.0, None]) == [None, 1.0, 1.0, 1.0, 2.0, None]
 ok("gaps inside a series carry the last price; nothing before the first or after the last")
 _wk = [d.strftime("%Y-%m-%d") for d in (_dt(2020, 1, 1) + _td(days=i) for i in range(1500)) if d.weekday() < 5]

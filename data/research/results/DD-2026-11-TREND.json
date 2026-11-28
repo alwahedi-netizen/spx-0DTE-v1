@@ -6,7 +6,7 @@
   "equities": [
    {
     "idea": "DD-2026-11-TREND-SMA10-VFINX",
-    "run": "2026-11-11T14:16:45+00:00",
+    "run": "2026-11-28T15:28:33+00:00",
     "period": [
      "1986-01-02",
      "2024-10-31"
@@ -66,7 +66,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-VFINX",
-    "run": "2026-11-11T14:16:45+00:00",
+    "run": "2026-11-28T15:28:33+00:00",
     "period": [
      "1986-01-02",
      "2024-10-31"
@@ -127,7 +127,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-NAESX",
-    "run": "2026-11-11T14:16:46+00:00",
+    "run": "2026-11-28T15:28:34+00:00",
     "period": [
      "1987-01-02",
      "2024-10-31"
@@ -187,7 +187,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-NAESX",
-    "run": "2026-11-11T14:16:46+00:00",
+    "run": "2026-11-28T15:28:35+00:00",
     "period": [
      "1987-01-02",
      "2024-10-31"
@@ -245,7 +245,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-VGTSX",
-    "run": "2026-11-11T14:16:46+00:00",
+    "run": "2026-11-28T15:28:36+00:00",
     "period": [
      "1997-01-02",
      "2024-10-31"
@@ -306,7 +306,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-VGTSX",
-    "run": "2026-11-11T14:16:47+00:00",
+    "run": "2026-11-28T15:28:36+00:00",
     "period": [
      "1997-01-02",
      "2024-10-31"
@@ -367,7 +367,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-VEIEX",
-    "run": "2026-11-11T14:16:47+00:00",
+    "run": "2026-11-28T15:28:36+00:00",
     "period": [
      "1995-01-03",
      "2024-10-31"
@@ -428,7 +428,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-VEIEX",
-    "run": "2026-11-11T14:16:47+00:00",
+    "run": "2026-11-28T15:28:37+00:00",
     "period": [
      "1995-01-03",
      "2024-10-31"
@@ -489,7 +489,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-QQQ",
-    "run": "2026-11-11T14:16:48+00:00",
+    "run": "2026-11-28T15:28:37+00:00",
     "period": [
      "2000-01-03",
      "2024-10-31"
@@ -550,7 +550,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-QQQ",
-    "run": "2026-11-11T14:16:48+00:00",
+    "run": "2026-11-28T15:28:37+00:00",
     "period": [
      "2000-01-03",
      "2024-10-31"
@@ -613,7 +613,7 @@
   "bonds": [
    {
     "idea": "DD-2026-11-TREND-SMA10-VUSTX",
-    "run": "2026-11-11T14:16:49+00:00",
+    "run": "2026-11-28T15:28:39+00:00",
     "period": [
      "1987-01-02",
      "2024-10-31"
@@ -674,7 +674,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-VUSTX",
-    "run": "2026-11-11T14:16:49+00:00",
+    "run": "2026-11-28T15:28:39+00:00",
     "period": [
      "1987-01-02",
      "2024-10-31"
@@ -734,7 +734,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-VFITX",
-    "run": "2026-11-11T14:16:49+00:00",
+    "run": "2026-11-28T15:28:40+00:00",
     "period": [
      "1992-01-02",
      "2024-10-31"
@@ -795,7 +795,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-VFITX",
-    "run": "2026-11-11T14:16:50+00:00",
+    "run": "2026-11-28T15:28:40+00:00",
     "period": [
      "1992-01-02",
      "2024-10-31"
@@ -858,7 +858,7 @@
   "commodities": [
    {
     "idea": "DD-2026-11-TREND-SMA10-GC=F",
-    "run": "2026-11-11T14:16:50+00:00",
+    "run": "2026-11-28T15:28:40+00:00",
     "period": [
      "2001-01-02",
      "2024-10-31"
@@ -916,7 +916,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-GC=F",
-    "run": "2026-11-11T14:16:50+00:00",
+    "run": "2026-11-28T15:28:40+00:00",
     "period": [
      "2001-01-02",
      "2024-10-31"
@@ -977,7 +977,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-CL=F",
-    "run": "2026-11-11T14:16:50+00:00",
+    "run": "2026-11-28T15:28:41+00:00",
     "period": [
      "2001-01-02",
      "2024-10-31"
@@ -1038,7 +1038,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-CL=F",
-    "run": "2026-11-11T14:16:50+00:00",
+    "run": "2026-11-28T15:28:41+00:00",
     "period": [
      "2001-01-02",
      "2024-10-31"
@@ -1099,7 +1099,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-DBC",
-    "run": "2026-11-11T14:16:51+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2007-01-03",
      "2024-10-31"
@@ -1160,7 +1160,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-DBC",
-    "run": "2026-11-11T14:16:51+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2007-01-03",
      "2024-10-31"
@@ -1222,7 +1222,7 @@
   "fx": [
    {
     "idea": "DD-2026-11-TREND-SMA10-EURUSD=X",
-    "run": "2026-11-11T14:16:51+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2004-01-01",
      "2024-10-31"
@@ -1232,24 +1232,24 @@
     "fin_spread": 0.0,
     "trials": 30,
     "notes": "SMA10 on EURUSD=X (fx)",
-    "idea_cagr": 0.0101,
+    "idea_cagr": 0.0091,
     "bench_cagr": -0.0067,
-    "idea_sharpe": -0.054,
+    "idea_sharpe": -0.07,
     "bench_sharpe": -0.141,
-    "idea_maxdd": -0.1788,
+    "idea_maxdd": -0.1971,
     "bench_maxdd": -0.3998,
     "turnover_per_year": 1.63,
     "periods_per_year": 252,
-    "confidence": 0.6669,
+    "confidence": 0.6384,
     "oos_from": "2018-08-14",
     "oos_idea_sharpe": -0.363,
     "oos_bench_sharpe": -0.403,
     "oos_idea_cagr": 0.0077,
     "verdict": "FAIL",
     "asset_class": null,
-    "deflated_sharpe": 0.076,
-    "active_t": 0.62,
-    "sharpe_2x_costs": -0.076,
+    "deflated_sharpe": 0.069,
+    "active_t": 0.57,
+    "sharpe_2x_costs": -0.09,
     "robust_share": null,
     "variants": 0,
     "factor_alpha": null,
@@ -1262,12 +1262,12 @@
     },
     "traits": {
      "corr_to_bench": 0.56,
-     "dd_cut": 0.55,
+     "dd_cut": 0.51,
      "sharpe_ratio_vs_bench": null,
-     "active_sharpe_first_half": -0.0,
+     "active_sharpe_first_half": -0.02,
      "active_sharpe_second_half": 0.39,
-     "active_sharpe_bench_uptrend": 0.23,
-     "active_sharpe_bench_downtrend": 0.08,
+     "active_sharpe_bench_uptrend": 0.21,
+     "active_sharpe_bench_downtrend": 0.07,
      "best_5y_active_sharpe": 0.67,
      "worst_5y_active_sharpe": -0.43,
      "building_blocks": [
@@ -1283,7 +1283,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-EURUSD=X",
-    "run": "2026-11-11T14:16:51+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2004-01-01",
      "2024-10-31"
@@ -1293,24 +1293,24 @@
     "fin_spread": 0.0,
     "trials": 30,
     "notes": "MOM12 on EURUSD=X (fx)",
-    "idea_cagr": -0.013,
+    "idea_cagr": -0.0105,
     "bench_cagr": -0.0067,
-    "idea_sharpe": -0.353,
+    "idea_sharpe": -0.32,
     "bench_sharpe": -0.141,
-    "idea_maxdd": -0.3623,
+    "idea_maxdd": -0.3592,
     "bench_maxdd": -0.3998,
-    "turnover_per_year": 1.35,
+    "turnover_per_year": 1.26,
     "periods_per_year": 252,
-    "confidence": 0.1202,
+    "confidence": 0.1619,
     "oos_from": "2018-08-14",
     "oos_idea_sharpe": -0.537,
     "oos_bench_sharpe": -0.403,
     "oos_idea_cagr": 0.0038,
     "verdict": "FAIL",
     "asset_class": null,
-    "deflated_sharpe": 0.0041,
-    "active_t": -0.54,
-    "sharpe_2x_costs": -0.368,
+    "deflated_sharpe": 0.0063,
+    "active_t": -0.4,
+    "sharpe_2x_costs": -0.333,
     "robust_share": null,
     "variants": 0,
     "factor_alpha": null,
@@ -1323,14 +1323,14 @@
     },
     "traits": {
      "corr_to_bench": 0.65,
-     "dd_cut": 0.09,
+     "dd_cut": 0.1,
      "sharpe_ratio_vs_bench": null,
-     "active_sharpe_first_half": -0.34,
+     "active_sharpe_first_half": -0.29,
      "active_sharpe_second_half": 0.22,
-     "active_sharpe_bench_uptrend": -0.13,
-     "active_sharpe_bench_downtrend": -0.16,
+     "active_sharpe_bench_uptrend": -0.17,
+     "active_sharpe_bench_downtrend": -0.09,
      "best_5y_active_sharpe": 0.62,
-     "worst_5y_active_sharpe": -0.53,
+     "worst_5y_active_sharpe": -0.52,
      "building_blocks": [
       "conditional-edge"
      ],
@@ -1343,7 +1343,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-GBPUSD=X",
-    "run": "2026-11-11T14:16:51+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2004-01-01",
      "2024-10-31"
@@ -1353,24 +1353,24 @@
     "fin_spread": 0.0,
     "trials": 30,
     "notes": "SMA10 on GBPUSD=X (fx)",
-    "idea_cagr": 0.0044,
-    "bench_cagr": -0.0152,
-    "idea_sharpe": -0.169,
-    "bench_sharpe": -0.28,
-    "idea_maxdd": -0.2174,
+    "idea_cagr": 0.0058,
+    "bench_cagr": -0.015,
+    "idea_sharpe": -0.143,
+    "bench_sharpe": -0.278,
+    "idea_maxdd": -0.1955,
     "bench_maxdd": -0.4911,
     "turnover_per_year": 1.54,
     "periods_per_year": 252,
-    "confidence": 0.7173,
+    "confidence": 0.7583,
     "oos_from": "2018-08-08",
     "oos_idea_sharpe": -0.284,
     "oos_bench_sharpe": -0.22,
     "oos_idea_cagr": 0.0041,
     "verdict": "FAIL",
     "asset_class": null,
-    "deflated_sharpe": 0.1483,
-    "active_t": 1.04,
-    "sharpe_2x_costs": -0.17,
+    "deflated_sharpe": 0.1671,
+    "active_t": 1.12,
+    "sharpe_2x_costs": -0.138,
     "robust_share": null,
     "variants": 0,
     "factor_alpha": null,
@@ -1383,14 +1383,14 @@
     },
     "traits": {
      "corr_to_bench": 0.6,
-     "dd_cut": 0.56,
+     "dd_cut": 0.6,
      "sharpe_ratio_vs_bench": null,
-     "active_sharpe_first_half": 0.15,
+     "active_sharpe_first_half": 0.19,
      "active_sharpe_second_half": 0.3,
-     "active_sharpe_bench_uptrend": 0.04,
+     "active_sharpe_bench_uptrend": 0.15,
      "active_sharpe_bench_downtrend": 0.35,
-     "best_5y_active_sharpe": 0.83,
-     "worst_5y_active_sharpe": -0.62,
+     "best_5y_active_sharpe": 0.82,
+     "worst_5y_active_sharpe": -0.55,
      "building_blocks": [
       "conditional-edge",
       "risk-reducer"
@@ -1404,7 +1404,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-GBPUSD=X",
-    "run": "2026-11-11T14:16:51+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2004-01-01",
      "2024-10-31"
@@ -1414,24 +1414,24 @@
     "fin_spread": 0.0,
     "trials": 30,
     "notes": "MOM12 on GBPUSD=X (fx)",
-    "idea_cagr": -0.0055,
-    "bench_cagr": -0.0152,
-    "idea_sharpe": -0.379,
-    "bench_sharpe": -0.28,
-    "idea_maxdd": -0.3017,
+    "idea_cagr": -0.0076,
+    "bench_cagr": -0.015,
+    "idea_sharpe": -0.412,
+    "bench_sharpe": -0.278,
+    "idea_maxdd": -0.33,
     "bench_maxdd": -0.4911,
-    "turnover_per_year": 1.54,
+    "turnover_per_year": 1.63,
     "periods_per_year": 252,
-    "confidence": 0.3145,
+    "confidence": 0.2539,
     "oos_from": "2018-08-08",
     "oos_idea_sharpe": -0.257,
     "oos_bench_sharpe": -0.22,
     "oos_idea_cagr": 0.0073,
     "verdict": "FAIL",
     "asset_class": null,
-    "deflated_sharpe": 0.0464,
-    "active_t": 0.4,
-    "sharpe_2x_costs": -0.377,
+    "deflated_sharpe": 0.035,
+    "active_t": 0.26,
+    "sharpe_2x_costs": -0.405,
     "robust_share": null,
     "variants": 0,
     "factor_alpha": null,
@@ -1443,15 +1443,15 @@
      "factor_alpha": "n/a"
     },
     "traits": {
-     "corr_to_bench": 0.55,
-     "dd_cut": 0.39,
+     "corr_to_bench": 0.56,
+     "dd_cut": 0.33,
      "sharpe_ratio_vs_bench": null,
-     "active_sharpe_first_half": -0.04,
+     "active_sharpe_first_half": -0.1,
      "active_sharpe_second_half": 0.22,
-     "active_sharpe_bench_uptrend": -0.11,
-     "active_sharpe_bench_downtrend": 0.22,
-     "best_5y_active_sharpe": 0.64,
-     "worst_5y_active_sharpe": -0.7,
+     "active_sharpe_bench_uptrend": -0.14,
+     "active_sharpe_bench_downtrend": 0.2,
+     "best_5y_active_sharpe": 0.65,
+     "worst_5y_active_sharpe": -0.87,
      "building_blocks": [
       "conditional-edge"
      ],
@@ -1464,7 +1464,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-AUDUSD=X",
-    "run": "2026-11-11T14:16:52+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2007-01-01",
      "2024-10-31"
@@ -1474,24 +1474,24 @@
     "fin_spread": 0.0,
     "trials": 30,
     "notes": "SMA10 on AUDUSD=X (fx)",
-    "idea_cagr": -0.011,
-    "bench_cagr": -0.0103,
-    "idea_sharpe": -0.297,
-    "bench_sharpe": -0.12,
-    "idea_maxdd": -0.3394,
+    "idea_cagr": -0.0107,
+    "bench_cagr": -0.01,
+    "idea_sharpe": -0.296,
+    "bench_sharpe": -0.118,
+    "idea_maxdd": -0.3356,
     "bench_maxdd": -0.4796,
-    "turnover_per_year": 2.44,
+    "turnover_per_year": 2.34,
     "periods_per_year": 252,
-    "confidence": 0.2078,
+    "confidence": 0.2064,
     "oos_from": "2019-07-02",
     "oos_idea_sharpe": -0.661,
     "oos_bench_sharpe": -0.27,
     "oos_idea_cagr": -0.0128,
     "verdict": "FAIL",
     "asset_class": null,
-    "deflated_sharpe": 0.0101,
+    "deflated_sharpe": 0.01,
     "active_t": -0.25,
-    "sharpe_2x_costs": -0.338,
+    "sharpe_2x_costs": -0.331,
     "robust_share": null,
     "variants": 0,
     "factor_alpha": null,
@@ -1503,15 +1503,15 @@
      "factor_alpha": "n/a"
     },
     "traits": {
-     "corr_to_bench": 0.57,
-     "dd_cut": 0.29,
+     "corr_to_bench": 0.56,
+     "dd_cut": 0.3,
      "sharpe_ratio_vs_bench": null,
-     "active_sharpe_first_half": -0.05,
+     "active_sharpe_first_half": -0.06,
      "active_sharpe_second_half": -0.07,
-     "active_sharpe_bench_uptrend": -0.51,
-     "active_sharpe_bench_downtrend": 0.1,
+     "active_sharpe_bench_uptrend": -0.6,
+     "active_sharpe_bench_downtrend": 0.13,
      "best_5y_active_sharpe": 0.43,
-     "worst_5y_active_sharpe": -0.77,
+     "worst_5y_active_sharpe": -0.74,
      "building_blocks": [],
      "potential_suggested": 0
     },
@@ -1522,7 +1522,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-AUDUSD=X",
-    "run": "2026-11-11T14:16:52+00:00",
+    "run": "2026-11-28T15:28:42+00:00",
     "period": [
      "2007-01-01",
      "2024-10-31"
@@ -1532,23 +1532,23 @@
     "fin_spread": 0.0,
     "trials": 30,
     "notes": "MOM12 on AUDUSD=X (fx)",
-    "idea_cagr": 0.0091,
-    "bench_cagr": -0.0103,
-    "idea_sharpe": -0.018,
-    "bench_sharpe": -0.12,
+    "idea_cagr": 0.0084,
+    "bench_cagr": -0.01,
+    "idea_sharpe": -0.027,
+    "bench_sharpe": -0.118,
     "idea_maxdd": -0.2455,
     "bench_maxdd": -0.4796,
-    "turnover_per_year": 1.47,
+    "turnover_per_year": 1.25,
     "periods_per_year": 252,
-    "confidence": 0.6793,
+    "confidence": 0.6616,
     "oos_from": "2019-07-02",
     "oos_idea_sharpe": 0.098,
     "oos_bench_sharpe": -0.27,
     "oos_idea_cagr": 0.0274,
     "verdict": "FAIL",
     "asset_class": null,
-    "deflated_sharpe": 0.0662,
-    "active_t": 0.57,
+    "deflated_sharpe": 0.0616,
+    "active_t": 0.53,
     "sharpe_2x_costs": -0.055,
     "robust_share": null,
     "variants": 0,
@@ -1561,15 +1561,15 @@
      "factor_alpha": "n/a"
     },
     "traits": {
-     "corr_to_bench": 0.56,
+     "corr_to_bench": 0.57,
      "dd_cut": 0.49,
      "sharpe_ratio_vs_bench": null,
-     "active_sharpe_first_half": 0.02,
+     "active_sharpe_first_half": 0.0,
      "active_sharpe_second_half": 0.3,
-     "active_sharpe_bench_uptrend": 0.15,
-     "active_sharpe_bench_downtrend": 0.18,
+     "active_sharpe_bench_uptrend": 0.09,
+     "active_sharpe_bench_downtrend": 0.19,
      "best_5y_active_sharpe": 0.59,
-     "worst_5y_active_sharpe": -0.45,
+     "worst_5y_active_sharpe": -0.57,
      "building_blocks": [
       "conditional-edge",
       "risk-reducer"
@@ -1585,7 +1585,7 @@
   "crypto": [
    {
     "idea": "DD-2026-11-TREND-SMA10-BTC-USD",
-    "run": "2026-11-11T14:16:52+00:00",
+    "run": "2026-11-28T15:28:43+00:00",
     "period": [
      "2015-06-01",
      "2024-10-31"
@@ -1643,7 +1643,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-BTC-USD",
-    "run": "2026-11-11T14:16:52+00:00",
+    "run": "2026-11-28T15:28:43+00:00",
     "period": [
      "2015-06-01",
      "2024-10-31"
@@ -1701,7 +1701,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-SMA10-ETH-USD",
-    "run": "2026-11-11T14:16:52+00:00",
+    "run": "2026-11-28T15:28:43+00:00",
     "period": [
      "2018-06-01",
      "2024-10-31"
@@ -1759,7 +1759,7 @@
    },
    {
     "idea": "DD-2026-11-TREND-MOM12-ETH-USD",
-    "run": "2026-11-11T14:16:52+00:00",
+    "run": "2026-11-28T15:28:43+00:00",
     "period": [
      "2018-06-01",
      "2024-10-31"
@@ -1816,5 +1816,6 @@
     "vault": "sealed from 2024-11-01"
    }
   ]
- }
+ },
+ "correction": "2026-11-28: re-run after the =X pre-2010-08-04 dating fix (harness fix 3); same rule, not a new trial"
 }
