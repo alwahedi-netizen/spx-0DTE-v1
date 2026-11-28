@@ -1,0 +1,71 @@
+{
+ "idea": "I-2026-11-28-EAPQTR",
+ "run": "2026-11-28T03:38:20+00:00",
+ "period": [
+  "2005-09-01",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 5.0,
+ "fin_spread": 0.0,
+ "trials": 15,
+ "notes": "Frazzini-Lamont earnings-announcement premium, quarterly: PIT S&P 500; expected announcer in month t = a release (first 8-K item 2.02 within 100 days of an ARQ reportperiod) in month t-12; covered firms need >= 2 releases in t-12..t-3; long announcers +1 / short non-announcers -1, value-weighted, monthly, drifting; >= 10 per leg else T-bills; signal day = day before trade; bench T-bills; variants EW, min 20, predictor t-3, t-12 AND t-3; trials 15 (RNDEAP 5 + EAPANN 5 + 5); EAPANN replication mean 0.01412/month (t 2.5)",
+ "idea_cagr": 0.0273,
+ "bench_cagr": 0.0152,
+ "idea_sharpe": 0.203,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.3098,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 39.14,
+ "periods_per_year": 252,
+ "confidence": 0.8128,
+ "oos_from": "2019-02-04",
+ "oos_idea_sharpe": 0.812,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.0888,
+ "verdict": "FAIL",
+ "asset_class": "stocks",
+ "deflated_sharpe": 0.1882,
+ "active_t": 0.89,
+ "sharpe_2x_costs": -0.074,
+ "robust_share": 0.75,
+ "variants": 4,
+ "factor_alpha": {
+  "alpha_ann": 0.0112,
+  "alpha_t": 0.7,
+  "loadings": {
+   "Mkt-RF": 0.01,
+   "SMB": 0.02,
+   "HML": -0.03,
+   "RMW": 0.06,
+   "CMA": -0.04,
+   "Mom": -0.01
+  },
+  "days": 4823
+ },
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "ok",
+  "factor_alpha": "FAIL"
+ },
+ "traits": {
+  "corr_to_bench": 0.04,
+  "dd_cut": -21272.09,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.14,
+  "active_sharpe_second_half": 0.27,
+  "best_5y_active_sharpe": 0.9,
+  "worst_5y_active_sharpe": -0.69,
+  "building_blocks": [
+   "conditional-edge",
+   "diversifier"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "sharadar",
+ "survivorship_free": true,
+ "family": "earnings-announcement-premium",
+ "vault": "sealed from 2024-11-01"
+}

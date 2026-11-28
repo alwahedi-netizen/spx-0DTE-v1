@@ -1,0 +1,59 @@
+{
+ "idea": "R-2026-11-28-FOMCDOL",
+ "run": "2026-11-28T03:23:07+00:00",
+ "period": [
+  "2006-07-03",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 3.0,
+ "fin_spread": 0.0,
+ "trials": 15,
+ "notes": "REPLICATION of Mueller-Tahbaz-Salehi-Vedolin (JF 2017) FOMC-day short-dollar premium (DOL 12.45bp/event 1994-2010); tradeable form: equal-weight FXE/FXB/FXA/FXC/FXF/FXY held close T-1 -> close T on scheduled FOMC decision days (16:00 ET, the source's sampling), else T-bills; 3bp; 2006-07 -> vault; variants PRE/POST/WIDE windows + UDN; re-test of fx-fomc-dollar after the FOMCUSD summer double-shift (87/165 events on the wrong day)",
+ "idea_cagr": 0.0218,
+ "bench_cagr": 0.014,
+ "idea_sharpe": 0.418,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.0627,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 15.84,
+ "periods_per_year": 252,
+ "confidence": 0.9632,
+ "oos_from": "2019-05-03",
+ "oos_idea_sharpe": 0.836,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": 0.0353,
+ "verdict": "FAIL",
+ "asset_class": "fx",
+ "deflated_sharpe": 0.5081,
+ "active_t": 1.79,
+ "sharpe_2x_costs": 0.168,
+ "robust_share": 1.0,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "ok",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": 0.07,
+  "dd_cut": -4305.75,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.34,
+  "active_sharpe_second_half": 0.57,
+  "best_5y_active_sharpe": 0.96,
+  "worst_5y_active_sharpe": -0.44,
+  "building_blocks": [
+   "conditional-edge",
+   "diversifier"
+  ],
+  "potential_suggested": 4
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "fx-fomc-dollar",
+ "vault": "sealed from 2024-11-01"
+}

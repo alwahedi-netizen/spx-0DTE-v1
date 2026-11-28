@@ -43,7 +43,7 @@
   },
   "commodities": {
    "budget_per_week": 10,
-   "points": 5,
+   "points": 8,
    "events": [
     {
      "round": "2026-11-14",
@@ -54,6 +54,11 @@
      "round": "2026-11-14",
      "points": 2,
      "why": "Near-miss CORRMOMREV: 99.86%, fails only t>=3 (2.99); red team survives with caveats; best diversifier yet (+0.14 book Sharpe)"
+    },
+    {
+     "round": "2026-11-28",
+     "points": 3,
+     "why": "Error caught in FX's FOMCDOL replication: before 2010-08 Yahoo =X bars are already closes, so the harness relabel dated 52 of 56 events a day late (+8.1bp t 0.93 -> +24.7bp t 2.51); a harness-wide one-day look-ahead in every pre-2010 =X study (confirmed by the lead: FX vs CurrencyShares corr 0.60-0.93 at lag -1 before 2010-08, 0.92 same-day after)"
     }
    ]
   },
@@ -64,7 +69,7 @@
   },
   "crypto": {
    "budget_per_week": 5,
-   "points": 6,
+   "points": 9,
    "events": [
     {
      "round": "2026-11-14",
@@ -75,6 +80,11 @@
      "round": "2026-11-21",
      "points": 3,
      "why": "Error caught in Options' FAIRMEIC: its live-fill cost model counted 9 sides whose stops never executed (+$3,876 of luck) as a -$62/side stop cost, turning a zero edge into +$17k"
+    },
+    {
+     "round": "2026-11-28",
+     "points": 3,
+     "why": "Error caught in Options' FLYREVIEW: the 2026-09-29 FLY session was booked at 09-30 gap marks after a Schwab auth failure (-$1,433; +$583 at the 7,670.84 settlement), the same corruption the 09-29 errata fixed only for MEIC; FLY's total is about -$130, not -$2,146"
     }
    ]
   }
@@ -136,7 +146,52 @@
     "fx": 0,
     "crypto": 6
    }
+  },
+  {
+   "date": "2026-11-28",
+   "tests": {
+    "options": 3,
+    "stocks": 2,
+    "bonds": 1,
+    "commodities": 2,
+    "fx": 1,
+    "crypto": 1
+   },
+   "harness_pass": 0,
+   "vault_tests": 0,
+   "near_misses": [],
+   "errors_caught": 2,
+   "table": {
+    "options": -5,
+    "stocks": 5,
+    "bonds": 3,
+    "commodities": 8,
+    "fx": 0,
+    "crypto": 9
+   },
+   "notes": "Last round of the November trial season. All 10 tests FAIL; CPFACTOR not run (replication), BTCSEASON replicated (0 tests), MEIC20GATE not ready (11/15 sessions). CORRMOMREV vault NOT spent (never a harness PASS; RESEARCH.md 2b)."
   }
  ],
- "budget_note": "owner 2026-11-11: multiply by 5 (was 4/2/2/2/1/1); month-end minimum 5"
+ "budget_note": "owner 2026-11-11: multiply by 5 (was 4/2/2/2/1/1); month-end minimum 5",
+ "november_final": {
+  "table": {
+   "options": -5,
+   "stocks": 5,
+   "bonds": 3,
+   "commodities": 8,
+   "fx": 0,
+   "crypto": 9
+  },
+  "leader": "crypto",
+  "last": "options",
+  "budgets_december_proposed": {
+   "options": 10,
+   "stocks": 10,
+   "bonds": 10,
+   "commodities": 10,
+   "fx": 5,
+   "crypto": 8
+  },
+  "note": "Budgets apply from the first December round (2026-12-05) per RESEARCH.md LEAGUE: leader +50% (5 -> 7.5, rounded up to 8), last -50% (20 -> 10), minimum 5; reported in the 2026-12-05 digest."
+ }
 }

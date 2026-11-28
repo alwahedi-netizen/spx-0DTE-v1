@@ -1,0 +1,58 @@
+{
+ "idea": "L-2026-11-28-CURVESPREAD",
+ "run": "2026-11-28T03:25:22+00:00",
+ "period": [
+  "2010-01-04",
+  "2024-10-31"
+ ],
+ "bench": "T-bills",
+ "cost_bps": 10.0,
+ "fin_spread": 0.0,
+ "trials": 25,
+ "notes": "month-end: for (USO,USL) and (UNG,UNL): if front 63d return > ladder 63d return front +0.5 / ladder -0.5, else front -0.5 / ladder +0.5 (100% long / 100% short with both pairs, net 0, T-bills on capital and short proceeds); bench T-bills; 10bp; no borrow fee; basis-momentum spreading form of L-2026-11-07-CARRYPROXY (lab)",
+ "idea_cagr": -0.0122,
+ "bench_cagr": 0.0116,
+ "idea_sharpe": -0.117,
+ "bench_sharpe": 0.0,
+ "idea_maxdd": -0.43,
+ "bench_maxdd": -0.0,
+ "turnover_per_year": 22.82,
+ "periods_per_year": 252,
+ "confidence": 0.3257,
+ "oos_from": "2020-05-21",
+ "oos_idea_sharpe": -0.813,
+ "oos_bench_sharpe": 0.0,
+ "oos_idea_cagr": -0.0993,
+ "verdict": "FAIL",
+ "asset_class": "commodities",
+ "deflated_sharpe": 0.0072,
+ "active_t": -0.45,
+ "sharpe_2x_costs": -0.291,
+ "robust_share": 0.75,
+ "variants": 4,
+ "factor_alpha": null,
+ "gates": {
+  "deflated_sharpe": "FAIL",
+  "t_stat_3": "FAIL",
+  "double_costs": "FAIL",
+  "robustness": "ok",
+  "factor_alpha": "n/a"
+ },
+ "traits": {
+  "corr_to_bench": -0.02,
+  "dd_cut": -29523.54,
+  "sharpe_ratio_vs_bench": null,
+  "active_sharpe_first_half": 0.02,
+  "active_sharpe_second_half": -0.2,
+  "best_5y_active_sharpe": 0.53,
+  "worst_5y_active_sharpe": -0.3,
+  "building_blocks": [
+   "conditional-edge"
+  ],
+  "potential_suggested": 1
+ },
+ "data_source": "yahoo",
+ "survivorship_free": false,
+ "family": "L-2026-11-07-CARRYPROXY",
+ "vault": "sealed from 2024-11-01"
+}

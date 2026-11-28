@@ -292,6 +292,30 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
     Spin-off premium (McConnell-Sibley-Xu) replicates 2006-13 but is gone
     since ~2015 (held-out Sharpe 0.08). AQR's TSMOM-FX did not replicate
     (ours -0.17 vs 0.22; gap in 2010-15 and CHF) even with carry included.
+38. **League round 3 (2026-11-28): 10 tests, all FAIL; no vault.** Replication
+    worked more often than before (FFDEF on 1934-87 Moody's yields, EAPANN on
+    true 8-K dates, FOMCDOL, BTCSEASON) but every replicated premium was
+    small, lumpy or faded after ~2010: the earnings-announcement premium is a
+    few mega-caps in thin months (+0.13%/month once >=20 names); the FOMC-day
+    short-dollar premium is 24.7bp/event 2004-10 but +4.7bp after 2011 with
+    five days = 76% of P&L; the default-spread switch is one year (2020).
+    CCYCMD hedged against gold earns T-bills (-64% drawdown): its value in
+    CMDBOOK is dollar exposure. Cochrane-Piazzesi does not reproduce its tent
+    on GSW zeros. Journal QA: the paper journal is sound except the 09-29
+    auth-failure rows (FLY was missed by the errata: -$1,433 booked, +$583 at
+    settlement) and 11 early-September settlements (net ~$14); QA scripts
+    must allow +-$0.51/side for 2-decimal price rounding. CORRMOMREV's vault
+    is NOT spent: the vault is only for a harness PASS that survived red team.
+39. **Yahoo `=X` dating changes on 2010-08-02** (Commodities red team on FX,
+    confirmed by the lead). From 2010-08 the `=X` value is the start-of-day
+    price (the harness relabel to the previous bar is right); BEFORE 2010-08
+    it is already that day's close, so the relabel puts each value a day
+    EARLY - a one-day look-ahead in every =X signal/replication using pre-2010
+    data (FX vs CurrencyShares corr 0.60-0.93 at lag -1 before, 0.92 same-day
+    after). Affected: haven sleeves (SAFEHAVEN/HAVEN*), FXVALUE, VALMOMFX,
+    TSMOM-FX, FOMCUSD/FOMCMOVE, CCYCMD's FX inputs, FOMCDOL's replication.
+    Until the harness is fixed (owner's call), treat pre-2010 =X results as
+    suspect and prefer CurrencyShares ETFs (2005-06+ / 2006+).
 7. **From the options lab** (RETIRED.md): tight condors die in chop; wide
    unprotected put wings are crash bets (PBW); the negative-GEX regime is the
    lab's strongest measured filter (MNG promoted 2026-11-07).
@@ -313,6 +337,7 @@ Sharadar (survivorship-free + point-in-time) is connected. Retested
 | done 2026-11-10 | RND, CBOP, LTREV, FOMCCYCLE, QVPARITY; RATESLEV, EMDOLLAR, LOWRISKIG, JANHY, YCMOM; HEDGEUUP, PREFOMCDIR, RRWCMD, OECDCARRY, CMDDXY; GOLDSHOCK, CMDBOOK, NGEIADAY, DEMANDVOTE, CCYCURVE; BOLD, BOLDTREND, BTCSLEEVE10H, SLEEVETREND (red-teamed), BTIFLOOR | All FAIL; CMDBOOK 4, RATESLEV/RND/CCYCURVE 3 |
 | done 2026-11-11 | RNDREV, RNDSECT, RNDEAP, INTANGVAL, RDINC; VTCREDIT, FFTERM, BONDCARRYX, CYCLEFAC, TSYCALPLUS (PASS → red team → vault FAIL); GOODCARRY, VIXCARRY, DOLCARRY, LRCARRY, RATEMOM; AGSKEW, CMDBAB, CCYVOLTGT, CMDBOOK2, ETFROLL; BTCSLEEVE (static), BTCVMP, BTCTOM, RPCRYPTO, SLEEVEVOL | All FAIL; every FX carry variant below T-bills even with FRED rates |
 | done 2026-11-21 (league round 2) | REBALFR (PASS → red team → vault FAIL), EOMCREDIT, TIPSSEAS; CORRMOMSGL; SPINOFF; QQQBTCBRK, QQQBTCOOS, BTCDVMP; ORGCAP and FXTSMOM not run (replication failed); 9 Options journal studies | All FAIL except LOCKOUTOOS (survives with caveats); FAIRMEIC withdrawn (data error). Queue note: CMDSKEW ag-only and CMDBAB were already run 2026-11-11 |
+| done 2026-11-28 (league round 3) | EAPANN, EAPQTR; FFDEF; CURVESPREAD, CCYDEMAND; FOMCDOL; SLEEVEBEST8 (BTCSEASON replicated); Options JOURNALQA, MPMREVIEW, FLYREVIEW (MEIC20GATE not ready until 15 sessions); CPFACTOR not run (replication) | All FAIL; no near-miss. Queue note: CMDTURN and DUALMOMDB already failed in round 1; INTANGMAGIC dropped (INTANGVAL failed) |
 | queued by desks (2026-11-11) | FFDEF, MBSVOL (bonds); CMDTURN, DUALMOMDB, CMDASYM (cmd); BTCDVMP, BTCBEST8 (crypto); RNDQUAL, INTANGMAGIC (stocks) | Lower priority if the owner approves the research reset |
 | queued by desks (older) | VTCREDIT, FFTERM, BONDCARRYX (bonds); CMDBAB, CCYVOLTGT, CMDSKEW ag-only (cmd); BTCVMP, BTCTOM, I-2026-11-07-BTCSLEEVE static control, RPCRYPTO, QQQBTCBRK (crypto); RNDREV (stocks); DOLCARRY, VIXCARRY, GOODCARRY, HEDGECARRY (FX — FRED now reachable, default Python user-agent; OECD rates lag ~2 months; NFCI is revised — look-ahead) | Next scripts |
 | harness fixes (new 2026-11-10) | `=X` start-of-day dating; short-leg T-bill sign in simulate(); financing-spread option | Owner's call — reported in the digest |
